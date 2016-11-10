@@ -92,7 +92,6 @@ public class PopupBridge extends WebViewClient {
                         }
                     });
                 } else {
-                    // TODO test this in < KITKAT
                     mWebView.loadUrl("javascript:" + javascript);
                     runnable.run();
                 }
