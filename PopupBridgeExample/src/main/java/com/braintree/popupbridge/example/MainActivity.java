@@ -7,6 +7,7 @@ import android.webkit.WebView;
 import com.braintree.popupbridge.PopupBridge;
 
 public class MainActivity extends Activity {
+
     private static final String LOCALHOST_URL = "http://10.0.2.2:3099";
     private WebView mWebView;
     private PopupBridge mPopupBridge;

@@ -9,6 +9,9 @@ import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Set;
 
 public class PopupBridge extends WebViewClient {
@@ -32,24 +35,36 @@ public class PopupBridge extends WebViewClient {
             return;
         }
         String error = null;
-        String json = null;
         String payload = null;
+        JSONObject json = null;
 
         Uri data = sResultIntent.getData();
         Set<String> queryParams = data.getQueryParameterNames();
 
         if (queryParams != null && !queryParams.isEmpty()) {
-            json = "";
+            json = new JSONObject();
             for (String queryParam : queryParams) {
-                json += String.format("\"%s\": \"%s\",", queryParam, data.getQueryParameter(queryParam));
+                try {
+                    json.put(queryParam, data.getQueryParameter(queryParam));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
-            json = String.format("{%s}", json.substring(0, json.length()-1));
         }
 
         if (data.getLastPathSegment().equals("return")) {
-            payload = json;
+            if (json != null) {
+                payload = json.toString();
+            }
         } else {
-            error = String.format("{ \"path\": \"%s\", \"payload\": %s }", data.getPath(), json);
+            JSONObject errorJson = new JSONObject();
+            try {
+                errorJson.put("path", data.getPath());
+                errorJson.put("payload", json);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            error = errorJson.toString();
         }
 
         executeJavascript(String.format("PopupBridge.onCompleteCallback(%s, %s)",
@@ -67,19 +82,6 @@ public class PopupBridge extends WebViewClient {
         return context.getPackageName().toLowerCase().replace("_", "") + ".braintree.popupbridge";
     }
 
-    @JavascriptInterface
-    public void initialize() {
-        final String scheme = mWebView.getContext().getString(R.string.com_braintree_popupbridge_scheme_template)
-                .replace("%%SCHEME%%", getSchemeFromPackageName(mWebView.getContext()))
-                .replace("%%VERSION%%", VERSION);
-        executeJavascript(String.format("PopupBridge.scheme = '%s';", scheme), new Runnable() {
-            @Override
-            public void run() {
-                handleResult();
-            }
-        });
-    }
-
     private void executeJavascript(final String javascript, final Runnable runnable) {
         mWebView.post(new Runnable() {
             @Override
@@ -95,7 +97,19 @@ public class PopupBridge extends WebViewClient {
                     mWebView.loadUrl("javascript:" + javascript);
                     runnable.run();
                 }
+            }
+        });
+    }
 
+    @JavascriptInterface
+    public void initialize() {
+        final String scheme = mWebView.getContext().getString(R.string.com_braintree_popupbridge_scheme_template)
+                .replace("%%SCHEME%%", getSchemeFromPackageName(mWebView.getContext()))
+                .replace("%%VERSION%%", VERSION);
+        executeJavascript(String.format("PopupBridge.scheme = '%s';", scheme), new Runnable() {
+            @Override
+            public void run() {
+                handleResult();
             }
         });
     }
