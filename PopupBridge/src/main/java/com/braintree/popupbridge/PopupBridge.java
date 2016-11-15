@@ -67,7 +67,7 @@ public class PopupBridge extends WebViewClient {
             error = errorJson.toString();
         }
 
-        executeJavascript(String.format("PopupBridge.onCompleteCallback(%s, %s)",
+        executeJavascript(String.format("PopupBridge.onComplete(%s, %s)",
                 error,
                 payload
         ), new Runnable() {
@@ -101,12 +101,17 @@ public class PopupBridge extends WebViewClient {
         });
     }
 
-    @JavascriptInterface
     public void initialize() {
         final String scheme = mWebView.getContext().getString(R.string.com_braintree_popupbridge_scheme_template)
                 .replace("%%SCHEME%%", getSchemeFromPackageName(mWebView.getContext()))
                 .replace("%%VERSION%%", VERSION);
-        executeJavascript(String.format("PopupBridge.scheme = '%s';", scheme), new Runnable() {
+
+        final String javascript = String.format("PopupBridge.scheme = '%s';", scheme)
+                + "PopupBridge.open = function (options) {"
+                + "  PopupBridge._open(options.url);"
+                + "};";
+
+        executeJavascript(javascript, new Runnable() {
             @Override
             public void run() {
                 handleResult();
@@ -115,7 +120,7 @@ public class PopupBridge extends WebViewClient {
     }
 
     @JavascriptInterface
-    public void open(String url) {
+    public void _open(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         mWebView.getContext().startActivity(intent);
     }
