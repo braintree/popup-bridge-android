@@ -18,12 +18,16 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mWebView = (WebView) findViewById(R.id.web_view);
         mWebView.getSettings().setJavaScriptEnabled(true);
+
+        mPopupBridge = PopupBridge.newInstance(this, mWebView);
+//        mPopupBridge.enablePageInWebView();
+
         mWebView.loadUrl(LOCALHOST_URL);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mPopupBridge = new PopupBridge(mWebView);
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        mPopupBridge = new PopupBridge(mWebView);
+//    }
 }
