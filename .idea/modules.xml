@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PopupBridge/popupbridge.iml" filepath="$PROJECT_DIR$/PopupBridge/popupbridge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PopupBridge/PopupBridge.iml" filepath="$PROJECT_DIR$/PopupBridge/PopupBridge.iml" />
       <module fileurl="file://$PROJECT_DIR$/PopupBridgeExample/PopupBridgeExample.iml" filepath="$PROJECT_DIR$/PopupBridgeExample/PopupBridgeExample.iml" />
-      <module fileurl="file://$PROJECT_DIR$/popupbridge-android.iml" filepath="$PROJECT_DIR$/popupbridge-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/popup-bridge-android.iml" filepath="$PROJECT_DIR$/popup-bridge-android.iml" />
     </modules>
   </component>
 </project>

@@ -19,15 +19,9 @@ public class MainActivity extends Activity {
         mWebView = (WebView) findViewById(R.id.web_view);
         mWebView.getSettings().setJavaScriptEnabled(true);
 
+        // Create PopupBridge and pass the Activity and the WebView
         mPopupBridge = PopupBridge.newInstance(this, mWebView);
-//        mPopupBridge.enablePageInWebView();
 
         mWebView.loadUrl(LOCALHOST_URL);
     }
-
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        mPopupBridge = new PopupBridge(mWebView);
-//    }
 }

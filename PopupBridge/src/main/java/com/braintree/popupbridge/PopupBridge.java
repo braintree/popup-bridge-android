@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.support.annotation.VisibleForTesting;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
@@ -20,14 +21,18 @@ import java.util.Set;
 
 public class PopupBridge extends Fragment {
 
-    // TODO: How is this tag?
-    public static final String TAG = "com.braintreepayments.opensource.PopupBridge";
+    private static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
+    private static final String TAG = "com.braintreepayments.opensource.PopupBridge";
 
     public static final String POPUP_BRIDGE_NAME = "PopupBridge";
     public static final String POPUP_BRIDGE_VERSION = "v1";
 
+    @VisibleForTesting
+    static final String EXTRA_BROWSER_SWITCHING = "com.braintreepayments.opensource.PopupBridge.EXTRA_BROWSER_SWITCHING";
+
     static Intent sResultIntent;
 
+    private boolean mIsBrowserSwitching = false;
     private WebView mWebView;
     private Context mContext;
 
@@ -90,56 +95,90 @@ public class PopupBridge extends Fragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
+        if (mContext == null) {
+            mContext = getActivity().getApplicationContext();
+        }
+
+        if (savedInstanceState != null) {
+            mIsBrowserSwitching = savedInstanceState.getBoolean(EXTRA_BROWSER_SWITCHING);
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
-        if (sResultIntent == null) {
-            // User switched back to app
-            // TODO: consider this a form of cancellation
+        if (mIsBrowserSwitching) {
+            int resultCode = Activity.RESULT_CANCELED;
+            if (sResultIntent != null) {
+                resultCode = Activity.RESULT_OK;
+            }
+
+            onActivityResult(POPUP_BRIDGE_REQUEST_CODE, resultCode, sResultIntent);
+
+            sResultIntent = null;
+            mIsBrowserSwitching = false;
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(EXTRA_BROWSER_SWITCHING, mIsBrowserSwitching);
+    }
+
+    @Override
+    public void onActivityResult(final int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        if (requestCode != POPUP_BRIDGE_REQUEST_CODE) {
             return;
         }
+
         String error = null;
         String payload = null;
-        JSONObject json = null;
 
-        Uri data = sResultIntent.getData();
-        Set<String> queryParams = data.getQueryParameterNames();
+        if (intent != null) {
+            JSONObject json = null;
 
-        if (queryParams != null && !queryParams.isEmpty()) {
-            json = new JSONObject();
-            for (String queryParam : queryParams) {
+            Uri uri = intent.getData();
+            Set<String> queryParams = uri.getQueryParameterNames();
+
+            if (queryParams != null && !queryParams.isEmpty()) {
+                json = new JSONObject();
+                for (String queryParam : queryParams) {
+                    try {
+                        json.put(queryParam, uri.getQueryParameter(queryParam));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if (uri.getLastPathSegment().equals("return")) {
+                if (json != null) {
+                    payload = json.toString();
+                }
+            } else {
+                JSONObject errorJson = new JSONObject();
                 try {
-                    json.put(queryParam, data.getQueryParameter(queryParam));
+                    errorJson.put("path", uri.getPath());
+                    errorJson.put("payload", json);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                error = errorJson.toString();
             }
-        }
-
-        if (data.getLastPathSegment().equals("return")) {
-            if (json != null) {
-                payload = json.toString();
-            }
-        } else {
-            JSONObject errorJson = new JSONObject();
-            try {
-                errorJson.put("path", data.getPath());
-                errorJson.put("payload", json);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            error = errorJson.toString();
         }
 
         executeJavascript(String.format("PopupBridge.onComplete(%s, %s)",
                 error,
                 payload
-        ), new Runnable() {
-            @Override
-            public void run() {
-                sResultIntent = null;
-            }
-        });
+        ));
     }
 
     private static String getSchemeFromPackageName(Context context) {
@@ -168,8 +207,7 @@ public class PopupBridge extends Fragment {
     private void executeJavascript(final String javascript) {
         executeJavascript(javascript, new Runnable() {
             @Override
-            public void run() {
-            }
+            public void run() {}
         });
     }
 
@@ -183,7 +221,18 @@ public class PopupBridge extends Fragment {
     @JavascriptInterface
     public void open(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        mWebView.getContext().startActivity(intent);
+        startActivity(intent);
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        sResultIntent = null;
+        mIsBrowserSwitching = true;
+        getApplicationContext().startActivity(intent);
+    }
+
+    protected Context getApplicationContext() {
+        return mContext;
     }
 
     @JavascriptInterface
