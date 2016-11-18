@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.braintree.popupbridge.example">
+    package="com.braintreepayments.popupbridge.example">
 
     <application
         android:allowBackup="true"
@@ -15,13 +15,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.braintree.popupbridge.PopupBridgeActivity"
+        <activity android:name="com.braintreepayments.popupbridge.PopupBridgeActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="${applicationId}.braintree.popupbridge" />
+                <data android:scheme="${applicationId}.braintreepayments.popupbridge" />
             </intent-filter>
         </activity>
 

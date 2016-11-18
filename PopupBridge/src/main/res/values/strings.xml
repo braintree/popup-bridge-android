@@ -1,4 +1,0 @@
-<resources>
-    <string name="com.braintree.popupbridge.app_name">PopupBridge</string>
-    <string name="com.braintree.popupbridge.scheme_template">%%SCHEME%%://popupbridge/%%VERSION%%/</string>
-</resources>
