@@ -181,7 +181,7 @@ public class PopupBridge extends Fragment {
     }
 
     private static String getSchemeFromPackageName(Context context) {
-        return context.getPackageName().toLowerCase().replace("_", "") + ".braintreepayments.popupbridge";
+        return context.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
     }
 
     @JavascriptInterface
