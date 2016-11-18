@@ -9,6 +9,7 @@ import com.braintree.popupbridge.PopupBridge;
 public class MainActivity extends Activity {
 
     private static final String LOCALHOST_URL = "http://10.0.2.2:3099";
+
     private WebView mWebView;
     private PopupBridge mPopupBridge;
 
@@ -19,7 +20,6 @@ public class MainActivity extends Activity {
         mWebView = (WebView) findViewById(R.id.web_view);
         mWebView.getSettings().setJavaScriptEnabled(true);
 
-        // Create PopupBridge and pass the Activity and the WebView
         mPopupBridge = PopupBridge.newInstance(this, mWebView);
 
         mWebView.loadUrl(LOCALHOST_URL);
