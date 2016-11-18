@@ -11,7 +11,6 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import org.json.JSONException;
@@ -175,47 +174,16 @@ public class PopupBridge extends Fragment {
             }
         }
 
-        executeJavascript(String.format("PopupBridge.onComplete(%s, %s)",
-                error,
-                payload
-        ));
+        mWebView.evaluateJavascript(String.format("PopupBridge.onComplete(%s, %s)", error, payload), null);
     }
 
     private static String getSchemeFromPackageName(Context context) {
         return context.getPackageName().toLowerCase().replace("_", "") + ".braintree.popupbridge";
     }
 
-    private void executeJavascript(final String javascript, final Runnable runnable) {
-        mWebView.post(new Runnable() {
-            @Override
-            public void run() {
-                if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
-                    mWebView.evaluateJavascript(javascript, new ValueCallback<String>() {
-                        @Override
-                        public void onReceiveValue(String s) {
-                            runnable.run();
-                        }
-                    });
-                } else {
-                    mWebView.loadUrl("javascript:" + javascript);
-                    runnable.run();
-                }
-            }
-        });
-    }
-
-    private void executeJavascript(final String javascript) {
-        executeJavascript(javascript, new Runnable() {
-            @Override
-            public void run() {}
-        });
-    }
-
     @JavascriptInterface
     public String getReturnUrlPrefix() {
-        return mContext.getString(R.string.com_braintree_popupbridge_scheme_template)
-                .replace("%%SCHEME%%", getSchemeFromPackageName(mContext))
-                .replace("%%VERSION%%", POPUP_BRIDGE_VERSION);
+        return String.format("%s://popupbridge/%s/", getSchemeFromPackageName(mContext), POPUP_BRIDGE_VERSION);
     }
 
     @JavascriptInterface
