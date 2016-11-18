@@ -1,4 +1,4 @@
-package com.braintree.popupbridge;
+package com.braintreepayments.popupbridge;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -21,13 +21,13 @@ import java.util.Set;
 public class PopupBridge extends Fragment {
 
     private static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
-    private static final String TAG = "com.braintreepayments.opensource.PopupBridge";
+    private static final String TAG = "com.braintreepayments.popupbridge";
 
     public static final String POPUP_BRIDGE_NAME = "PopupBridge";
     public static final String POPUP_BRIDGE_VERSION = "v1";
 
     @VisibleForTesting
-    static final String EXTRA_BROWSER_SWITCHING = "com.braintreepayments.opensource.PopupBridge.EXTRA_BROWSER_SWITCHING";
+    static final String EXTRA_BROWSER_SWITCHING = "com.braintreepayments.popupbridge.EXTRA_BROWSER_SWITCHING";
 
     static Intent sResultIntent;
 
@@ -181,7 +181,7 @@ public class PopupBridge extends Fragment {
     }
 
     private static String getSchemeFromPackageName(Context context) {
-        return context.getPackageName().toLowerCase().replace("_", "") + ".braintree.popupbridge";
+        return context.getPackageName().toLowerCase().replace("_", "") + ".braintreepayments.popupbridge";
     }
 
     @JavascriptInterface

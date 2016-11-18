@@ -1,4 +1,4 @@
-package com.braintree.popupbridge;
+package com.braintreepayments.popupbridge.example;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.braintree.popupbridge.test", appContext.getPackageName());
+        assertEquals("com.braintreepayments.popupbridge", appContext.getPackageName());
     }
 }

@@ -1,10 +1,11 @@
-package com.braintree.popupbridge.example;
+package com.braintreepayments.popupbridge.example;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.webkit.WebView;
 
-import com.braintree.popupbridge.PopupBridge;
+import com.braintreepayments.popupbridge.PopupBridge;
+import com.braintreepayments.popupbridge.example.R;
 
 public class MainActivity extends Activity {
 

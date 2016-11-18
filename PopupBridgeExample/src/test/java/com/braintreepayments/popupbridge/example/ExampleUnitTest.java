@@ -1,4 +1,4 @@
-package com.braintree.popupbridge.example;
+package com.braintreepayments.popupbridge.example;
 
 import org.junit.Test;
 

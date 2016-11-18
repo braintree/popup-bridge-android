@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.braintreepayments.popupbridge.example">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,7 +26,5 @@
                 <data android:scheme="${applicationId}.braintreepayments.popupbridge" />
             </intent-filter>
         </activity>
-
     </application>
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
