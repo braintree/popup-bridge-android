@@ -24,7 +24,7 @@ public class PopupBridge extends Fragment {
     private static final String TAG = "com.braintreepayments.popupbridge";
 
     public static final String POPUP_BRIDGE_NAME = "PopupBridge";
-    public static final String POPUP_BRIDGE_VERSION = "v1";
+    public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
     @VisibleForTesting
     static final String EXTRA_BROWSER_SWITCHING = "com.braintreepayments.popupbridge.EXTRA_BROWSER_SWITCHING";
@@ -148,6 +148,11 @@ public class PopupBridge extends Fragment {
             JSONObject json = null;
 
             Uri uri = intent.getData();
+
+            if (!uri.getScheme().equals(getSchemeFromPackageName(mContext)) || !uri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
+                return;
+            }
+
             Set<String> queryParams = uri.getQueryParameterNames();
 
             if (queryParams != null && !queryParams.isEmpty()) {
@@ -156,25 +161,23 @@ public class PopupBridge extends Fragment {
                     try {
                         json.put(queryParam, uri.getQueryParameter(queryParam));
                     } catch (JSONException e) {
+                        error = "new Error('Failed to parse query items from return URL. " + e.getLocalizedMessage() + "')";
                         e.printStackTrace();
                     }
                 }
             }
 
-            if (uri.getLastPathSegment().equals("return")) {
-                if (json != null) {
-                    payload = json.toString();
-                }
-            } else {
-                JSONObject errorJson = new JSONObject();
-                try {
-                    errorJson.put("path", uri.getPath());
-                    errorJson.put("payload", json);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                error = errorJson.toString();
+            if (json == null) {
+                json = new JSONObject();
             }
+
+            try {
+                json.put("path", uri.getPath());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            payload = json.toString();
         }
 
         mWebView.evaluateJavascript(String.format("PopupBridge.onComplete(%s, %s)", error, payload), null);
@@ -186,7 +189,7 @@ public class PopupBridge extends Fragment {
 
     @JavascriptInterface
     public String getReturnUrlPrefix() {
-        return String.format("%s://popupbridge/%s/", getSchemeFromPackageName(mContext), POPUP_BRIDGE_VERSION);
+        return String.format("%s://%s/", getSchemeFromPackageName(mContext), POPUP_BRIDGE_URL_HOST);
     }
 
     @JavascriptInterface
@@ -204,10 +207,5 @@ public class PopupBridge extends Fragment {
 
     protected Context getApplicationContext() {
         return mContext;
-    }
-
-    @JavascriptInterface
-    public String getVersion() {
-        return POPUP_BRIDGE_VERSION;
     }
 }
