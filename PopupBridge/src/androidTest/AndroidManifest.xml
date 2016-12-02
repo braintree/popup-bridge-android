@@ -1,0 +1,22 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.braintreepayments.popupbridge">
+
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+
+    <application>
+
+        <!--suppress AndroidDomInspection -->
+        <activity android:name="com.braintreepayments.popupbridge.test.TestActivity" />
+
+        <activity android:name=".PopupBridgeActivity"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data android:scheme="com.braintreepayments.test.popupbridge" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>
