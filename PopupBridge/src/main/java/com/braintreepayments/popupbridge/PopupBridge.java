@@ -13,14 +13,9 @@ import android.support.annotation.VisibleForTesting;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Set;
-
 public class PopupBridge extends Fragment {
 
-    private static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
+    public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
     private static final String TAG = "com.braintreepayments.popupbridge";
 
     public static final String POPUP_BRIDGE_NAME = "PopupBridge";
@@ -141,46 +136,20 @@ public class PopupBridge extends Fragment {
             return;
         }
 
-        String error = null;
+        String error = null; // TODO canceled?
         String payload = null;
 
         if (intent != null) {
-            JSONObject json = null;
-
             Uri uri = intent.getData();
 
             if (!uri.getScheme().equals(getSchemeFromPackageName(mContext)) || !uri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
             }
 
-            Set<String> queryParams = uri.getQueryParameterNames();
-
-            if (queryParams != null && !queryParams.isEmpty()) {
-                json = new JSONObject();
-                for (String queryParam : queryParams) {
-                    try {
-                        json.put(queryParam, uri.getQueryParameter(queryParam));
-                    } catch (JSONException e) {
-                        error = "new Error('Failed to parse query items from return URL. " + e.getLocalizedMessage() + "')";
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            if (json == null) {
-                json = new JSONObject();
-            }
-
-            try {
-                json.put("path", uri.getPath());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            payload = json.toString();
+            payload = uri.toString();
         }
 
-        mWebView.evaluateJavascript(String.format("PopupBridge.onComplete(%s, %s)", error, payload), null);
+        mWebView.evaluateJavascript(String.format("PopupBridge.onComplete(%s, %s);", error, payload), null);
     }
 
     private static String getSchemeFromPackageName(Context context) {
