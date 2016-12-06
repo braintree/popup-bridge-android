@@ -124,12 +124,13 @@ public class TestPopupBridge {
     }
 
     @Test
-    public void onActivityResult_whenSuccessful_reportsPayload() throws JSONException {
+    public void onActivityResult_whenReturnUrlHasQueryParams_reportsPayloadWithQueryItems() throws JSONException {
         Uri uri = new Uri.Builder()
                 .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .path("mypath")
                 .appendQueryParameter("foo", "bar")
+                .appendQueryParameter("baz", "qux")
                 .build();
         Intent intent = new Intent();
         intent.setData(uri);
@@ -139,7 +140,31 @@ public class TestPopupBridge {
                 intent);
 
         assertEquals("null", mWebView.mError);
-        assertEquals(uri.toString(), mWebView.mPayload);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
+        assertEquals(payload.getString("path"), "/mypath");
+        assertEquals(payload.getJSONObject("queryItems").getString("foo"), "bar");
+        assertEquals(payload.getJSONObject("queryItems").getString("baz"), "qux");
+        assertEquals(payload.getJSONObject("queryItems").length(), 2);
+    }
+
+    @Test
+    public void onActivityResult_whenReturnUrlHasNoQueryParams_reportsPayloadWithEmptyQueryItems() throws JSONException {
+        Uri uri = new Uri.Builder()
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .authority("popupbridgev1")
+                .path("mypath")
+                .build();
+        Intent intent = new Intent();
+        intent.setData(uri);
+
+        mPopupBridge.onActivityResult(PopupBridge.POPUP_BRIDGE_REQUEST_CODE,
+                Activity.RESULT_OK,
+                intent);
+
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
+        assertEquals(payload.getString("path"), "/mypath");
+        assertEquals(payload.getJSONObject("queryItems").length(), 0);
     }
 
     @Test

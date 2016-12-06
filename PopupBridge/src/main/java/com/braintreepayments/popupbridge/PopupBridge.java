@@ -13,6 +13,11 @@ import android.support.annotation.VisibleForTesting;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Set;
+
 public class PopupBridge extends Fragment {
 
     public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
@@ -139,14 +144,42 @@ public class PopupBridge extends Fragment {
         String error = null; // TODO canceled?
         String payload = null;
 
+
+        if (requestCode != POPUP_BRIDGE_REQUEST_CODE) {
+            return;
+        }
+
         if (intent != null) {
+            JSONObject json = new JSONObject();
+            JSONObject queryItems = new JSONObject();
+
             Uri uri = intent.getData();
 
             if (!uri.getScheme().equals(getSchemeFromPackageName(mContext)) || !uri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
             }
 
-            payload = uri.toString();
+            Set<String> queryParams = uri.getQueryParameterNames();
+
+            if (queryParams != null && !queryParams.isEmpty()) {
+                for (String queryParam : queryParams) {
+                    try {
+                        queryItems.put(queryParam, uri.getQueryParameter(queryParam));
+                    } catch (JSONException e) {
+                        error = "new Error('Failed to parse query items from return URL. " + e.getLocalizedMessage() + "')";
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            try {
+                json.put("path", uri.getPath());
+                json.put("queryItems", queryItems);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            payload = json.toString();
         }
 
         mWebView.evaluateJavascript(String.format("PopupBridge.onComplete(%s, %s);", error, payload), null);
