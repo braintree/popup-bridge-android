@@ -107,6 +107,14 @@ public class TestPopupBridge {
     }
 
     @Test
+    public void onActivityResult_whenCancelled_callsPopupBridgeWithNull() {
+        mPopupBridge.onActivityResult(PopupBridge.POPUP_BRIDGE_REQUEST_CODE,
+                Activity.RESULT_CANCELED, null);
+        assertEquals(mWebView.mError, "null");
+        assertEquals(mWebView.mPayload, "null");
+    }
+
+    @Test
     public void onActivityResult_whenDifferentScheme_doesNotCallOnComplete() {
         Uri uri = new Uri.Builder()
                 .scheme("com.oranges.popupbridge")

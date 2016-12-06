@@ -141,7 +141,7 @@ public class PopupBridge extends Fragment {
             return;
         }
 
-        String error = null; // TODO canceled?
+        String error = null;
         String payload = null;
 
 
