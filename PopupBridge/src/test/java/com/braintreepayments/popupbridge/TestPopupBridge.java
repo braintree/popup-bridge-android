@@ -176,8 +176,22 @@ public class TestPopupBridge {
     }
 
     @Test
-    public void onActivityResult_whenCanceled_() {
-        fail("Unimplemented");
+    public void onActivityResult_whenNoPath_returnsEmptyString() throws JSONException {
+         Uri uri = new Uri.Builder()
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .authority("popupbridgev1")
+                .build();
+        Intent intent = new Intent();
+        intent.setData(uri);
+
+        mPopupBridge.onActivityResult(PopupBridge.POPUP_BRIDGE_REQUEST_CODE,
+                Activity.RESULT_OK,
+                intent);
+
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
+        assertEquals(payload.getString("path"), "");
+        assertEquals(payload.getJSONObject("queryItems").length(), 0);
     }
 
     @Test

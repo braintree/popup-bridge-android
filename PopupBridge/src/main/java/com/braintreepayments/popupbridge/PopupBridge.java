@@ -175,9 +175,7 @@ public class PopupBridge extends Fragment {
             try {
                 json.put("path", uri.getPath());
                 json.put("queryItems", queryItems);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            } catch (JSONException ignored) {}
 
             payload = json.toString();
         }
