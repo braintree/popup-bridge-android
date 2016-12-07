@@ -23,7 +23,7 @@ public class PopupBridge extends Fragment {
     public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
     private static final String TAG = "com.braintreepayments.popupbridge";
 
-    public static final String POPUP_BRIDGE_NAME = "PopupBridge";
+    public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
     @VisibleForTesting
@@ -180,7 +180,7 @@ public class PopupBridge extends Fragment {
             payload = json.toString();
         }
 
-        mWebView.evaluateJavascript(String.format("PopupBridge.onComplete(%s, %s);", error, payload), null);
+        mWebView.evaluateJavascript(String.format("window.popupBridge.onComplete(%s, %s);", error, payload), null);
     }
 
     private static String getSchemeFromPackageName(Context context) {

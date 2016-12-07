@@ -96,7 +96,7 @@ public class TestPopupBridge {
         PopupBridge popupBridge = PopupBridge.newInstance(mActivity, webView);
 
         verify(webView).addJavascriptInterface(eq(popupBridge),
-                eq(PopupBridge.POPUP_BRIDGE_NAME));
+                eq("popupBridge"));
     }
 
     @Test
