@@ -1,11 +1,11 @@
-Popup Bridge
+PopupBridge
 ============
 
-Popup Bridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.
+PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.
 
-Popup Bridge is also available for [iOS](../../../popup-bridge-ios).
+PopupBridge is also available for [iOS](../../../popup-bridge-ios).
 
-See the [Frequently Asked Questions](#frequently-asked-questions) to learn more about Popup Bridge.
+See the [Frequently Asked Questions](#frequently-asked-questions) to learn more about PopupBridge.
 
 Requirements
 ------------
@@ -34,7 +34,7 @@ Quick Start
   </activity>
   ```
 
-2. Include Popup Bridge in your app code:
+2. Include PopupBridge in your app code:
 
    ```java
    import com.braintreepayments.popupbridge.PopupBridge;
@@ -47,13 +47,13 @@ Quick Start
            // Connect your web view.
            // ...
 
-           // ...and then attach Popup Bridge.
+           // ...and then attach PopupBridge.
            PopupBridge.newInstance(this, mWebView);
        }
    }
    ```
 
-3. Use Popup Bridge from the web page by writing some JavaScript:
+3. Use PopupBridge from the web page by writing some JavaScript:
 
    ```javascript
    var url = 'http://localhost:4567/';
@@ -65,7 +65,7 @@ Quick Start
      // Optional: define a callback to process results of interaction with the popup
      popupBridge.onComplete = function (err, payload) {
        if (err) {
-         console.error('Popup Bridge onComplete Error:', err);
+         console.error('PopupBridge onComplete Error:', err);
        } else if (!err && !payload) {
          console.log('User closed popup.');
        } else {
@@ -114,19 +114,19 @@ Quick Start
 Frequently Asked Questions
 --------------------------
 
-### What does Popup Bridge do?
+### What does PopupBridge do?
 
-Popup Bridge allows Android apps to simulate the opening of a popup window from a WebView by opening the popup URL in an Android web browser instead.
+PopupBridge allows Android apps to simulate the opening of a popup window from a WebView by opening the popup URL in an Android web browser instead.
 
 It also allows the simulated popup window to send data back to the parent page.
 
-### Why use Popup Bridge?
+### Why use PopupBridge?
 
 By default, WebViews cannot open popups -- `window.open` will not work.
 
 You can use [`setSupportMultipleWindows()`](https://developer.android.com/reference/android/webkit/WebSettings.html#setSupportMultipleWindows(boolean)) and [roll your own WebChromeClient and manage the windows yourself](http://maurizionapoleoni.com/blog/opening-a-window-open-in-android-without-killing-the-content-of-the-main-webview/), but this does not allow popups to communicate back to the parent WebView.
 
-### What are some use cases for using Popup Bridge?
+### What are some use cases for using PopupBridge?
 
 - Apps with WebViews that need to open a popup
 - When a popup window needs to to send data from the popup back to the WebView
@@ -135,7 +135,7 @@ You can use [`setSupportMultipleWindows()`](https://developer.android.com/refere
 
 ### How does it work?
 
-- Popup Bridge attaches to a WebView through the [Android JavaScript interface](https://developer.android.com/reference/android/webkit/WebView.html#addJavascriptInterface(java.lang.Object, java.lang.String))
+- PopupBridge attaches to a WebView through the [Android JavaScript interface](https://developer.android.com/reference/android/webkit/WebView.html#addJavascriptInterface(java.lang.Object, java.lang.String))
   - This exposes a JavaScript interface (via `window.popupBridge`) for the web page to interact with the Android app code
 - The web page detects whether the page has access to `window.popupBridge`; if so, it uses `popupBridge.open` to open the popup URL
   - `popupBridge.open` creates an Intent to open the popup URL, which Android forwards to the user's selected browser
@@ -151,14 +151,22 @@ You can use [`setSupportMultipleWindows()`](https://developer.android.com/refere
     - Optionally, you can add path components and query parameters to the deep link URL to return data to the parent page, which are provided in the payload of `popupBridge.onComplete`
 - If the user hits the back button or manually navigates back to the app, `popupBridge.onComplete` gets called with the error and payload as `null`
 
-### Who built Popup Bridge?
+### Who built PopupBridge?
 
 We are a team of engineers who work on the Developer Experience team at [Braintree](https://www.braintreepayments.com).
 
-### Why did Braintree build Popup Bridge?
+### Why did Braintree build PopupBridge?
 
 Short answer: to accept PayPal as a payment option when mobile apps are using a WebView to power the checkout process.
 
 PayPal used to support authentication via a modal iframe, but authentication now occurs in a popup window to increase user confidence that their account information is protected from malicious actors (the address bar shows `https://checkout.paypal.com` with the HTTPS lock icon). However, this causes issues with Braintree merchants who use a web page to power payments within their apps: they can't accept PayPal because WebViews cannot open popups and return the PayPal payment authorization data to the parent checkout page.
 
-Popup Bridge solves this problem by allowing [`braintree-web`](https://github.com/braintree/braintree-web) to open the PayPal popup from a secure mini-browser.
+PopupBridge solves this problem by allowing [`braintree-web`](https://github.com/braintree/braintree-web) to open the PayPal popup from a secure mini-browser.
+
+## Author
+
+Braintree, code@getbraintree.com
+
+## License
+
+PopupBridge is available under the MIT license. See the LICENSE file for more info.
