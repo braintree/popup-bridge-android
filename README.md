@@ -15,21 +15,9 @@ Requirements
 Installation
 ------------
 
-To install via Maven:
-
-```xml
-<dependency>
-  <groupId>com.braintreepayments.popupbridge</groupId>
-  <artifactId>popupbridge</artifactId>
-  <version>0.1.0</version>
-</dependency>
-```
-
-Gradle:
-
 ```groovy
 dependencies {
-  compile 'com.braintreepayments.popupbridge:popupbridge:0.1+'
+  compile 'com.braintreepayments.popupbridge:popupbridge:0.1.+'
 }
 ```
 
