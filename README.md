@@ -17,7 +17,7 @@ Installation
 
 ```groovy
 dependencies {
-  compile 'com.braintreepayments.popupbridge:popupbridge:0.1.+'
+  compile 'com.braintreepayments:popupbridge:0.1.+'
 }
 ```
 
