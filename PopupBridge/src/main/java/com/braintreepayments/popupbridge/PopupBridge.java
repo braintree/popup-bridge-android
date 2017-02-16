@@ -34,6 +34,8 @@ public class PopupBridge extends Fragment {
     private boolean mIsBrowserSwitching = false;
     private WebView mWebView;
     private Context mContext;
+    private PopupBridgeNavigationListener mNavigationListener;
+    private PopupBridgeMessageListener mMessageListener;
 
     public PopupBridge() {
     }
@@ -196,6 +198,23 @@ public class PopupBridge extends Fragment {
     public void open(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
+        if (mNavigationListener != null) {
+            mNavigationListener.onUrlOpened(url);
+        }
+    }
+
+    @JavascriptInterface
+    public void sendMessage(String messageName) {
+        if (mMessageListener != null) {
+            mMessageListener.onMessageReceived(messageName, null);
+        }
+    }
+
+    @JavascriptInterface
+    public void sendMessage(String messageName, String data) {
+        if (mMessageListener != null) {
+            mMessageListener.onMessageReceived(messageName, data);
+        }
     }
 
     @Override
@@ -207,5 +226,13 @@ public class PopupBridge extends Fragment {
 
     protected Context getApplicationContext() {
         return mContext;
+    }
+
+    public void setNavigationListener(PopupBridgeNavigationListener listener) {
+        mNavigationListener = listener;
+    }
+
+    public void setMessageListener(PopupBridgeMessageListener listener) {
+        mMessageListener = listener;
     }
 }

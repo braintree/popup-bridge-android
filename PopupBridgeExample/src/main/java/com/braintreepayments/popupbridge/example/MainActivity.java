@@ -8,7 +8,7 @@ import com.braintreepayments.popupbridge.PopupBridge;
 
 public class MainActivity extends Activity {
 
-    private static final String LOCALHOST_URL = "http://10.0.2.2:3099";
+    private static final String URL = "https://braintree.github.io/popup-bridge-example/";
 
     private WebView mWebView;
     private PopupBridge mPopupBridge;
@@ -22,6 +22,6 @@ public class MainActivity extends Activity {
 
         mPopupBridge = PopupBridge.newInstance(this, mWebView);
 
-        mWebView.loadUrl(LOCALHOST_URL);
+        mWebView.loadUrl(URL);
     }
 }
