@@ -3,7 +3,7 @@ PopupBridge
 
 PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.
 
-PopupBridge is also available for [iOS](../../../popup-bridge-ios).
+PopupBridge is also available for iOS.
 
 See the [Frequently Asked Questions](#frequently-asked-questions) to learn more about PopupBridge.
 
