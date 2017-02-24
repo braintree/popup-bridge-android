@@ -1,14 +1,6 @@
 package com.braintreepayments.popupbridge;
 
-import android.app.Activity;
-import android.os.Bundle;
+import com.braintreepayments.browserswitch.BrowserSwitchActivity;
 
-public class PopupBridgeActivity extends Activity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        PopupBridge.sResultIntent = getIntent();
-        finish();
-    }
+public class PopupBridgeActivity extends BrowserSwitchActivity {
 }
