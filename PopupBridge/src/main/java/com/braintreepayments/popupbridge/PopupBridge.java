@@ -41,9 +41,10 @@ public class PopupBridge extends Fragment {
     /**
      * Create a new instance of {@link PopupBridge} and add it to the {@link Activity}'s {@link FragmentManager}.
      *
-     * @note This will enable JavaScript in your WebView.
+     * This will enable JavaScript in your WebView.
      *
      * @param activity The {@link Activity} to add the {@link Fragment} to.
+     * @param webView The {@link WebView} to enable for PopupBridge.
      * @return {@link PopupBridge}
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
