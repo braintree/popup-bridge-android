@@ -21,10 +21,11 @@ import java.util.Set;
 public class PopupBridge extends Fragment {
 
     public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
-    private static final String TAG = "com.braintreepayments.popupbridge";
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
+
+    private static final String TAG = "com.braintreepayments.popupbridge";
 
     @VisibleForTesting
     static final String EXTRA_BROWSER_SWITCHING = "com.braintreepayments.popupbridge.EXTRA_BROWSER_SWITCHING";
@@ -37,8 +38,7 @@ public class PopupBridge extends Fragment {
     private PopupBridgeNavigationListener mNavigationListener;
     private PopupBridgeMessageListener mMessageListener;
 
-    public PopupBridge() {
-    }
+    public PopupBridge() {}
 
     /**
      * Create a new instance of {@link PopupBridge} and add it to the {@link Activity}'s {@link FragmentManager}.
@@ -74,15 +74,13 @@ public class PopupBridge extends Fragment {
                         fm.beginTransaction().add(popupBridge, TAG).commit();
                         try {
                             fm.executePendingTransactions();
-                        } catch (IllegalStateException ignored) {
-                        }
+                        } catch (IllegalStateException ignored) {}
                     }
                 } else {
                     fm.beginTransaction().add(popupBridge, TAG).commit();
                     try {
                         fm.executePendingTransactions();
-                    } catch (IllegalStateException ignored) {
-                    }
+                    } catch (IllegalStateException ignored) {}
                 }
             } catch (IllegalStateException e) {
                 throw new IllegalArgumentException(e.getMessage());
