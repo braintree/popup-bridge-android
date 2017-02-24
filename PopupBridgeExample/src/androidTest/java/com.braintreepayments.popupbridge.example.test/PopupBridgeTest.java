@@ -15,8 +15,7 @@ public class PopupBridgeTest {
 
     @Before
     public void setup() {
-        onDevice().onHomeScreen();
-        onDevice().launchApp("com.braintreepayments.popupbridge.example");
+        onDevice().onHomeScreen().launchApp("com.braintreepayments.popupbridge.example");
     }
 
     @Test(timeout = 20000)
