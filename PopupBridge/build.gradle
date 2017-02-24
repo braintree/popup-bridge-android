@@ -1,4 +1,7 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'io.codearte.nexus-staging'
 
 android {
     compileSdkVersion 25
@@ -8,9 +11,9 @@ android {
         minSdkVersion 19
         targetSdkVersion 25
         versionCode 1
-        versionName "0.1.0"
+        versionName '0.1.0-SNAPSHOT'
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
 
     resourcePrefix 'bt_'
@@ -19,5 +22,86 @@ android {
 dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.1.4'
-    testCompile "org.mockito:mockito-core:2.7.11"
+    testCompile 'org.mockito:mockito-core:2.7.11'
 }
+
+/* maven release */
+task javadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocsJar(type: Jar, dependsOn: javadocs) {
+    classifier = 'javadoc'
+    from javadocs.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+    archives javadocsJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+nexusStaging {
+    packageGroup = 'com.braintreepayments'
+}
+
+def sonatypeUsername = System.properties.containsKey('sonatypeUsername') ? System.properties['sonatypeUsername'] : ''
+def sonatypePassword = System.properties.containsKey('sonatypePassword') ? System.properties['sonatypePassword'] : ''
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.setArtifactId 'popup-bridge'
+
+            pom.project {
+                name 'popup-bridge'
+                groupId= 'com.braintreepayments'
+                version = "${android.defaultConfig.versionName}"
+                packaging 'aar'
+                description 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
+                url 'https://github.com/braintree/popup-bridge-android'
+
+                scm {
+                    url 'scm:git@github.com:braintree/popup-bridge-android.git'
+                    connection 'scm:git@github.com:braintree/popup-bridge-android.git'
+                    developerConnection 'scm:git@github.com:braintree/popup-bridge-android.git'
+                }
+
+                developers {
+                    developer {
+                        id 'devs'
+                        name 'Braintree Payments'
+                    }
+                }
+
+                licenses {
+                    license {
+                        name 'MIT'
+                        url 'http://opensource.org/licenses/MIT'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }
+    }
+}
+
+
