@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.support.annotation.VisibleForTesting;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -20,13 +19,12 @@ import java.util.Set;
 
 public class PopupBridge extends Fragment {
 
-    public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
     private static final String TAG = "com.braintreepayments.popupbridge";
 
+    public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
-    @VisibleForTesting
     static final String EXTRA_BROWSER_SWITCHING = "com.braintreepayments.popupbridge.EXTRA_BROWSER_SWITCHING";
 
     static Intent sResultIntent;
