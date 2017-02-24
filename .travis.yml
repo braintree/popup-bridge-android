@@ -1,0 +1,25 @@
+language: android
+jdk: oraclejdk8
+notifications:
+  email:
+    - external-ci-notifications+popup-bridge-android@getbraintree.com
+sudo: true
+android:
+  components:
+    - tools
+    - tools
+    - android-25
+    - android-22
+    - sys-img-armeabi-v7a-android-22
+    - build-tools-25.0.2
+    - platform-tools
+    - extra-android-support
+    - extra-android-m2repository
+    - extra-google-m2repository
+before_script:
+  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+  - emulator -avd test -skin WXGA720 -no-audio -no-window &
+  - android-wait-for-emulator
+  - sleep 60
+  - adb shell input keyevent 82
+script: ./gradlew clean test connectedAndroidTest

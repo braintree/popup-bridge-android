@@ -15,33 +15,32 @@ public class PopupBridgeTest {
 
     @Before
     public void setup() {
-        onDevice().onHomeScreen();
-        onDevice().launchApp("com.braintreepayments.popupbridge.example");
+        onDevice().onHomeScreen().launchApp("com.braintreepayments.popupbridge.example");
     }
 
-    @Test(timeout = 20000)
+    @Test(timeout = 30000)
     public void opensPopup_whenClickingRed_returnsRedColor() {
        testColor("Red");
     }
 
-    @Test(timeout = 20000)
+    @Test(timeout = 30000)
     public void opensPopup_whenClickingGreen_returnsGreenColor() {
         testColor("Green");
     }
 
-    @Test(timeout = 20000)
+    @Test(timeout = 30000)
     public void opensPopup_whenClickingBlue_returnsBlueColor() {
         testColor("Blue");
     }
 
-    @Test(timeout = 20000)
+    @Test(timeout = 30000)
     public void opensPopup_whenClickingDontLikeAnyOfTheseColors_returnsCanceledSelection() {
         onDevice(withContentDescription("Launch Popup")).perform(click());
         onDevice(withContentDescription("I don't like any of these colors")).perform(click());
         onDevice(withContentDescription("You do not like any of these colors")).waitForExists();
     }
 
-    @Test(timeout = 20000)
+    @Test(timeout = 30000)
     public void opensPopup_whenClickingBack_returnsCanceledSelection() {
         onDevice(withContentDescription("Launch Popup")).perform(click());
         onDevice(withContentDescription("I don't like any of these colors")).waitForExists();

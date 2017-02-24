@@ -3,8 +3,6 @@ package com.braintreepayments.popupbridge;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -12,31 +10,26 @@ import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import com.braintreepayments.browserswitch.BrowserSwitchFragment;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Set;
 
-public class PopupBridge extends Fragment {
-
-    private static final String TAG = "com.braintreepayments.popupbridge";
+public class PopupBridge extends BrowserSwitchFragment {
 
     public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
-    static final String EXTRA_BROWSER_SWITCHING = "com.braintreepayments.popupbridge.EXTRA_BROWSER_SWITCHING";
+    private static final String TAG = "com.braintreepayments.popupbridge";
 
-    static Intent sResultIntent;
-
-    private boolean mIsBrowserSwitching = false;
     private WebView mWebView;
-    private Context mContext;
     private PopupBridgeNavigationListener mNavigationListener;
     private PopupBridgeMessageListener mMessageListener;
 
-    public PopupBridge() {
-    }
+    public PopupBridge() {}
 
     /**
      * Create a new instance of {@link PopupBridge} and add it to the {@link Activity}'s {@link FragmentManager}.
@@ -73,15 +66,13 @@ public class PopupBridge extends Fragment {
                         fm.beginTransaction().add(popupBridge, TAG).commit();
                         try {
                             fm.executePendingTransactions();
-                        } catch (IllegalStateException ignored) {
-                        }
+                        } catch (IllegalStateException ignored) {}
                     }
                 } else {
                     fm.beginTransaction().add(popupBridge, TAG).commit();
                     try {
                         fm.executePendingTransactions();
-                    } catch (IllegalStateException ignored) {
-                    }
+                    } catch (IllegalStateException ignored) {}
                 }
             } catch (IllegalStateException e) {
                 throw new IllegalArgumentException(e.getMessage());
@@ -101,102 +92,60 @@ public class PopupBridge extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-        if (mContext == null) {
-            mContext = getActivity().getApplicationContext();
-        }
-
-        if (savedInstanceState != null) {
-            mIsBrowserSwitching = savedInstanceState.getBoolean(EXTRA_BROWSER_SWITCHING);
-        }
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        if (mIsBrowserSwitching) {
-            int resultCode = Activity.RESULT_CANCELED;
-            if (sResultIntent != null) {
-                resultCode = Activity.RESULT_OK;
-            }
-
-            onActivityResult(POPUP_BRIDGE_REQUEST_CODE, resultCode, sResultIntent);
-
-            sResultIntent = null;
-            mIsBrowserSwitching = false;
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean(EXTRA_BROWSER_SWITCHING, mIsBrowserSwitching);
-    }
-
-    @Override
-    public void onActivityResult(final int requestCode, int resultCode, Intent intent) {
-        super.onActivityResult(requestCode, resultCode, intent);
-
-        if (requestCode != POPUP_BRIDGE_REQUEST_CODE) {
+    public void onBrowserSwitchResult(int requestCode, BrowserSwitchResult result, Uri returnUri) {
+        if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
+                !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
             return;
         }
 
         String error = null;
         String payload = null;
 
-
-        if (requestCode != POPUP_BRIDGE_REQUEST_CODE) {
-            return;
-        }
-
-        if (intent != null) {
+        if (result != BrowserSwitchResult.CANCELED) {
             JSONObject json = new JSONObject();
             JSONObject queryItems = new JSONObject();
 
-            Uri uri = intent.getData();
-
-            if (!uri.getScheme().equals(getSchemeFromPackageName(mContext)) || !uri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
-                return;
-            }
-
-            Set<String> queryParams = uri.getQueryParameterNames();
-
+            Set<String> queryParams = returnUri.getQueryParameterNames();
             if (queryParams != null && !queryParams.isEmpty()) {
                 for (String queryParam : queryParams) {
                     try {
-                        queryItems.put(queryParam, uri.getQueryParameter(queryParam));
+                        queryItems.put(queryParam, returnUri.getQueryParameter(queryParam));
                     } catch (JSONException e) {
-                        error = "new Error('Failed to parse query items from return URL. " + e.getLocalizedMessage() + "')";
-                        e.printStackTrace();
+                        error = "new Error('Failed to parse query items from return URL. " +
+                                e.getLocalizedMessage() + "')";
                     }
                 }
             }
 
             try {
-                json.put("path", uri.getPath());
+                json.put("path", returnUri.getPath());
                 json.put("queryItems", queryItems);
             } catch (JSONException ignored) {}
 
             payload = json.toString();
         }
 
-        mWebView.evaluateJavascript(String.format("window.popupBridge.onComplete(%s, %s);", error, payload), null);
+        mWebView.evaluateJavascript(String.format("window.popupBridge.onComplete(%s, %s);", error,
+                payload), null);
     }
 
-    private static String getSchemeFromPackageName(Context context) {
-        return context.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
+    @Override
+    public String getReturnUrlScheme() {
+        return mContext.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
     }
 
     @JavascriptInterface
     public String getReturnUrlPrefix() {
-        return String.format("%s://%s/", getSchemeFromPackageName(mContext), POPUP_BRIDGE_URL_HOST);
+        return String.format("%s://%s/", getReturnUrlScheme(), POPUP_BRIDGE_URL_HOST);
     }
 
     @JavascriptInterface
     public void open(String url) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(intent);
+        browserSwitch(1, url);
+
         if (mNavigationListener != null) {
             mNavigationListener.onUrlOpened(url);
         }
@@ -214,17 +163,6 @@ public class PopupBridge extends Fragment {
         if (mMessageListener != null) {
             mMessageListener.onMessageReceived(messageName, data);
         }
-    }
-
-    @Override
-    public void startActivity(Intent intent) {
-        sResultIntent = null;
-        mIsBrowserSwitching = true;
-        getApplicationContext().startActivity(intent);
-    }
-
-    protected Context getApplicationContext() {
-        return mContext;
     }
 
     public void setNavigationListener(PopupBridgeNavigationListener listener) {

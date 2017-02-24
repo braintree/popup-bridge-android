@@ -1,6 +1,8 @@
 PopupBridge
 ============
 
+[![Build Status](https://travis-ci.org/braintree/popup-bridge-android.svg?branch=master)](https://travis-ci.org/braintree/popup-bridge-android)
+
 PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.
 
 PopupBridge is also available for iOS.

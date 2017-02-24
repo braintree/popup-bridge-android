@@ -18,7 +18,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mWebView = (WebView) findViewById(R.id.web_view);
-        mWebView.getSettings().setJavaScriptEnabled(true);
 
         mPopupBridge = PopupBridge.newInstance(this, mWebView);
 

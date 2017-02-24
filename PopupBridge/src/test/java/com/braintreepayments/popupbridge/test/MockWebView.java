@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MockWebView extends WebView {
+
     public String mError;
     public String mPayload;
 
