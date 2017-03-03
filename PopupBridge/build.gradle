@@ -17,8 +17,6 @@ android {
 
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
-
-    resourcePrefix 'bt_'
 }
 
 dependencies {
