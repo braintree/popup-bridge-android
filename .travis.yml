@@ -16,4 +16,4 @@ android:
 env:
   global:
     - TERM=dumb
-script: ./gradlew --info clean lint test
+script: ./gradlew clean lint test
