@@ -19,7 +19,6 @@ import java.util.Set;
 
 public class PopupBridge extends BrowserSwitchFragment {
 
-    public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
