@@ -22,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Collections;
 
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 19)
-public class TestPopupBridge {
+public class PopupBridgeTest {
 
     private Activity mActivity;
     private PopupBridge mPopupBridge;
@@ -167,6 +168,17 @@ public class TestPopupBridge {
         JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals(payload.getString("path"), "/mypath");
         assertEquals(payload.getJSONObject("queryItems").length(), 0);
+    }
+
+    @Test
+    public void onBrowserSwitchResult_whenResultIsError_reportsError() {
+        BrowserSwitchResult result = BrowserSwitchResult.ERROR;
+        ReflectionHelpers.callInstanceMethod(result, "setErrorMessage",
+                new ReflectionHelpers.ClassParameter<>(String.class, "Browser switch error"));
+
+        mPopupBridge.onBrowserSwitchResult(1, result, null);
+
+        assertEquals("new Error('Browser switch error')", mWebView.mError);
     }
 
     @Test
