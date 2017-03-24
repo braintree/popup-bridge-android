@@ -19,7 +19,6 @@ import java.util.Set;
 
 public class PopupBridge extends BrowserSwitchFragment {
 
-    public static final int POPUP_BRIDGE_REQUEST_CODE = 13592;
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
@@ -96,15 +95,15 @@ public class PopupBridge extends BrowserSwitchFragment {
 
     @Override
     public void onBrowserSwitchResult(int requestCode, BrowserSwitchResult result, Uri returnUri) {
-        if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
-                !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
-            return;
-        }
-
         String error = null;
         String payload = null;
 
-        if (result != BrowserSwitchResult.CANCELED) {
+        if (result == BrowserSwitchResult.OK) {
+            if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
+                    !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
+                return;
+            }
+
             JSONObject json = new JSONObject();
             JSONObject queryItems = new JSONObject();
 
@@ -126,6 +125,8 @@ public class PopupBridge extends BrowserSwitchFragment {
             } catch (JSONException ignored) {}
 
             payload = json.toString();
+        } else if (result == BrowserSwitchResult.ERROR) {
+            error = "new Error('" + result.getErrorMessage() + "')";
         }
 
         mWebView.evaluateJavascript(String.format("window.popupBridge.onComplete(%s, %s);", error,
