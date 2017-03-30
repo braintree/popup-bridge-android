@@ -16,7 +16,6 @@ android {
 
 dependencies {
     compile project(':PopupBridge')
-    compile 'com.android.support:appcompat-v7:25.3.0'
 
     androidTestCompile 'com.lukekorth:device-automator:0.1.1'
 }
