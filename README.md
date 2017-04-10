@@ -143,7 +143,7 @@ You can use [`setSupportMultipleWindows()`](https://developer.android.com/refere
 
 ### How does it work?
 
-- PopupBridge attaches to a WebView through the [Android JavaScript interface](https://developer.android.com/reference/android/webkit/WebView.html#addJavascriptInterface(java.lang.Object, java.lang.String))
+- PopupBridge attaches to a WebView through the [Android JavaScript interface](https://developer.android.com/reference/android/webkit/WebView.html#addJavascriptInterface(java.lang.Object%2C%20java.lang.String))
   - This exposes a JavaScript interface (via `window.popupBridge`) for the web page to interact with the Android app code
 - The web page detects whether the page has access to `window.popupBridge`; if so, it uses `popupBridge.open` to open the popup URL
   - `popupBridge.open` creates an Intent to open the popup URL, which Android forwards to the user's selected browser
