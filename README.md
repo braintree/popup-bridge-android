@@ -3,13 +3,13 @@ PopupBridge
 
 [![Build Status](https://travis-ci.org/braintree/popup-bridge-android.svg?branch=master)](https://travis-ci.org/braintree/popup-bridge-android)
 
-PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.
+PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the parent page in the WebView.
 
 ![PopupBridge Demo gif](popup-bridge-android.gif)
 
-PopupBridge is also available for iOS.
+PopupBridge is also available for [iOS](https://github.com/braintree/popup-bridge-ios).
 
-See the [Frequently Asked Questions](#frequently-asked-questions) to learn more about PopupBridge.
+See the [Frequently Asked Questions](#frequently-asked-questions) to learn more about PopupBridge. See [Using PayPal in a WebView](#using-paypal-in-a-webview) to use PopupBridge with PayPal.
 
 Requirements
 ------------
@@ -122,12 +122,6 @@ Quick Start
 Frequently Asked Questions
 --------------------------
 
-### What does PopupBridge do?
-
-PopupBridge allows Android apps to simulate the opening of a popup window from a WebView by opening the popup URL in an Android web browser instead.
-
-It also allows the simulated popup window to send data back to the parent page.
-
 ### Why use PopupBridge?
 
 By default, WebViews cannot open popups -- `window.open` will not work.
@@ -170,6 +164,23 @@ Short answer: to accept PayPal as a payment option when mobile apps are using a 
 PayPal used to support authentication via a modal iframe, but authentication now occurs in a popup window to increase user confidence that their account information is protected from malicious actors (the address bar shows `https://checkout.paypal.com` with the HTTPS lock icon). However, this causes issues with Braintree merchants who use a web page to power payments within their apps: they can't accept PayPal because WebViews cannot open popups and return the PayPal payment authorization data to the parent checkout page.
 
 PopupBridge solves this problem by allowing [`braintree-web`](https://github.com/braintree/braintree-web) to open the PayPal popup from a secure mini-browser.
+
+Using PayPal in a WebView
+-------------------------
+
+WebView-based checkout flows can accept PayPal with PopupBridge the Braintree JS SDK. For the authentication flow, PayPal requires a popup window—which can be simulated with PopupBridge.
+
+### Setup
+1. Create a web-based checkout that accepts PayPal using Braintree JS v3.9.0 or higher
+2. Show a loading indicator
+    - PopupBridge lacks the PayPal loading page that customers see when using PayPal through a real popup window. We recommend adding a loading indicator on your web page when the PayPal button is clicked. In the PayPal tokenize completion callback, hide the loading indicator.
+3. Create a native mobile app that opens the checkout in a WebView
+4. Integrate the PopupBridge library
+5. Collect device data
+    - To help detect fraudulent activity, collect device data before performing PayPal transactions. This is similar to collecting device data with our [native Android SDK](https://developers.braintreepayments.com/guides/paypal/vault/android/v2#collecting-device-data) with a few differences:
+        1. Rather than the entire data collector, you can add just PayPalDataCollector to your app, e.g. `compile 'com.paypal.android.sdk:data-collector:2.4.2'`
+        2. Implement methods in your native app depending on whether you are doing one-time payments or vaulted payments. See the [Android code snippet for PayPal + PopupBridge](popupbridge-paypaldatacollector-android.md)
+6. Profit!
 
 ## Author
 
