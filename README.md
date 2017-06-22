@@ -168,7 +168,7 @@ PopupBridge solves this problem by allowing [`braintree-web`](https://github.com
 Using PayPal in a WebView
 -------------------------
 
-WebView-based checkout flows can accept PayPal with PopupBridge the Braintree JS SDK. For the authentication flow, PayPal requires a popup window—which can be simulated with PopupBridge.
+WebView-based checkout flows can accept PayPal with PopupBridge and the [Braintree JS SDK](https://github.com/braintree/braintree-web). For the authentication flow, PayPal requires a popup window—which can be simulated with PopupBridge.
 
 ### Setup
 1. Create a web-based checkout that accepts PayPal using Braintree JS v3.9.0 or higher
