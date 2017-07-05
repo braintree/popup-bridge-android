@@ -42,7 +42,7 @@ Quick Start
   </activity>
   ```
 
-2. Include PopupBridge in your app code:
+1. Include PopupBridge in your app code:
 
    ```java
    import com.braintreepayments.popupbridge.PopupBridge;
@@ -61,7 +61,7 @@ Quick Start
    }
    ```
 
-3. Use PopupBridge from the web page by writing some JavaScript:
+1. Use PopupBridge from the web page by writing some JavaScript:
 
    ```javascript
    var url = 'http://localhost:4567/';
@@ -94,7 +94,7 @@ Quick Start
    }
    ```
 
-4. Redirect back to the app inside of the popup:
+1. Redirect back to the app inside of the popup:
 
    ```html
    <h1>What is your favorite color?</h1>
@@ -172,14 +172,14 @@ WebView-based checkout flows can accept PayPal with PopupBridge and the [Braintr
 
 ### Setup
 1. Create a web-based checkout that accepts PayPal using Braintree JS v3.9.0 or higher
-2. Show a loading indicator
+1. Show a loading indicator
     - PopupBridge lacks the PayPal loading page that customers see when using PayPal through a real popup window. We recommend adding a loading indicator on your web page when the PayPal button is clicked. In the PayPal tokenize completion callback, hide the loading indicator.
-3. Create a native mobile app that opens the checkout in a WebView
-4. Integrate the PopupBridge library
-5. Collect device data
+1. Create a native mobile app that opens the checkout in a WebView
+1. Integrate the PopupBridge library
+1. Collect device data
     - To help detect fraudulent activity, collect device data before performing PayPal transactions. This is similar to collecting device data with our [native Android SDK](https://developers.braintreepayments.com/guides/paypal/vault/android/v2#collecting-device-data):
       1. Include `PayPalDataCollector` in your `build.gradle` dependencies, e.g. `compile 'com.paypal.android.sdk:data-collector:2.+'`
-      2. Implement a method in your native app for sending device data. See the [Android code snippet for PayPal + PopupBridge](popupbridge-paypaldatacollector-android.md)
+      1. Implement a method in your native app for sending device data. See the [Android code snippet for PayPal + PopupBridge](popupbridge-paypaldatacollector-android.md)
 6. Profit!
 
 ## Author
