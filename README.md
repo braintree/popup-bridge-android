@@ -161,7 +161,7 @@ We are a team of engineers who work on the Developer Experience team at [Braintr
 
 Short answer: to accept PayPal as a payment option when mobile apps are using a WebView to power the checkout process.
 
-PayPal used to support authentication via a modal iframe, but authentication now occurs in a popup window to increase user confidence that their account information is protected from malicious actors (the address bar shows `https://checkout.paypal.com` with the HTTPS lock icon). However, this causes issues with Braintree merchants who use a web page to power payments within their apps: they can't accept PayPal because WebViews cannot open popups and return the PayPal payment authorization data to the parent checkout page.
+PayPal used to support authentication via a modal iframe, but authentication now occurs in a popup window to increase user confidence that their account information is protected from malicious actors (the address bar shows `paypal.com` with the HTTPS lock icon). However, this causes issues with Braintree merchants who use a web page to power payments within their apps: they can't accept PayPal because WebViews cannot open popups and return the PayPal payment authorization data to the parent checkout page.
 
 PopupBridge solves this problem by allowing [`braintree-web`](https://github.com/braintree/braintree-web) to open the PayPal popup from a secure mini-browser.
 
@@ -177,9 +177,7 @@ WebView-based checkout flows can accept PayPal with PopupBridge and the [Braintr
 3. Create a native mobile app that opens the checkout in a WebView
 4. Integrate the PopupBridge library
 5. Collect device data
-    - To help detect fraudulent activity, collect device data before performing PayPal transactions. This is similar to collecting device data with our [native Android SDK](https://developers.braintreepayments.com/guides/paypal/vault/android/v2#collecting-device-data) with a few differences:
-        1. Rather than the entire data collector, you can add just PayPalDataCollector to your app, e.g. `compile 'com.paypal.android.sdk:data-collector:2.4.2'`
-        2. Implement methods in your native app depending on whether you are doing one-time payments or vaulted payments. See the [Android code snippet for PayPal + PopupBridge](popupbridge-paypaldatacollector-android.md)
+    - To help detect fraudulent activity, collect device data before performing PayPal transactions. This is similar to collecting device data with our [native Android SDK](https://developers.braintreepayments.com/guides/paypal/vault/android/v2#collecting-device-data), and you will need to implement a method in your native app for sending device data. See the [Android code snippet for PayPal + PopupBridge](popupbridge-paypaldatacollector-android.md)
 6. Profit!
 
 ## Author
