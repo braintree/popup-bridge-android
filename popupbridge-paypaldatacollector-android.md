@@ -16,13 +16,10 @@ import com.braintreepayments.popupbridge.PopupBridge;
 import com.braintreepayments.popupbridge.PopupBridgeNavigationListener;
 import com.paypal.android.sdk.data.collector.SdkRiskComponent;
 
-import java.util.UUID;
-
 public class MainActivity extends Activity implements PopupBridgeNavigationListener {
 
     private WebView mWebView;
     private PopupBridge mPopupBridge;
-    private String mUuid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,44 +27,27 @@ public class MainActivity extends Activity implements PopupBridgeNavigationListe
         setContentView(R.layout.activity_main);
         mWebView = (WebView) findViewById(R.id.web_view);
 
-        mUuid = getOrGenerateUuid();
         mPopupBridge = PopupBridge.newInstance(this, mWebView);
 
         mPopupBridge.setNavigationListener(this);
-        mWebView.loadUrl("http://10.0.2.2:3000");
-    }
-
-    private String getOrGenerateUuid() {
-        SharedPreferences prefManager = PreferenceManager.getDefaultSharedPreferences(this);
-        String savedUuid = prefManager.getString("uuid", "");
-
-        if (TextUtils.isEmpty(savedUuid)) {
-            savedUuid = UUID.randomUUID().toString();
-            prefManager.edit()
-                    .putString("uuid", savedUuid)
-                    .apply();
-        }
-
-        return savedUuid;
+        mWebView.loadUrl("http://10.0.2.2");
     }
 
     @Override
     public void onUrlOpened(String url) {
-        if (url.startsWith("https://checkout.paypal.com")) {
-            String id = "";
-            Uri uri = Uri.parse(url);
+        String id = "";
+        Uri uri = Uri.parse(url);
 
-            String checkoutId = uri.getQueryParameter("token");
-            String vaultId = uri.getQueryParameter("ba_token");
+        String checkoutId = uri.getQueryParameter("token");
+        String vaultId = uri.getQueryParameter("ba_token");
 
-            if (!TextUtils.isEmpty(checkoutId)) {
-                id = checkoutId;
-            } else if (!TextUtils.isEmpty(vaultId)) {
-                id = vaultId;
-            }
-
-            Log.d("result", SdkRiskComponent.getClientMetadataId(this, mUuid, id));
+        if (!TextUtils.isEmpty(checkoutId)) {
+            id = checkoutId;
+        } else if (!TextUtils.isEmpty(vaultId)) {
+            id = vaultId;
         }
+
+        Log.d("result", PayPalDataCollector.getClientMetadataId(this, id));
     }
 }
 ```
