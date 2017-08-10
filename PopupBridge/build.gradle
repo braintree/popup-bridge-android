@@ -3,6 +3,8 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'io.codearte.nexus-staging'
 
+version '0.1.2-SNAPSHOT'
+
 android {
     compileSdkVersion 26
     buildToolsVersion '26.0.0'
@@ -11,7 +13,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 26
         versionCode 2
-        versionName '0.1.1'
+        versionName version
 
         consumerProguardFiles 'proguard.pro'
 
@@ -50,6 +52,7 @@ artifacts {
 }
 
 signing {
+    required { !version.endsWith("SNAPSHOT") }
     sign configurations.archives
 }
 
@@ -57,8 +60,8 @@ nexusStaging {
     packageGroup = 'com.braintreepayments'
 }
 
-def sonatypeUsername = System.properties.containsKey('sonatypeUsername') ? System.properties['sonatypeUsername'] : ''
-def sonatypePassword = System.properties.containsKey('sonatypePassword') ? System.properties['sonatypePassword'] : ''
+def sonatypeUsername = System.env['SONATYPE_USERNAME']
+def sonatypePassword = System.env['SONATYPE_PASSWORD']
 
 uploadArchives {
     repositories {

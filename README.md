@@ -19,9 +19,19 @@ Requirements
 Installation
 ------------
 
+Add the dependency in your `build.gradle`:
+
 ```groovy
 dependencies {
-  compile 'com.braintreepayments:popup-bridge:0.1.+'
+  compile 'com.braintreepayments:popup-bridge:0.1.1'
+}
+```
+
+To use the latest build from the `master` branch use:
+
+```groovy
+dependencies {
+  compile 'com.braintreepayments:popup-bridge:0.1.2-SNAPSHOT'
 }
 ```
 

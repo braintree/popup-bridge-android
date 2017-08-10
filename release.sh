@@ -2,11 +2,16 @@
 
 set -e
 
-echo "1) Make sure to update the version in build.gradle and the README."
+echo "1) Make sure to update the versions in build.gradle and the README."
 echo "2) Make sure an Android emulator is running for integration tests"
 echo
 echo "Press enter when you are ready to release."
 read
+
+if [[ $(./gradlew :PopupBridge:properties | grep version) == *-SNAPSHOT ]]; then
+  echo "Stopping release, the version is a snapshot"
+  exit 1
+fi
 
 ./gradlew clean lint :PopupBridge:test :PopupBridgeExample:connectedCheck
 ./gradlew :PopupBridge:uploadArchives :PopupBridge:closeAndPromoteRepository
