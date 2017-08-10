@@ -2,7 +2,7 @@
 
 set -e
 
-SLUG="braintree/popup-bridge-android
+SLUG="braintree/popup-bridge-android"
 JDK="oraclejdk8"
 BRANCH="master"
 
