@@ -18,5 +18,6 @@ fi
 
 echo "Release complete. Be sure to commit, tag and push your changes."
 echo "After the tag has been pushed, update the releases tab on GitHub with the changes for this release."
+echo "Remember to bump the version and add '-SNAPSHOT' to the version after the release."
 echo "\n"
 read
