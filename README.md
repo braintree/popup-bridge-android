@@ -141,7 +141,7 @@ You can use [`setSupportMultipleWindows()`](https://developer.android.com/refere
 ### What are some use cases for using PopupBridge?
 
 - Apps with WebViews that need to open a popup
-- When a popup window needs to to send data from the popup back to the WebView
+- When a popup window needs to send data from the popup back to the WebView
 - When the popup window needs to display the HTTPS lock icon to increase user trust
 - Apps that use OAuth
 
