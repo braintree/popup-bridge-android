@@ -1,5 +1,9 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Pass back specific error (`POPUP_CLOSED`) when user closes the opened popup
+
 ## 0.1.1 (2017-03-30)
 
 * Upgrade browser-switch to 0.1.3

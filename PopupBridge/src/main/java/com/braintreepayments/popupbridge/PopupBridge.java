@@ -125,6 +125,8 @@ public class PopupBridge extends BrowserSwitchFragment {
             } catch (JSONException ignored) {}
 
             payload = json.toString();
+        } else if (result == BrowserSwitchResult.CANCELED) {
+            error = "new Error('POPUP_CLOSED')";
         } else if (result == BrowserSwitchResult.ERROR) {
             error = "new Error('" + result.getErrorMessage() + "')";
         }
