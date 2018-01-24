@@ -126,13 +126,13 @@ public class PopupBridge extends BrowserSwitchFragment {
 
             payload = json.toString();
         } else if (result == BrowserSwitchResult.CANCELED) {
-            //mWebView.evaluateJavascript(""
-            //    + "if (typeof window.popupBridge.onClose === 'function') {"
-            //    + "  window.popupBridge.onClose();"
-            //    + "} else {"
-            //    + "  window.popupBridge.onComplete(null, null);"
-            //    + "}", null);
-            //return;
+            mWebView.evaluateJavascript(""
+                + "if (typeof window.popupBridge.onClose === 'function') {"
+                + "  window.popupBridge.onClose();"
+                + "} else {"
+                + "  window.popupBridge.onComplete(null, null);"
+                + "}", null);
+            return;
         } else if (result == BrowserSwitchResult.ERROR) {
             error = "new Error('" + result.getErrorMessage() + "')";
         }
