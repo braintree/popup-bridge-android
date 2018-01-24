@@ -107,7 +107,7 @@ public class PopupBridgeTest {
     }
 
     @Test
-    public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeWithPopupClosedError() {
+    public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeOnCloseMethod() {
         Uri uri = new Uri.Builder()
                 .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
@@ -115,7 +115,7 @@ public class PopupBridgeTest {
 
         mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.CANCELED, uri);
 
-        assertEquals("new Error('POPUP_CLOSED')", mWebView.mError);
+        assertEquals(mWebView.mError, "null");
         assertEquals(mWebView.mPayload, "null");
     }
 
