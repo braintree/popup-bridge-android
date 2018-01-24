@@ -2,7 +2,7 @@
 
 ## unreleased
 
-* Pass back specific error (`POPUP_CLOSED`) when user closes the opened popup
+* If page has created an `popupBridge.onClose` function, it will be called when user closes the window
 
 ## 0.1.1 (2017-03-30)
 
