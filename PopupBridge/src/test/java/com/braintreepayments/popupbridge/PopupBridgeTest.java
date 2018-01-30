@@ -119,7 +119,7 @@ public class PopupBridgeTest {
 
         assertEquals(mWebView.mError, "null");
         assertEquals(mWebView.mPayload, "null");
-        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onClose()"));
+        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onCancel()"));
         assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, null)"));
     }
 
