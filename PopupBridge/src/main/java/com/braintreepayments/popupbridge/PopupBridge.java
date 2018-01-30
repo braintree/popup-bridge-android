@@ -98,7 +98,15 @@ public class PopupBridge extends BrowserSwitchFragment {
         String error = null;
         String payload = null;
 
-        if (result == BrowserSwitchResult.OK) {
+        if (result == BrowserSwitchResult.CANCELED) {
+            mWebView.evaluateJavascript(""
+                + "if (typeof window.popupBridge.onCancel === 'function') {"
+                + "  window.popupBridge.onCancel();"
+                + "} else {"
+                + "  window.popupBridge.onComplete(null, null);"
+                + "}", null);
+            return;
+        } else if (result == BrowserSwitchResult.OK) {
             if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
                     !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;

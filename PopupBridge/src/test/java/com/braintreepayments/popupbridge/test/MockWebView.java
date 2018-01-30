@@ -11,6 +11,7 @@ public class MockWebView extends WebView {
 
     public String mError;
     public String mPayload;
+    public String mJavascriptEval;
 
     public MockWebView(Context context) {
         super(context);
@@ -19,6 +20,7 @@ public class MockWebView extends WebView {
     @Override
     public void evaluateJavascript(String script, ValueCallback<String> resultCallback) {
         String expression = "window\\.popupBridge\\.onComplete\\((.*), (.*)\\)";
+        mJavascriptEval = script;
         Pattern pattern = Pattern.compile(expression);
         Matcher match = pattern.matcher(script);
         if (match.find()) {

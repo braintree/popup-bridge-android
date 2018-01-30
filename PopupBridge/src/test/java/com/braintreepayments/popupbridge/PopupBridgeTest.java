@@ -29,6 +29,8 @@ import java.util.Collections;
 import static com.braintreepayments.browserswitch.BrowserSwitchFragment.BrowserSwitchResult;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -107,7 +109,7 @@ public class PopupBridgeTest {
     }
 
     @Test
-    public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeWithNull() {
+    public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeOnCancelMethod() {
         Uri uri = new Uri.Builder()
                 .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
@@ -117,6 +119,8 @@ public class PopupBridgeTest {
 
         assertEquals(mWebView.mError, "null");
         assertEquals(mWebView.mPayload, "null");
+        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onCancel()"));
+        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, null)"));
     }
 
     @Test
@@ -130,6 +134,7 @@ public class PopupBridgeTest {
 
         assertNull(mWebView.mError);
         assertNull(mWebView.mPayload);
+        assertNull(mWebView.mJavascriptEval);
     }
 
     @Test
@@ -151,6 +156,7 @@ public class PopupBridgeTest {
         assertEquals(payload.getJSONObject("queryItems").getString("foo"), "bar");
         assertEquals(payload.getJSONObject("queryItems").getString("baz"), "qux");
         assertEquals(payload.getJSONObject("queryItems").length(), 2);
+        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, {"));
     }
 
     @Test
@@ -179,6 +185,7 @@ public class PopupBridgeTest {
         mPopupBridge.onBrowserSwitchResult(1, result, null);
 
         assertEquals("new Error('Browser switch error')", mWebView.mError);
+        assertEquals(mWebView.mJavascriptEval, "window.popupBridge.onComplete(new Error('Browser switch error'), null);");
     }
 
     @Test

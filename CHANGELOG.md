@@ -1,5 +1,9 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* If page has created an `popupBridge.onCancel` function, it will be called when user closes the window
+
 ## 0.1.1 (2017-03-30)
 
 * Upgrade browser-switch to 0.1.3
