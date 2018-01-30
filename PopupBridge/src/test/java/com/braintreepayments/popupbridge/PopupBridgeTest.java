@@ -109,7 +109,7 @@ public class PopupBridgeTest {
     }
 
     @Test
-    public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeOnCloseMethod() {
+    public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeOnCancelMethod() {
         Uri uri = new Uri.Builder()
                 .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
