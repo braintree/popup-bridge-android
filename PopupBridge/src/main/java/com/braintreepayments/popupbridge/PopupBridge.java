@@ -137,8 +137,16 @@ public class PopupBridge extends BrowserSwitchFragment {
             error = "new Error('" + result.getErrorMessage() + "')";
         }
 
-        mWebView.evaluateJavascript(String.format("window.popupBridge.onComplete(%s, %s);", error,
-                payload), null);
+        final String postError = error;
+        final String postPayload = payload;
+
+        mWebView.post(new Runnable() {
+            @Override
+            public void run() {
+                mWebView.evaluateJavascript(String.format("window.popupBridge.onComplete(%s, %s);",
+                        postError, postPayload), null);
+            }
+        });
     }
 
     @Override
