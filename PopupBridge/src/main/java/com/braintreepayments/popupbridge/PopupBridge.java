@@ -93,18 +93,27 @@ public class PopupBridge extends BrowserSwitchFragment {
         setRetainInstance(true);
     }
 
+    private void runJavaScriptInWebView(final String script) {
+        mWebView.post(new Runnable() {
+            @Override
+            public void run() {
+                mWebView.evaluateJavascript(script, null);
+            }
+        });
+    }
+
     @Override
     public void onBrowserSwitchResult(int requestCode, BrowserSwitchResult result, Uri returnUri) {
         String error = null;
         String payload = null;
 
         if (result == BrowserSwitchResult.CANCELED) {
-            mWebView.evaluateJavascript(""
+            runJavaScriptInWebView(""
                 + "if (typeof window.popupBridge.onCancel === 'function') {"
                 + "  window.popupBridge.onCancel();"
                 + "} else {"
                 + "  window.popupBridge.onComplete(null, null);"
-                + "}", null);
+                + "}");
             return;
         } else if (result == BrowserSwitchResult.OK) {
             if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
@@ -137,8 +146,7 @@ public class PopupBridge extends BrowserSwitchFragment {
             error = "new Error('" + result.getErrorMessage() + "')";
         }
 
-        mWebView.evaluateJavascript(String.format("window.popupBridge.onComplete(%s, %s);", error,
-                payload), null);
+        runJavaScriptInWebView(String.format("window.popupBridge.onComplete(%s, %s);", error, payload));
     }
 
     @Override
