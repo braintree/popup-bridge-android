@@ -2,7 +2,7 @@
 
 set -e
 
-echo "1) Update the version in PopuBridge/build.gradle"
+echo "1) Update the version, and versionCode in PopuBridge/build.gradle"
 echo "2) Update the version in the CHANGELOG and make sure that all changes have been noted"
 echo "3) Update the version in the README, include the SNAPSHOT version, make it 1 patch version higher than the released one (You'll use this version number at the end)"
 echo "4) Make sure an Android emulator is running for integration tests"
