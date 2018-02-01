@@ -23,7 +23,7 @@ Add the dependency in your `build.gradle`:
 
 ```groovy
 dependencies {
-  compile 'com.braintreepayments:popup-bridge:0.1.1'
+  compile 'com.braintreepayments:popup-bridge:1.0.0'
 }
 ```
 
@@ -31,7 +31,7 @@ To use the latest build from the `master` branch use:
 
 ```groovy
 dependencies {
-  compile 'com.braintreepayments:popup-bridge:0.1.2-SNAPSHOT'
+  compile 'com.braintreepayments:popup-bridge:1.0.1-SNAPSHOT'
 }
 ```
 

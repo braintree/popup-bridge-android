@@ -1,8 +1,9 @@
 # PopupBridge Android Release Notes
 
-## unreleased
+## 1.0.0 (2018-01-31)
 
 * If page has created an `popupBridge.onCancel` function, it will be called when user closes the window
+* Execute JavaScript on the same thread as the WebView (fixes #10)
 
 ## 0.1.1 (2017-03-30)
 
