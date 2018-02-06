@@ -39,6 +39,7 @@ public class PayPalCheckoutPopupBridgeTest {
                 .putExtra(MainActivity.EXTRA_URL, PAYPAL_POPUPBRIDGE_EXAMPLE_URL);
 
         onDevice().onHomeScreen().launchApp(intent);
+        onDevice(withContentDescription("PayPal PopupBridge Example")).waitForExists(BROWSER_TIMEOUT);
     }
 
     @Test
