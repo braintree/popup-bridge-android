@@ -119,7 +119,7 @@ Quick Start
      var color = $(this).data('color');
 
      if (location.search.indexOf('popupBridgeReturnUrlPrefix') !== -1) {
-       var prefix = location.search.split('popupBridgereturnUrlPrefix=')[1];
+       var prefix = location.search.split('popupBridgeReturnUrlPrefix=')[1];
        // Open the deep link back to the app, and send some data
        location.href = prefix + '?color=' + color;
      } else {
