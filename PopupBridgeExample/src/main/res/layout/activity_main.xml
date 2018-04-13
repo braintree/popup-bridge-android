@@ -3,9 +3,19 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <WebView
-        android:id="@+id/web_view"
+    <Button
+        android:id="@+id/button_popup_bridge"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"
+        android:onClick="onPopupBridgeClick"
+        android:text="Launch PopupBridge"
+        android:contentDescription="Launch PopupBridge"/>
+    <Button
+        android:id="@+id/button_popup_bridge_paypal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onPayPalPopupBridgeClick"
+        android:text="Launch PayPal PopupBridge (checkout.js)"
+        android:contentDescription="Launch PayPal PopupBridge (checkout.js)"/>
 
 </LinearLayout>

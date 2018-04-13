@@ -1,14 +1,11 @@
 package com.braintreepayments.popupbridge.example.test;
 
-import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.UiObjectNotFoundException;
-
-import com.braintreepayments.popupbridge.example.MainActivity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,32 +17,43 @@ import static com.lukekorth.deviceautomator.AutomatorAction.click;
 import static com.lukekorth.deviceautomator.AutomatorAssertion.contentDescription;
 import static com.lukekorth.deviceautomator.DeviceAutomator.onDevice;
 import static com.lukekorth.deviceautomator.UiObjectMatcher.withContentDescription;
-import static com.lukekorth.deviceautomator.UiObjectMatcher.withResourceId;
-import static org.hamcrest.CoreMatchers.containsString;
+import static com.lukekorth.deviceautomator.UiObjectMatcher.withText;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 @RunWith(AndroidJUnit4.class)
 public class PayPalCheckoutPopupBridgeTest {
 
     private static final long BROWSER_TIMEOUT = 60000;
     private static final String PAYPAL_POPUPBRIDGE_EXAMPLE_URL = "https://braintree.github.io/popup-bridge-example/paypal-checkout.html";
-    private static final String SANDBOX_PAYPAL_USERNAME = "sandbox-user@paypal.com";
-    private static final String SANDBOX_PAYPAL_PASSWORD = "passw0rd";
+    private static final String SANDBOX_PAYPAL_USERNAME = "jsdk@bt.com";
+    private static final String SANDBOX_PAYPAL_PASSWORD = "11111111";
+
+    public void skipIfCi() {
+        boolean runningOnCi = "true".equals(System.getenv("CI"));
+        assumeFalse("Can't run these tests on CI", runningOnCi);
+    }
 
     @Before
     public void setup() {
-        Intent intent = InstrumentationRegistry.getContext()
-                .getPackageManager()
-                .getLaunchIntentForPackage("com.braintreepayments.popupbridge.example")
-                .putExtra(MainActivity.EXTRA_URL, PAYPAL_POPUPBRIDGE_EXAMPLE_URL);
+        skipIfCi();
 
-        onDevice().onHomeScreen().launchApp(intent);
-        onDevice(withContentDescription("PayPal PopupBridge Example")).waitForExists(BROWSER_TIMEOUT);
+        onDevice().onHomeScreen().launchApp("com.braintreepayments.popupbridge.example");
+        onDevice(withText("Launch PayPal PopupBridge (checkout.js)")).perform(click());
     }
 
     @Test
     public void opensCheckout_returnsPaymentToken() throws UiObjectNotFoundException {
-        onDevice(withContentDescription("The safer, easier way to pay")).perform(click());
-        login();
+        UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        onDevice(withContentDescription("The safer, easier way to pay")).perform(
+                click(), click());
+        login(uiDevice);
+        onDevice(withContentDescription("Pay with")).waitForExists(BROWSER_TIMEOUT);
+
+        UiObject2 webview = uiDevice.findObject(By.clazz(WebView.class));
+        webview.scroll(Direction.DOWN, 100);
+
         onDevice(withContentDescription("Pay Now")).perform(click());
 
         onDevice(withResourceId("log")).check(
