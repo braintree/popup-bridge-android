@@ -8,7 +8,7 @@ import android.view.View;
 
 public class MainActivity extends Activity {
 
-    private static final String POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example";
+    private static final String POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/";
     private static final String PAYPAL_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal-checkout.html";
 
     @Override
