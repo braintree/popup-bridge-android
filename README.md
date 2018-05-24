@@ -74,7 +74,7 @@ Quick Start
 1. Use PopupBridge from the web page by writing some JavaScript:
 
    ```javascript
-   var url = 'http://localhost:4567/';
+   var url = 'http://localhost:4567/'; // the url you wish to open in a popup
 
    if (window.popupBridge) {
      // Open the popup in a browser, and give it the deep link back to the app
@@ -182,7 +182,7 @@ WebView-based checkout flows can accept PayPal with PopupBridge and the [Braintr
 
 ### Setup
 1. Create a web-based checkout that accepts PayPal using Checkout.js or the Braintree JS SDK
-1. Create a native mobile app that opens the checkout in a WebView
+1. Create a native mobile app that opens the checkout in a WebView (see steps 1-2 in quick start)
 1. Integrate the PopupBridge library
 1. Collect device data
     - To help detect fraudulent activity, collect device data before performing PayPal transactions. This is similar to collecting device data with our [native Android SDK](https://developers.braintreepayments.com/guides/paypal/vault/android/v2#collecting-device-data):
