@@ -6,12 +6,12 @@ apply plugin: 'io.codearte.nexus-staging'
 version '1.0.1'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
     buildToolsVersion '27.0.3'
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 3
         versionName version
 

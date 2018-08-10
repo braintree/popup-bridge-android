@@ -8,10 +8,10 @@ android:
   components:
     - tools
     - tools
-    - android-26
+    - android-27
     - android-22
     - sys-img-armeabi-v7a-android-22
-    - build-tools-26.0.0
+    - build-tools-27.0.3
     - platform-tools
     - extra-android-support
     - extra-android-m2repository
