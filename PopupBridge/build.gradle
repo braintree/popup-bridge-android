@@ -6,12 +6,12 @@ apply plugin: 'io.codearte.nexus-staging'
 version '1.0.1'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 28
+    buildToolsVersion '28.0.2'
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 3
         versionName version
 
@@ -22,11 +22,11 @@ android {
 }
 
 dependencies {
-    compile 'com.braintreepayments:browser-switch:0.1.4'
+    api 'com.braintreepayments:browser-switch:0.1.4'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.7.11'
-    testCompile 'org.robolectric:robolectric:3.3'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.7.11'
+    testImplementation 'org.robolectric:robolectric:3.3'
 }
 
 /* maven release */
