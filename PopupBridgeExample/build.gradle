@@ -17,5 +17,6 @@ android {
 dependencies {
     implementation project(':PopupBridge')
 
+    androidTestImplementation 'androidx.test:runner:1.1.0-alpha1'
     androidTestImplementation 'com.lukekorth:device-automator:0.1.1'
 }
