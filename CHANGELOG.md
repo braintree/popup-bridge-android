@@ -1,5 +1,9 @@
 # PopupBridge Android Release Notes
 
+## 1.1.0 (2018-09-26)
+* Update SDK to 28
+* Update browser-switch to 0.1.6
+
 ## 1.0.1 (2018-01-31)
 
 * Update versionCode
