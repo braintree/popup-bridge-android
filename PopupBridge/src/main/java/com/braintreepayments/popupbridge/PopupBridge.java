@@ -123,6 +123,11 @@ public class PopupBridge extends BrowserSwitchFragment {
 
             JSONObject json = new JSONObject();
             JSONObject queryItems = new JSONObject();
+            String fragment = returnUri.getFragment();
+
+            if (fragment == null) {
+                fragment = "";
+            }
 
             Set<String> queryParams = returnUri.getQueryParameterNames();
             if (queryParams != null && !queryParams.isEmpty()) {
@@ -139,6 +144,7 @@ public class PopupBridge extends BrowserSwitchFragment {
             try {
                 json.put("path", returnUri.getPath());
                 json.put("queryItems", queryItems);
+                json.put("fragment", fragment);
             } catch (JSONException ignored) {}
 
             payload = json.toString();
