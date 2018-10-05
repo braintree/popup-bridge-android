@@ -183,14 +183,14 @@ public class PopupBridgeTest {
         Uri uri = new Uri.Builder()
                 .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
-                .fragment("fragmentValue")
+                .fragment("hashValue")
                 .build();
 
         mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
 
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
-        assertEquals("fragmentValue", payload.getString("fragment"));
+        assertEquals("hashValue", payload.getString("hash"));
     }
 
     @Test
@@ -206,7 +206,7 @@ public class PopupBridgeTest {
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals("", payload.getString("path"));
-        assertEquals("", payload.getString("fragment"));
+        assertEquals("", payload.getString("hash"));
     }
 
     @Test
