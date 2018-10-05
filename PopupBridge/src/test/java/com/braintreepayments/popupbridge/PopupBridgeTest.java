@@ -206,7 +206,7 @@ public class PopupBridgeTest {
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals("", payload.getString("path"));
-        assertEquals("", payload.getString("hash"));
+        assertFalse(payload.has("hash"));
     }
 
     @Test
