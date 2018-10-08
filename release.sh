@@ -19,7 +19,12 @@ echo "Running gradle tasks, please wait..."
 echo
 
 ./gradlew clean lint :PopupBridge:test :PopupBridgeExample:connectedCheck
-./gradlew :PopupBridge:uploadArchives :PopupBridge:closeAndPromoteRepository
+./gradlew :PopupBridge:uploadArchives
+
+./gradlew :PopupBridge:closeRepository
+echo "Sleeping for one minute to allow PopupBridge module to close"
+sleep 60
+./gradlew :PopupBridge:promoteRepository
 
 echo "Release complete. Be sure to commit, tag and push your changes."
 echo "After the tag has been pushed, update the releases tab on GitHub with the changes for this release from the CHANGELOG."
