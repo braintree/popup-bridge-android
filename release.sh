@@ -10,6 +10,18 @@ echo
 echo "Press enter when you are ready to release."
 read
 
+if [ -z "$SONATYPE_USERNAME" ]; then
+  echo "Enter Sonatype username:"
+  read username
+  export SONATYPE_USERNAME=$(echo "${username}")
+fi
+
+if [ -z "$SONATYPE_PASSWORD" ]; then
+  echo "Enter Sonatype password:"
+  read -s password
+  export SONATYPE_PASSWORD=$(echo "${password}")
+fi
+
 if [[ $(./gradlew :PopupBridge:properties | grep version) == *-SNAPSHOT ]]; then
   echo "Stopping release, the version is a snapshot"
   exit 1
@@ -18,7 +30,8 @@ fi
 echo "Running gradle tasks, please wait..."
 echo
 
-./gradlew clean lint :PopupBridge:test :PopupBridgeExample:connectedCheck
+./gradlew clean lint :PopupBridge:test
+./gradlew :PopupBridgeExample:connectedCheck || true; echo "There were failed tests. Verify these tests before continuing the release. Press enter to continue."; read
 ./gradlew :PopupBridge:uploadArchives
 
 ./gradlew :PopupBridge:closeRepository
