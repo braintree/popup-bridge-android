@@ -29,6 +29,7 @@ import java.util.Collections;
 import static com.braintreepayments.browserswitch.BrowserSwitchFragment.BrowserSwitchResult;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
@@ -174,6 +175,38 @@ public class PopupBridgeTest {
         JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals(payload.getString("path"), "/mypath");
         assertEquals(payload.getJSONObject("queryItems").length(), 0);
+    }
+
+    @Test
+    public void  onBrowserSwitchResult_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
+            throws JSONException {
+        Uri uri = new Uri.Builder()
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .authority("popupbridgev1")
+                .fragment("hashValue")
+                .build();
+
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
+        assertEquals("hashValue", payload.getString("hash"));
+    }
+
+    @Test
+    public void  onBrowserSwitchResult_whenReturnUrlExcludesFragmentIdentifier_fragmentIdentifierIsNotReturned()
+            throws JSONException {
+        Uri uri = new Uri.Builder()
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .authority("popupbridgev1")
+                .build();
+
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
+        assertEquals("", payload.getString("path"));
+        assertFalse(payload.has("hash"));
     }
 
     @Test

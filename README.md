@@ -88,6 +88,9 @@ Quick Start
          console.log('User closed popup.');
        } else {
          alert('Your favorite color is ' + payload.queryItems.color);
+
+         console.log(payload.path) // defaults to ""
+         console.log(payload.hash) // defaults to ""
        }
      };
    } else {
@@ -160,7 +163,7 @@ You can use [`setSupportMultipleWindows()`](https://developer.android.com/refere
       popupBridge.open(url + '?popupBridgeReturnUrlPrefix=' + popupBridge.getReturnUrlPrefix());
     ```
 
-    - Optionally, you can add path components and query parameters to the deep link URL to return data to the parent page, which are provided in the payload of `popupBridge.onComplete`
+    - Optionally, you can add path components, query parameters, hash values to the deep link URL to return data to the parent page, which are provided in the payload of `popupBridge.onComplete`
 - If the user hits the back button or manually navigates back to the app, `popupBridge.onComplete` gets called with the error and payload as `null`
 
 ### Who built PopupBridge?

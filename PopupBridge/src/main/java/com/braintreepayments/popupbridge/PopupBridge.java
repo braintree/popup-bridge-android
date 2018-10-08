@@ -139,6 +139,7 @@ public class PopupBridge extends BrowserSwitchFragment {
             try {
                 json.put("path", returnUri.getPath());
                 json.put("queryItems", queryItems);
+                json.put("hash", returnUri.getFragment());
             } catch (JSONException ignored) {}
 
             payload = json.toString();
