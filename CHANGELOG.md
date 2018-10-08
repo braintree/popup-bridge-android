@@ -1,5 +1,9 @@
 # PopupBridge Android Release Notes
 
+## 1.2.0 (2018-10-08)
+* Return URI fragment identifiers / URI hashes on the result object
+* Added a PayPal Checkout example
+
 ## 1.1.0 (2018-09-26)
 * Update SDK to 28
 * Update browser-switch to 0.1.6
