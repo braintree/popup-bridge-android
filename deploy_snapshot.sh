@@ -4,7 +4,7 @@ set -e
 
 SLUG="braintree/popup-bridge-android"
 JDK="oraclejdk8"
-BRANCH="master"
+BRANCH="2.x"
 
 if [ "$TRAVIS_REPO_SLUG" != "$SLUG" ]; then
   echo "Skipping snapshot deployment: wrong repository. Expected '$SLUG' but was '$TRAVIS_REPO_SLUG'."
