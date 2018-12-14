@@ -1,7 +1,6 @@
 package com.braintreepayments.popupbridge;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,12 +25,14 @@ import org.robolectric.util.ReflectionHelpers;
 
 import java.util.Collections;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import static com.braintreepayments.browserswitch.BrowserSwitchFragment.BrowserSwitchResult;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -44,7 +45,7 @@ import static org.mockito.Mockito.when;
 @Config(sdk = 19)
 public class PopupBridgeTest {
 
-    private Activity mActivity;
+    private AppCompatActivity mActivity;
     private PopupBridge mPopupBridge;
     private MockWebView mWebView;
 

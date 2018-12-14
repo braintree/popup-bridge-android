@@ -7,7 +7,7 @@ version '2.0.0-SNAPSHOT'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion '28.0.2'
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         minSdkVersion 19
@@ -17,16 +17,19 @@ android {
 
         consumerProguardFiles 'proguard.pro'
 
-        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
+
+    testOptions.unitTests.includeAndroidResources = true
 }
 
 dependencies {
-    api 'com.braintreepayments:browser-switch:0.1.6'
+    api 'com.braintreepayments:browser-switch:0.2.0'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:2.7.11'
-    testImplementation 'org.robolectric:robolectric:3.3'
+    testImplementation 'org.robolectric:robolectric:3.8'
 }
 
 /* maven release */

@@ -1,12 +1,13 @@
 package com.braintreepayments.popupbridge.example;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.webkit.WebView;
 
 import com.braintreepayments.popupbridge.PopupBridge;
 
-public class PopupActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class PopupActivity extends AppCompatActivity {
 
     private WebView mWebView;
     private PopupBridge mPopupBridge;
