@@ -9,7 +9,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName '1.0'
-        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 }
 
@@ -17,5 +17,5 @@ dependencies {
     implementation project(':PopupBridge')
     implementation 'androidx.appcompat:appcompat:1.0.2'
 
-    androidTestImplementation 'com.lukekorth:device-automator:0.1.1'
+    androidTestImplementation 'com.lukekorth:device-automator:1.0.0'
 }

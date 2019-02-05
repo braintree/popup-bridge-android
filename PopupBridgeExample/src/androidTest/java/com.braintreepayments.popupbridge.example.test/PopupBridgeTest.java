@@ -1,13 +1,14 @@
 package com.braintreepayments.popupbridge.example.test;
 
 import android.os.Build;
-import android.support.test.runner.AndroidJUnit4;
 
 import com.lukekorth.deviceautomator.DeviceAutomator;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import androidx.test.runner.AndroidJUnit4;
 
 import static com.lukekorth.deviceautomator.AutomatorAction.click;
 import static com.lukekorth.deviceautomator.DeviceAutomator.onDevice;
@@ -25,22 +26,22 @@ public class PopupBridgeTest {
         onDevice(withContentDescription("Launch PopupBridge")).perform(click());
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 50000)
     public void opensPopup_whenClickingRed_returnsRedColor() {
        testColor("Red");
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 50000)
     public void opensPopup_whenClickingGreen_returnsGreenColor() {
         testColor("Green");
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 50000)
     public void opensPopup_whenClickingBlue_returnsBlueColor() {
         testColor("Blue");
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 50000)
     public void opensPopup_whenClickingDontLikeAnyOfTheseColors_returnsCanceledSelection() {
         onViewWithText("Launch Popup").perform(click());
         onViewWithText("I don't like any of these colors")
@@ -48,7 +49,7 @@ public class PopupBridgeTest {
         onViewWithText("You do not like any of these colors").waitForExists();
     }
 
-    @Test(timeout = 30000)
+    @Test(timeout = 50000)
     public void opensPopup_whenClickingBack_returnsCanceledSelection() {
         onViewWithText("Launch Popup").perform(click());
         onViewWithText("I don't like any of these colors")

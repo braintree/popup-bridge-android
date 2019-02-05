@@ -16,7 +16,7 @@ android {
 
         consumerProguardFiles 'proguard.pro'
 
-        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     testOptions.unitTests.includeAndroidResources = true
