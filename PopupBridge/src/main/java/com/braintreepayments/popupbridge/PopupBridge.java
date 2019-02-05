@@ -1,8 +1,6 @@
 package com.braintreepayments.popupbridge;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -16,6 +14,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Set;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 public class PopupBridge extends BrowserSwitchFragment {
 
@@ -31,16 +33,17 @@ public class PopupBridge extends BrowserSwitchFragment {
     public PopupBridge() {}
 
     /**
-     * Create a new instance of {@link PopupBridge} and add it to the {@link Activity}'s {@link FragmentManager}.
+     * Create a new instance of {@link PopupBridge} and add it to the {@link AppCompatActivity}'s {@link android.support.v4.app.FragmentManager}.
      *
      * This will enable JavaScript in your WebView.
      *
-     * @param activity The {@link Activity} to add the {@link Fragment} to.
+     * @param activity The {@link AppCompatActivity} to add the {@link Fragment} to.
      * @param webView The {@link WebView} to enable for PopupBridge.
      * @return {@link PopupBridge}
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
-    public static PopupBridge newInstance(Activity activity, WebView webView) throws IllegalArgumentException {
+    @SuppressLint("SetJavaScriptEnabled")
+    public static PopupBridge newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
         if (activity == null) {
             throw new IllegalArgumentException("Activity is null");
         }
@@ -49,7 +52,7 @@ public class PopupBridge extends BrowserSwitchFragment {
             throw new IllegalArgumentException("WebView is null");
         }
 
-        FragmentManager fm = activity.getFragmentManager();
+        FragmentManager fm = activity.getSupportFragmentManager();
         PopupBridge popupBridge = (PopupBridge) fm.findFragmentByTag(TAG);
         if (popupBridge == null) {
             popupBridge = new PopupBridge();
