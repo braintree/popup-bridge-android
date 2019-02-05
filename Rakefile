@@ -43,8 +43,8 @@ end
 
 task :release_popup_bridge do
   sh "./gradlew clean :PopupBridge:uploadArchives"
-  sh "./gradlew closeAndReleaseRepository"
-  sleep 600
+  sh "./gradlew :PopupBridge:closeRepository"
+  sh "./gradlew :PopupBridge:promoteRepository"
   puts "PopupBridge module have been released"
 end
 
