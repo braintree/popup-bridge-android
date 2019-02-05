@@ -106,9 +106,6 @@ def post_release(version)
   $stdin.gets
 
   sh "git push origin master #{version}"
-
-  puts "\nPushed to GHE! Press ENTER to push to public Github."
-  $stdin.gets
 end
 
 def get_current_version
