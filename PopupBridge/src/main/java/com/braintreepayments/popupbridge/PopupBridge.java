@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 import java.util.Set;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -31,6 +32,23 @@ public class PopupBridge extends BrowserSwitchFragment {
     private PopupBridgeMessageListener mMessageListener;
 
     public PopupBridge() {}
+
+    /**
+     * @deprecated Use {@link PopupBridge#newInstance(FragmentActivity, String)}
+     * Create a new instance of {@link PopupBridge} and add it to the {@link AppCompatActivity}'s {@link android.support.v4.app.FragmentManager}.
+     *
+     * This will enable JavaScript in your WebView.
+     *
+     * @param activity The {@link AppCompatActivity} to add the {@link Fragment} to.
+     * @param webView The {@link WebView} to enable for PopupBridge.
+     * @return {@link PopupBridge}
+     * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
+     */
+    @SuppressLint("SetJavaScriptEnabled")
+    @Deprecated
+    public static PopupBridge newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
+        return newInstance((FragmentActivity)activity, webView);
+    }
 
     /**
      * Create a new instance of {@link PopupBridge} and add it to the {@link FragmentActivity}'s {@link android.support.v4.app.FragmentManager}.
