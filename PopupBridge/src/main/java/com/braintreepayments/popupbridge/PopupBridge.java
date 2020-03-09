@@ -45,7 +45,6 @@ public class PopupBridge extends BrowserSwitchFragment {
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @SuppressLint("SetJavaScriptEnabled")
-    @Deprecated
     public static PopupBridge newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
         return newInstance((FragmentActivity)activity, webView);
     }

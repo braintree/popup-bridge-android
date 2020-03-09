@@ -25,6 +25,8 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.Collections;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import static com.braintreepayments.browserswitch.BrowserSwitchFragment.BrowserSwitchResult;
 import static junit.framework.Assert.assertEquals;
@@ -43,7 +45,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class PopupBridgeTest {
 
-    private AppCompatActivity mActivity;
+    private FragmentActivity mActivity;
     private PopupBridge mPopupBridge;
     private MockWebView mWebView;
 
@@ -87,7 +89,6 @@ public class PopupBridgeTest {
         when(webView.getSettings()).thenReturn(webSettings);
 
         PopupBridge.newInstance(mActivity, webView);
-
         verify(webSettings).setJavaScriptEnabled(eq(true));
     }
 
