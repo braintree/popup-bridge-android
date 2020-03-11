@@ -1,7 +1,7 @@
 # PopupBridge Android Release Notes
 
 ## unreleased
-* Support AppCompatActivity overload for PopupBridge::newInstance
+* Support FragmentActivity overload for PopupBridge::newInstance
 * Deprecate AppCompatActivity overload for PopupBridge::newInstance
 
 ## 2.0.0
