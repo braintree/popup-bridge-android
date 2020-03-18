@@ -34,7 +34,7 @@ public class PopupBridge extends BrowserSwitchFragment {
     public PopupBridge() {}
 
     /**
-     * @deprecated Use {@link PopupBridge#newInstance(FragmentActivity, String)}
+     * NEXT_MAJOR_VERSION: remove this method in favor of PopupBridge#newInstance(FragmentActivity, WebView)
      * Create a new instance of {@link PopupBridge} and add it to the {@link AppCompatActivity}'s {@link android.support.v4.app.FragmentManager}.
      *
      * This will enable JavaScript in your WebView.
@@ -45,7 +45,6 @@ public class PopupBridge extends BrowserSwitchFragment {
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @SuppressLint("SetJavaScriptEnabled")
-    @Deprecated
     public static PopupBridge newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
         return newInstance((FragmentActivity)activity, webView);
     }

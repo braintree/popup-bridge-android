@@ -10,8 +10,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.braintreepayments.popupbridge.test.MockWebView;
-import com.braintreepayments.popupbridge.test.TestAppCompatActivity;
-import com.braintreepayments.popupbridge.test.TestFragmentActivity;
+import com.braintreepayments.popupbridge.test.TestActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +25,6 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.Collections;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import static com.braintreepayments.browserswitch.BrowserSwitchFragment.BrowserSwitchResult;
 import static junit.framework.Assert.assertEquals;
@@ -45,30 +43,22 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class PopupBridgeTest {
 
-    private FragmentActivity mFragmentActivity;
-    private PopupBridge mFragmentActivityPopupBridge;
-    private MockWebView mFragmentActivityWebView;
-
-    private AppCompatActivity mAppCompatActivity;
-    private PopupBridge mAppCompatActivityPopupBridge;
-    private MockWebView mAppCompatActivityWebView;
+    private AppCompatActivity mActivity;
+    private PopupBridge mPopupBridge;
+    private MockWebView mWebView;
 
     @Before
     public void setup() {
-        mFragmentActivity = Robolectric.setupActivity(TestFragmentActivity.class);
-        mFragmentActivityWebView = new MockWebView(mFragmentActivity);
-        mFragmentActivityPopupBridge = PopupBridge.newInstance(mFragmentActivity, mFragmentActivityWebView);
-
-        mAppCompatActivity = Robolectric.setupActivity(TestAppCompatActivity.class);
-        mAppCompatActivityWebView = new MockWebView(mAppCompatActivity);
-        mAppCompatActivityPopupBridge = PopupBridge.newInstance(mAppCompatActivity, mAppCompatActivityWebView);
+        mActivity = Robolectric.setupActivity(TestActivity.class);
+        mWebView = new MockWebView(mActivity);
+        mPopupBridge = PopupBridge.newInstance(mActivity, mWebView);
     }
 
     @Test
     public void newInstance_whenActivityIsNull_throwsException() {
         Exception thrownException = null;
-        TestFragmentActivity testFragmentActivity = Robolectric.setupActivity(TestFragmentActivity.class);
-        WebView webView = new WebView(testFragmentActivity);
+        TestActivity testActivity = Robolectric.setupActivity(TestActivity.class);
+        WebView webView = new WebView(testActivity);
         try {
             PopupBridge.newInstance(null, webView);
         } catch (IllegalArgumentException e){
@@ -79,10 +69,10 @@ public class PopupBridgeTest {
     }
 
     @Test
-    public void newInstance_withFragmentActivity_whenWebViewIsNull_throwsException() {
+    public void newInstance_whenWebViewIsNull_throwsException() {
         Exception thrownException = null;
         try {
-            PopupBridge.newInstance(new TestFragmentActivity(), null);
+            PopupBridge.newInstance(new TestActivity(), null);
         } catch (IllegalArgumentException e){
             thrownException = e;
         } finally {
@@ -91,384 +81,186 @@ public class PopupBridgeTest {
     }
 
     @Test
-    public void newInstance_withAppCompatActivity_whenWebViewIsNull_throwsException() {
-        Exception thrownException = null;
-        try {
-            PopupBridge.newInstance(new TestAppCompatActivity(), null);
-        } catch (IllegalArgumentException e){
-            thrownException = e;
-        } finally {
-            assertEquals(thrownException.getMessage(), "WebView is null");
-        }
-    }
-
-    @Test
-    public void newInstance_withFragmentActivity_enablesJavascriptOnWebView() {
+    public void newInstance_enablesJavascriptOnWebView() {
         WebView webView = mock(WebView.class);
         WebSettings webSettings = mock(WebSettings.class);
         when(webView.getSettings()).thenReturn(webSettings);
 
-        PopupBridge.newInstance(mFragmentActivity, webView);
-        verify(webSettings).setJavaScriptEnabled(eq(true));
-    }
+        PopupBridge.newInstance(mActivity, webView);
 
-    @Test
-    public void newInstance_withAppCompatActivity_enablesJavascriptOnWebView() {
-        WebView webView = mock(WebView.class);
-        WebSettings webSettings = mock(WebSettings.class);
-        when(webView.getSettings()).thenReturn(webSettings);
-
-        PopupBridge.newInstance(mAppCompatActivity, webView);
         verify(webSettings).setJavaScriptEnabled(eq(true));
     }
 
     @Test
     @SuppressLint("JavascriptInterface")
-    public void newInstance_withFragmentActivity_addsJavascriptInterfaceToWebView() {
+    public void newInstance_addsJavascriptInterfaceToWebView() {
         WebView webView = mock(WebView.class);
         when(webView.getSettings()).thenReturn(mock(WebSettings.class));
-        PopupBridge popupBridge = PopupBridge.newInstance(mFragmentActivity, webView);
+        PopupBridge popupBridge = PopupBridge.newInstance(mActivity, webView);
 
         verify(webView).addJavascriptInterface(eq(popupBridge), eq("popupBridge"));
     }
 
     @Test
-    @SuppressLint("JavascriptInterface")
-    public void newInstance_withAppCompatActivity_addsJavascriptInterfaceToWebView() {
-        WebView webView = mock(WebView.class);
-        when(webView.getSettings()).thenReturn(mock(WebSettings.class));
-        PopupBridge popupBridge = PopupBridge.newInstance(mFragmentActivity, webView);
-
-        verify(webView).addJavascriptInterface(eq(popupBridge), eq("popupBridge"));
+    public void onBrowserSwitchResult_whenNotPopupBridgeRequest_doesNotCallOnComplete() {
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, null);
+        assertNull(mWebView.mError);
+        assertNull(mWebView.mPayload);
     }
 
     @Test
-    public void onBrowserSwitchResult_withFragmentActivity_whenNotPopupBridgeRequest_doesNotCallOnComplete() {
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, null);
-        assertNull(mFragmentActivityWebView.mError);
-        assertNull(mFragmentActivityWebView.mPayload);
-    }
-
-    @Test
-    public void onBrowserSwitchResult_withAppCompatActivity_whenNotPopupBridgeRequest_doesNotCallOnComplete() {
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, null);
-        assertNull(mAppCompatActivityWebView.mError);
-        assertNull(mAppCompatActivityWebView.mPayload);
-    }
-
-    @Test
-    public void onBrowserSwitchResult_withFragmentActivity_whenCancelled_callsPopupBridgeOnCancelMethod() {
+    public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeOnCancelMethod() {
         Uri uri = new Uri.Builder()
-                .scheme(mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .build();
 
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.CANCELED, uri);
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.CANCELED, uri);
 
-        assertEquals(mFragmentActivityWebView.mError, "null");
-        assertEquals(mFragmentActivityWebView.mPayload, "null");
-        assertThat(mFragmentActivityWebView.mJavascriptEval, containsString("window.popupBridge.onCancel()"));
-        assertThat(mFragmentActivityWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, null)"));
+        assertEquals(mWebView.mError, "null");
+        assertEquals(mWebView.mPayload, "null");
+        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onCancel()"));
+        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, null)"));
     }
 
     @Test
-    public void onBrowserSwitchResult_withAppCompatActivity_whenCancelled_callsPopupBridgeOnCancelMethod() {
-        Uri uri = new Uri.Builder()
-                .scheme(mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge")
-                .authority("popupbridgev1")
-                .build();
-
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.CANCELED, uri);
-
-        assertEquals(mAppCompatActivityWebView.mError, "null");
-        assertEquals(mAppCompatActivityWebView.mPayload, "null");
-        assertThat(mAppCompatActivityWebView.mJavascriptEval, containsString("window.popupBridge.onCancel()"));
-        assertThat(mAppCompatActivityWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, null)"));
-    }
-
-    @Test
-    public void onBrowserSwitchResult_withFragmentActivity_whenDifferentScheme_doesNotCallOnComplete() {
+    public void onBrowserSwitchResult_whenDifferentScheme_doesNotCallOnComplete() {
         Uri uri = new Uri.Builder()
                 .scheme("com.oranges.popupbridge")
                 .path("mypath")
                 .build();
 
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
 
-        assertNull(mFragmentActivityWebView.mError);
-        assertNull(mFragmentActivityWebView.mPayload);
-        assertNull(mFragmentActivityWebView.mJavascriptEval);
+        assertNull(mWebView.mError);
+        assertNull(mWebView.mPayload);
+        assertNull(mWebView.mJavascriptEval);
     }
 
     @Test
-    public void onBrowserSwitchResult_withAppCompatActivity_whenDifferentScheme_doesNotCallOnComplete() {
-        Uri uri = new Uri.Builder()
-                .scheme("com.oranges.popupbridge")
-                .path("mypath")
-                .build();
-
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
-
-        assertNull(mAppCompatActivityWebView.mError);
-        assertNull(mAppCompatActivityWebView.mPayload);
-        assertNull(mAppCompatActivityWebView.mJavascriptEval);
-    }
-
-    @Test
-    public void onBrowserSwitchResult_withFragmentActivity_whenReturnUrlHasQueryParams_reportsPayloadWithQueryItems()
+    public void onBrowserSwitchResult_whenReturnUrlHasQueryParams_reportsPayloadWithQueryItems()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .path("mypath")
                 .appendQueryParameter("foo", "bar")
                 .appendQueryParameter("baz", "qux")
                 .build();
 
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
 
-        assertEquals("null", mFragmentActivityWebView.mError);
-        JSONObject payload = new JSONObject(mFragmentActivityWebView.mPayload);
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals(payload.getString("path"), "/mypath");
         assertEquals(payload.getJSONObject("queryItems").getString("foo"), "bar");
         assertEquals(payload.getJSONObject("queryItems").getString("baz"), "qux");
         assertEquals(payload.getJSONObject("queryItems").length(), 2);
-        assertThat(mFragmentActivityWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, {"));
+        assertThat(mWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, {"));
     }
 
     @Test
-    public void onBrowserSwitchResult_withAppCompatActivity_whenReturnUrlHasQueryParams_reportsPayloadWithQueryItems()
+    public void onBrowserSwitchResult_whenReturnUrlHasNoQueryParams_reportsPayloadWithEmptyQueryItems()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
-                .authority("popupbridgev1")
-                .path("mypath")
-                .appendQueryParameter("foo", "bar")
-                .appendQueryParameter("baz", "qux")
-                .build();
-
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
-
-        assertEquals("null", mAppCompatActivityWebView.mError);
-        JSONObject payload = new JSONObject(mAppCompatActivityWebView.mPayload);
-        assertEquals(payload.getString("path"), "/mypath");
-        assertEquals(payload.getJSONObject("queryItems").getString("foo"), "bar");
-        assertEquals(payload.getJSONObject("queryItems").getString("baz"), "qux");
-        assertEquals(payload.getJSONObject("queryItems").length(), 2);
-        assertThat(mAppCompatActivityWebView.mJavascriptEval, containsString("window.popupBridge.onComplete(null, {"));
-    }
-
-    @Test
-    public void onBrowserSwitchResult_withFragmentActivity_whenReturnUrlHasNoQueryParams_reportsPayloadWithEmptyQueryItems()
-            throws JSONException {
-        Uri uri = new Uri.Builder()
-                .scheme(mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .path("mypath")
                 .build();
 
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
 
-        assertEquals("null", mFragmentActivityWebView.mError);
-        JSONObject payload = new JSONObject(mFragmentActivityWebView.mPayload);
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals(payload.getString("path"), "/mypath");
         assertEquals(payload.getJSONObject("queryItems").length(), 0);
     }
 
     @Test
-    public void onBrowserSwitchResult_withAppCompatActivity_whenReturnUrlHasNoQueryParams_reportsPayloadWithEmptyQueryItems()
+    public void  onBrowserSwitchResult_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
-                .authority("popupbridgev1")
-                .path("mypath")
-                .build();
-
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
-
-        assertEquals("null", mAppCompatActivityWebView.mError);
-        JSONObject payload = new JSONObject(mAppCompatActivityWebView.mPayload);
-        assertEquals(payload.getString("path"), "/mypath");
-        assertEquals(payload.getJSONObject("queryItems").length(), 0);
-    }
-
-    @Test
-    public void  onBrowserSwitchResult_withFragmentActivity_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
-            throws JSONException {
-        Uri uri = new Uri.Builder()
-                .scheme(mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .fragment("hashValue")
                 .build();
 
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
 
-        assertEquals("null", mFragmentActivityWebView.mError);
-        JSONObject payload = new JSONObject(mFragmentActivityWebView.mPayload);
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals("hashValue", payload.getString("hash"));
     }
 
     @Test
-    public void  onBrowserSwitchResult_withAppCompatActivity_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
+    public void  onBrowserSwitchResult_whenReturnUrlExcludesFragmentIdentifier_fragmentIdentifierIsNotReturned()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
-                .authority("popupbridgev1")
-                .fragment("hashValue")
-                .build();
-
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
-
-        assertEquals("null", mAppCompatActivityWebView.mError);
-        JSONObject payload = new JSONObject(mAppCompatActivityWebView.mPayload);
-        assertEquals("hashValue", payload.getString("hash"));
-    }
-
-    @Test
-    public void onBrowserSwitchResult_withFragmentActivity_whenReturnUrlExcludesFragmentIdentifier_fragmentIdentifierIsNotReturned()
-            throws JSONException {
-        Uri uri = new Uri.Builder()
-                .scheme(mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .build();
 
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
 
-        assertEquals("null", mFragmentActivityWebView.mError);
-        JSONObject payload = new JSONObject(mFragmentActivityWebView.mPayload);
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals("", payload.getString("path"));
         assertFalse(payload.has("hash"));
     }
 
     @Test
-    public void onBrowserSwitchResult_withAppCompatActivity_whenReturnUrlExcludesFragmentIdentifier_fragmentIdentifierIsNotReturned()
-            throws JSONException {
-        Uri uri = new Uri.Builder()
-                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
-                .authority("popupbridgev1")
-                .build();
-
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
-
-        assertEquals("null", mAppCompatActivityWebView.mError);
-        JSONObject payload = new JSONObject(mAppCompatActivityWebView.mPayload);
-        assertEquals("", payload.getString("path"));
-        assertFalse(payload.has("hash"));
-    }
-
-    @Test
-    public void onBrowserSwitchResult_withFragmentActivity_whenResultIsError_reportsError() {
+    public void onBrowserSwitchResult_whenResultIsError_reportsError() {
         BrowserSwitchResult result = BrowserSwitchResult.ERROR;
         ReflectionHelpers.callInstanceMethod(result, "setErrorMessage",
                 new ReflectionHelpers.ClassParameter<>(String.class, "Browser switch error"));
 
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, result, null);
+        mPopupBridge.onBrowserSwitchResult(1, result, null);
 
-        assertEquals("new Error('Browser switch error')", mFragmentActivityWebView.mError);
-        assertEquals(mFragmentActivityWebView.mJavascriptEval, "window.popupBridge.onComplete(new Error('Browser switch error'), null);");
+        assertEquals("new Error('Browser switch error')", mWebView.mError);
+        assertEquals(mWebView.mJavascriptEval, "window.popupBridge.onComplete(new Error('Browser switch error'), null);");
     }
 
     @Test
-    public void onBrowserSwitchResult_withAppCompatActivity_whenResultIsError_reportsError() {
-        BrowserSwitchResult result = BrowserSwitchResult.ERROR;
-        ReflectionHelpers.callInstanceMethod(result, "setErrorMessage",
-                new ReflectionHelpers.ClassParameter<>(String.class, "Browser switch error"));
-
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, result, null);
-
-        assertEquals("new Error('Browser switch error')", mAppCompatActivityWebView.mError);
-        assertEquals(mAppCompatActivityWebView.mJavascriptEval, "window.popupBridge.onComplete(new Error('Browser switch error'), null);");
-    }
-
-    @Test
-    public void onActivityResult_withFragmentActivity_whenNoPath_returnsEmptyString() throws JSONException {
-        Uri uri = new Uri.Builder()
-                .scheme(mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge")
-                .authority("popupbridgev1")
-                .build();
-
-        mFragmentActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
-
-        assertEquals("null", mFragmentActivityWebView.mError);
-        JSONObject payload = new JSONObject(mFragmentActivityWebView.mPayload);
-        assertEquals(payload.getString("path"), "");
-        assertEquals(payload.getJSONObject("queryItems").length(), 0);
-    }
-
-    @Test
-    public void onActivityResult_withAppCompatActivity_whenNoPath_returnsEmptyString() throws JSONException {
+    public void onActivityResult_whenNoPath_returnsEmptyString() throws JSONException {
          Uri uri = new Uri.Builder()
-                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .build();
 
-        mAppCompatActivityPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
+        mPopupBridge.onBrowserSwitchResult(1, BrowserSwitchResult.OK, uri);
 
-        assertEquals("null", mAppCompatActivityWebView.mError);
-        JSONObject payload = new JSONObject(mAppCompatActivityWebView.mPayload);
+        assertEquals("null", mWebView.mError);
+        JSONObject payload = new JSONObject(mWebView.mPayload);
         assertEquals(payload.getString("path"), "");
         assertEquals(payload.getJSONObject("queryItems").length(), 0);
     }
 
     @Test
-    public void getReturnUrlScheme_withFragmentActivity_returnsExpectedUrlScheme() {
-        assertEquals(mFragmentActivityPopupBridge.getReturnUrlScheme(),
-                mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge");
+    public void getReturnUrlScheme_returnsExpectedUrlScheme() {
+        assertEquals(mPopupBridge.getReturnUrlScheme(),
+                mActivity.getApplicationContext().getPackageName() + ".popupbridge");
     }
 
     @Test
-    public void getReturnUrlScheme_withAppCompatActivity_returnsExpectedUrlScheme() {
-        assertEquals(mAppCompatActivityPopupBridge.getReturnUrlScheme(),
-                mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge");
+    public void getReturnUrlPrefix_returnsExpectedUrlPrefix() {
+        assertEquals(mPopupBridge.getReturnUrlPrefix(),
+                mActivity.getApplicationContext().getPackageName() + ".popupbridge://popupbridgev1/");
     }
 
     @Test
-    public void getReturnUrlPrefix_withFragmentActivity_returnsExpectedUrlPrefix() {
-        assertEquals(mFragmentActivityPopupBridge.getReturnUrlPrefix(),
-                mFragmentActivity.getApplicationContext().getPackageName() + ".popupbridge://popupbridgev1/");
-    }
-
-    @Test
-    public void getReturnUrlPrefix_withAppCompatActivity_returnsExpectedUrlPrefix() {
-        assertEquals(mAppCompatActivityPopupBridge.getReturnUrlPrefix(),
-                mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge://popupbridgev1/");
-    }
-
-    @Test
-    public void open_withFragmentActivity_launchesActivityWithUrl() {
+    public void open_launchesActivityWithUrl() {
         Context context = mock(Context.class);
         when(context.getPackageName()).thenReturn("com.braintreepayments.popupbridge");
         PackageManager packageManager = mock(PackageManager.class);
         when(packageManager.queryIntentActivities(any(Intent.class), anyInt()))
                 .thenReturn(Collections.singletonList(new ResolveInfo()));
         when(context.getPackageManager()).thenReturn(packageManager);
-        mFragmentActivity = spy(Robolectric.setupActivity(TestFragmentActivity.class));
-        when(mFragmentActivity.getApplicationContext()).thenReturn(context);
-        mFragmentActivityWebView = new MockWebView(mFragmentActivity);
-        mFragmentActivityPopupBridge = PopupBridge.newInstance(mFragmentActivity, mFragmentActivityWebView);
+        mActivity = spy(Robolectric.setupActivity(TestActivity.class));
+        when(mActivity.getApplicationContext()).thenReturn(context);
+        mWebView = new MockWebView(mActivity);
+        mPopupBridge = PopupBridge.newInstance(mActivity, mWebView);
 
-        mFragmentActivityPopupBridge.open("someUrl://");
-
-        ArgumentCaptor<Intent> captor = ArgumentCaptor.forClass(Intent.class);
-        verify(context).startActivity(captor.capture());
-        Uri intentUri = captor.getValue().getData();
-        assertEquals(intentUri.toString(), "someUrl://");
-    }
-
-    @Test
-    public void open_withAppCompatActivity_launchesActivityWithUrl() {
-        Context context = mock(Context.class);
-        when(context.getPackageName()).thenReturn("com.braintreepayments.popupbridge");
-        PackageManager packageManager = mock(PackageManager.class);
-        when(packageManager.queryIntentActivities(any(Intent.class), anyInt()))
-                .thenReturn(Collections.singletonList(new ResolveInfo()));
-        when(context.getPackageManager()).thenReturn(packageManager);
-        mAppCompatActivity = spy(Robolectric.setupActivity(TestAppCompatActivity.class));
-        when(mAppCompatActivity.getApplicationContext()).thenReturn(context);
-        mAppCompatActivityWebView = new MockWebView(mAppCompatActivity);
-        mAppCompatActivityPopupBridge = PopupBridge.newInstance(mAppCompatActivity, mAppCompatActivityWebView);
-
-        mAppCompatActivityPopupBridge.open("someUrl://");
+        mPopupBridge.open("someUrl://");
 
         ArgumentCaptor<Intent> captor = ArgumentCaptor.forClass(Intent.class);
         verify(context).startActivity(captor.capture());
