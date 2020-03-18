@@ -2,7 +2,6 @@
 
 ## unreleased
 * Support FragmentActivity overload for PopupBridge::newInstance
-* Deprecate AppCompatActivity overload for PopupBridge::newInstance
 
 ## 2.0.0
 
