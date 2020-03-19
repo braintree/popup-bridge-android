@@ -2,10 +2,10 @@ package com.braintreepayments.popupbridge.test;
 
 import android.os.Bundle;
 
-import com.braintreepayments.popupbridge.R;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.braintreepayments.popupbridge.R;
 
 public class AppCompatTestActivity extends AppCompatActivity {
     @Override

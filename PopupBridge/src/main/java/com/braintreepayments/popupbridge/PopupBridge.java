@@ -8,17 +8,17 @@ import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+
 import com.braintreepayments.browserswitch.BrowserSwitchFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Set;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
 
 public class PopupBridge extends BrowserSwitchFragment {
 

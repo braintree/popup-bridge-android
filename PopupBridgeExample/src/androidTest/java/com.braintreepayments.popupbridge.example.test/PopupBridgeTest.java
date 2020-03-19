@@ -2,13 +2,13 @@ package com.braintreepayments.popupbridge.example.test;
 
 import android.os.Build;
 
+import androidx.test.runner.AndroidJUnit4;
+
 import com.lukekorth.deviceautomator.DeviceAutomator;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import androidx.test.runner.AndroidJUnit4;
 
 import static com.lukekorth.deviceautomator.AutomatorAction.click;
 import static com.lukekorth.deviceautomator.DeviceAutomator.onDevice;
