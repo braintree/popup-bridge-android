@@ -1,5 +1,8 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+* Support FragmentActivity overload for PopupBridge::newInstance
+
 ## 2.0.0
 
 * Convert to AndroidX

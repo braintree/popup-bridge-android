@@ -9,8 +9,9 @@ import android.net.Uri;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import com.braintreepayments.popupbridge.test.FragmentTestActivity;
 import com.braintreepayments.popupbridge.test.MockWebView;
-import com.braintreepayments.popupbridge.test.TestActivity;
+import com.braintreepayments.popupbridge.test.AppCompatTestActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,6 +26,7 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.Collections;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import static com.braintreepayments.browserswitch.BrowserSwitchFragment.BrowserSwitchResult;
 import static junit.framework.Assert.assertEquals;
@@ -43,22 +45,25 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class PopupBridgeTest {
 
-    private AppCompatActivity mActivity;
+    private FragmentActivity mFragmentActivity;
+    private AppCompatActivity mAppCompatActivity;
+
     private PopupBridge mPopupBridge;
     private MockWebView mWebView;
 
     @Before
     public void setup() {
-        mActivity = Robolectric.setupActivity(TestActivity.class);
-        mWebView = new MockWebView(mActivity);
-        mPopupBridge = PopupBridge.newInstance(mActivity, mWebView);
+        mAppCompatActivity = Robolectric.setupActivity(AppCompatTestActivity.class);
+        mFragmentActivity = Robolectric.setupActivity(FragmentTestActivity.class);
+        mWebView = new MockWebView(mAppCompatActivity);
+        mPopupBridge = PopupBridge.newInstance(mAppCompatActivity, mWebView);
     }
 
     @Test
     public void newInstance_whenActivityIsNull_throwsException() {
         Exception thrownException = null;
-        TestActivity testActivity = Robolectric.setupActivity(TestActivity.class);
-        WebView webView = new WebView(testActivity);
+        AppCompatTestActivity appCompatTestActivity = Robolectric.setupActivity(AppCompatTestActivity.class);
+        WebView webView = new WebView(appCompatTestActivity);
         try {
             PopupBridge.newInstance(null, webView);
         } catch (IllegalArgumentException e){
@@ -72,7 +77,7 @@ public class PopupBridgeTest {
     public void newInstance_whenWebViewIsNull_throwsException() {
         Exception thrownException = null;
         try {
-            PopupBridge.newInstance(new TestActivity(), null);
+            PopupBridge.newInstance(new AppCompatTestActivity(), null);
         } catch (IllegalArgumentException e){
             thrownException = e;
         } finally {
@@ -86,8 +91,18 @@ public class PopupBridgeTest {
         WebSettings webSettings = mock(WebSettings.class);
         when(webView.getSettings()).thenReturn(webSettings);
 
-        PopupBridge.newInstance(mActivity, webView);
+        PopupBridge.newInstance(mAppCompatActivity, webView);
 
+        verify(webSettings).setJavaScriptEnabled(eq(true));
+    }
+
+    @Test
+    public void newInstance_fragmentActivity_enablesJavascriptOnWebView() {
+        WebView webView = mock(WebView.class);
+        WebSettings webSettings = mock(WebSettings.class);
+        when(webView.getSettings()).thenReturn(webSettings);
+
+        PopupBridge.newInstance(mFragmentActivity, webView);
         verify(webSettings).setJavaScriptEnabled(eq(true));
     }
 
@@ -96,7 +111,7 @@ public class PopupBridgeTest {
     public void newInstance_addsJavascriptInterfaceToWebView() {
         WebView webView = mock(WebView.class);
         when(webView.getSettings()).thenReturn(mock(WebSettings.class));
-        PopupBridge popupBridge = PopupBridge.newInstance(mActivity, webView);
+        PopupBridge popupBridge = PopupBridge.newInstance(mAppCompatActivity, webView);
 
         verify(webView).addJavascriptInterface(eq(popupBridge), eq("popupBridge"));
     }
@@ -111,7 +126,7 @@ public class PopupBridgeTest {
     @Test
     public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeOnCancelMethod() {
         Uri uri = new Uri.Builder()
-                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .build();
 
@@ -141,7 +156,7 @@ public class PopupBridgeTest {
     public void onBrowserSwitchResult_whenReturnUrlHasQueryParams_reportsPayloadWithQueryItems()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .path("mypath")
                 .appendQueryParameter("foo", "bar")
@@ -163,7 +178,7 @@ public class PopupBridgeTest {
     public void onBrowserSwitchResult_whenReturnUrlHasNoQueryParams_reportsPayloadWithEmptyQueryItems()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .path("mypath")
                 .build();
@@ -180,7 +195,7 @@ public class PopupBridgeTest {
     public void  onBrowserSwitchResult_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .fragment("hashValue")
                 .build();
@@ -196,7 +211,7 @@ public class PopupBridgeTest {
     public void  onBrowserSwitchResult_whenReturnUrlExcludesFragmentIdentifier_fragmentIdentifierIsNotReturned()
             throws JSONException {
         Uri uri = new Uri.Builder()
-                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .build();
 
@@ -223,7 +238,7 @@ public class PopupBridgeTest {
     @Test
     public void onActivityResult_whenNoPath_returnsEmptyString() throws JSONException {
          Uri uri = new Uri.Builder()
-                .scheme(mActivity.getApplicationContext().getPackageName() + ".popupbridge")
+                .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
                 .authority("popupbridgev1")
                 .build();
 
@@ -238,13 +253,13 @@ public class PopupBridgeTest {
     @Test
     public void getReturnUrlScheme_returnsExpectedUrlScheme() {
         assertEquals(mPopupBridge.getReturnUrlScheme(),
-                mActivity.getApplicationContext().getPackageName() + ".popupbridge");
+                mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge");
     }
 
     @Test
     public void getReturnUrlPrefix_returnsExpectedUrlPrefix() {
         assertEquals(mPopupBridge.getReturnUrlPrefix(),
-                mActivity.getApplicationContext().getPackageName() + ".popupbridge://popupbridgev1/");
+                mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge://popupbridgev1/");
     }
 
     @Test
@@ -255,10 +270,10 @@ public class PopupBridgeTest {
         when(packageManager.queryIntentActivities(any(Intent.class), anyInt()))
                 .thenReturn(Collections.singletonList(new ResolveInfo()));
         when(context.getPackageManager()).thenReturn(packageManager);
-        mActivity = spy(Robolectric.setupActivity(TestActivity.class));
-        when(mActivity.getApplicationContext()).thenReturn(context);
-        mWebView = new MockWebView(mActivity);
-        mPopupBridge = PopupBridge.newInstance(mActivity, mWebView);
+        mAppCompatActivity = spy(Robolectric.setupActivity(AppCompatTestActivity.class));
+        when(mAppCompatActivity.getApplicationContext()).thenReturn(context);
+        mWebView = new MockWebView(mAppCompatActivity);
+        mPopupBridge = PopupBridge.newInstance(mAppCompatActivity, mWebView);
 
         mPopupBridge.open("someUrl://");
 
