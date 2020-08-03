@@ -4,8 +4,6 @@ plugins {
     id 'signing'
 }
 
-version '2.0.1-SNAPSHOT'
-
 android {
     compileSdkVersion rootProject.compileSdkVersion
     buildToolsVersion '29.0.3'
