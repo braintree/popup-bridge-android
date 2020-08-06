@@ -1,12 +1,8 @@
 language: android
 jdk: oraclejdk8
-notifications:
-  email:
-    - external-ci-notifications+popup-bridge-android@getbraintree.com
 sudo: true
 android:
   components:
-    - tools
     - tools
     - android-28
     - android-22
