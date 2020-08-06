@@ -5,6 +5,7 @@ android:
   components:
     - tools
     - android-28
+    - android-22
     - sys-img-armeabi-v7a-android-22
     - build-tools-29.0.3
     - platform-tools
@@ -12,7 +13,7 @@ android:
     - extra-android-m2repository
     - extra-google-m2repository
 before_script:
-  - echo no | android create avd --force -n test -t android-28 --abi armeabi-v7a
+  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
   - emulator -avd test -skin WXGA720 -no-audio -no-window &
   - android-wait-for-emulator
   - sleep 60
