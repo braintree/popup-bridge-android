@@ -111,7 +111,7 @@ end
 def get_current_version
   current_version = nil
   File.foreach("build.gradle") do |line|
-    if match = line.match(/version '(\d+\.\d+\.\d+(-SNAPSHOT)?)'/)
+    if match = line.match(/^version '(\d+\.\d+\.\d+(-SNAPSHOT)?)'/)
       current_version = match.captures
     end
   end
