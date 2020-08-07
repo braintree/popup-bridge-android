@@ -20,7 +20,7 @@ plugins {
 version '2.0.1-SNAPSHOT'
 ext {
     compileSdkVersion = 28
-    minSdkVersion = 19
+    minSdkVersion = 21
     targetSdkVersion = 28
     versionCode = 7
     versionName = version

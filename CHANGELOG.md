@@ -2,6 +2,8 @@
 
 ## unreleased
 * Support FragmentActivity overload for PopupBridge::newInstance
+* Breaking Changes
+  * Update minSdkVersion to 21.
 
 ## 2.0.0
 
