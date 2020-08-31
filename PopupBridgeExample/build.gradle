@@ -1,14 +1,18 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion '29.0.3'
 
     defaultConfig {
         applicationId 'com.braintreepayments.popupbridge.example'
-        minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 1
-        versionName '1.0'
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+        versionCode rootProject.versionCode
+        versionName rootProject.versionName
+
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 }
