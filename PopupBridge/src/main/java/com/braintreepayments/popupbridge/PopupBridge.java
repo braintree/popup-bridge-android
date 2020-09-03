@@ -1,6 +1,7 @@
 package com.braintreepayments.popupbridge;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
@@ -8,12 +9,14 @@ import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.braintreepayments.browserswitch.BrowserSwitchFragment;
+import com.braintreepayments.browserswitch.BrowserSwitchResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +33,8 @@ public class PopupBridge extends BrowserSwitchFragment {
     private WebView mWebView;
     private PopupBridgeNavigationListener mNavigationListener;
     private PopupBridgeMessageListener mMessageListener;
+
+    private static Context mContext;
 
     public PopupBridge() {}
 
@@ -100,11 +105,15 @@ public class PopupBridge extends BrowserSwitchFragment {
 
         webView.getSettings().setJavaScriptEnabled(true);
 
-        popupBridge.mContext = activity.getApplicationContext();
+        setContext(activity.getApplicationContext());
         popupBridge.mWebView = webView;
         popupBridge.mWebView.addJavascriptInterface(popupBridge, POPUP_BRIDGE_NAME);
 
         return popupBridge;
+    }
+
+    private static void setContext(Context context) {
+        mContext = context;
     }
 
     @Override
@@ -123,11 +132,11 @@ public class PopupBridge extends BrowserSwitchFragment {
     }
 
     @Override
-    public void onBrowserSwitchResult(int requestCode, BrowserSwitchResult result, Uri returnUri) {
+    public void onBrowserSwitchResult(int requestCode, BrowserSwitchResult result, @Nullable Uri returnUri) {
         String error = null;
         String payload = null;
 
-        if (result == BrowserSwitchResult.CANCELED) {
+        if (result.getStatus() == BrowserSwitchResult.STATUS_CANCELED) {
             runJavaScriptInWebView(""
                 + "if (typeof window.popupBridge.onCancel === 'function') {"
                 + "  window.popupBridge.onCancel();"
@@ -135,7 +144,7 @@ public class PopupBridge extends BrowserSwitchFragment {
                 + "  window.popupBridge.onComplete(null, null);"
                 + "}");
             return;
-        } else if (result == BrowserSwitchResult.OK) {
+        } else if (result.getStatus() == BrowserSwitchResult.STATUS_OK) {
             if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
                     !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
@@ -163,7 +172,7 @@ public class PopupBridge extends BrowserSwitchFragment {
             } catch (JSONException ignored) {}
 
             payload = json.toString();
-        } else if (result == BrowserSwitchResult.ERROR) {
+        } else if (result.getStatus() == BrowserSwitchResult.STATUS_ERROR) {
             error = "new Error('" + result.getErrorMessage() + "')";
         }
 
@@ -172,7 +181,7 @@ public class PopupBridge extends BrowserSwitchFragment {
 
     @Override
     public String getReturnUrlScheme() {
-        return mContext.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
+        return getContext().getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
     }
 
     @JavascriptInterface
