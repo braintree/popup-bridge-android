@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -33,6 +34,7 @@ public class PopupBridge extends BrowserSwitchFragment {
     private WebView mWebView;
     private PopupBridgeNavigationListener mNavigationListener;
     private PopupBridgeMessageListener mMessageListener;
+    private String mReturnUrlScheme;
 
     public PopupBridge() {}
 
@@ -110,6 +112,12 @@ public class PopupBridge extends BrowserSwitchFragment {
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mReturnUrlScheme = context.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
@@ -174,7 +182,7 @@ public class PopupBridge extends BrowserSwitchFragment {
 
     @Override
     public String getReturnUrlScheme() {
-        return getContext().getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
+        return mReturnUrlScheme;
     }
 
     @JavascriptInterface
