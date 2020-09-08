@@ -1,40 +1,31 @@
 package com.braintreepayments.popupbridge;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
+
 import com.braintreepayments.browserswitch.BrowserSwitchResult;
+import com.braintreepayments.popupbridge.test.AppCompatTestActivity;
 import com.braintreepayments.popupbridge.test.FragmentTestActivity;
 import com.braintreepayments.popupbridge.test.MockWebView;
-import com.braintreepayments.popupbridge.test.AppCompatTestActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-
-import java.util.Collections;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -118,7 +109,7 @@ public class PopupBridgeTest {
     @Test
     public void onBrowserSwitchResult_whenNotPopupBridgeRequest_doesNotCallOnComplete() {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(1);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
         mPopupBridge.onBrowserSwitchResult(1, result, null);
         assertNull(mWebView.mError);
         assertNull(mWebView.mPayload);
@@ -127,7 +118,7 @@ public class PopupBridgeTest {
     @Test
     public void onBrowserSwitchResult_whenCancelled_callsPopupBridgeOnCancelMethod() {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(2);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_CANCELED);
 
         Uri uri = new Uri.Builder()
                 .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
@@ -145,7 +136,7 @@ public class PopupBridgeTest {
     @Test
     public void onBrowserSwitchResult_whenDifferentScheme_doesNotCallOnComplete() {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(1);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
 
         Uri uri = new Uri.Builder()
                 .scheme("com.oranges.popupbridge")
@@ -163,7 +154,7 @@ public class PopupBridgeTest {
     public void onBrowserSwitchResult_whenReturnUrlHasQueryParams_reportsPayloadWithQueryItems()
             throws JSONException {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(1);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
 
         Uri uri = new Uri.Builder()
                 .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
@@ -189,7 +180,7 @@ public class PopupBridgeTest {
             throws JSONException {
 
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(1);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
 
         Uri uri = new Uri.Builder()
                 .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
@@ -209,7 +200,7 @@ public class PopupBridgeTest {
     public void  onBrowserSwitchResult_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
             throws JSONException {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(1);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
 
         Uri uri = new Uri.Builder()
                 .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
@@ -228,7 +219,7 @@ public class PopupBridgeTest {
     public void  onBrowserSwitchResult_whenReturnUrlExcludesFragmentIdentifier_fragmentIdentifierIsNotReturned()
             throws JSONException {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(1);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
 
         Uri uri = new Uri.Builder()
                 .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
@@ -246,7 +237,7 @@ public class PopupBridgeTest {
     @Test
     public void onBrowserSwitchResult_whenResultIsError_reportsError() {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(3);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_ERROR);
         when(result.getErrorMessage()).thenReturn("Browser switch error");
 
         mPopupBridge.onBrowserSwitchResult(1, result, null);
@@ -258,7 +249,7 @@ public class PopupBridgeTest {
     @Test
     public void onActivityResult_whenNoPath_returnsEmptyString() throws JSONException {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(1);
+        when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
 
          Uri uri = new Uri.Builder()
                 .scheme(mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge")
@@ -287,22 +278,11 @@ public class PopupBridgeTest {
 
     @Test
     public void open_launchesActivityWithUrl() {
-        Context context = mock(Context.class);
-        when(context.getPackageName()).thenReturn("com.braintreepayments.popupbridge");
-        PackageManager packageManager = mock(PackageManager.class);
-        when(packageManager.queryIntentActivities(any(Intent.class), anyInt()))
-                .thenReturn(Collections.singletonList(new ResolveInfo()));
-        when(context.getPackageManager()).thenReturn(packageManager);
-        mAppCompatActivity = spy(Robolectric.setupActivity(AppCompatTestActivity.class));
-        when(mAppCompatActivity.getApplicationContext()).thenReturn(context);
         mWebView = new MockWebView(mAppCompatActivity);
-        mPopupBridge = PopupBridge.newInstance(mAppCompatActivity, mWebView);
+        mPopupBridge = spy(PopupBridge.newInstance(mAppCompatActivity, mWebView));
 
         mPopupBridge.open("someUrl://");
 
-        ArgumentCaptor<Intent> captor = ArgumentCaptor.forClass(Intent.class);
-        verify(context).startActivity(captor.capture());
-        Uri intentUri = captor.getValue().getData();
-        assertEquals(intentUri.toString(), "someUrl://");
+        verify(mPopupBridge).browserSwitch(1, "someUrl://");
     }
 }

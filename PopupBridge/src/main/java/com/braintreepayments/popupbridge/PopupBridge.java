@@ -34,8 +34,6 @@ public class PopupBridge extends BrowserSwitchFragment {
     private PopupBridgeNavigationListener mNavigationListener;
     private PopupBridgeMessageListener mMessageListener;
 
-    private static Context mContext;
-
     public PopupBridge() {}
 
     /**
@@ -105,15 +103,10 @@ public class PopupBridge extends BrowserSwitchFragment {
 
         webView.getSettings().setJavaScriptEnabled(true);
 
-        setContext(activity.getApplicationContext());
         popupBridge.mWebView = webView;
         popupBridge.mWebView.addJavascriptInterface(popupBridge, POPUP_BRIDGE_NAME);
 
         return popupBridge;
-    }
-
-    private static void setContext(Context context) {
-        mContext = context;
     }
 
     @Override
