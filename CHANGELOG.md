@@ -1,6 +1,6 @@
 # PopupBridge Android Release Notes
 
-## 3.0.0
+## unreleased
 * Support FragmentActivity overload for PopupBridge::newInstance
 * Breaking Changes
   * Update minSdkVersion to 21.
