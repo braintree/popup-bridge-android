@@ -31,7 +31,7 @@ To use the latest build from the `master` branch use:
 
 ```groovy
 dependencies {
-  implementation 'com.braintreepayments:popup-bridge:3.0.1-SNAPSHOT'
+  implementation 'com.braintreepayments:popup-bridge:2.0.1-SNAPSHOT'
 }
 ```
 
