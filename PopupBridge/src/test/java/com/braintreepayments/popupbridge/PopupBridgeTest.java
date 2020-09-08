@@ -178,7 +178,6 @@ public class PopupBridgeTest {
     @Test
     public void onBrowserSwitchResult_whenReturnUrlHasNoQueryParams_reportsPayloadWithEmptyQueryItems()
             throws JSONException {
-
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
         when(result.getStatus()).thenReturn(BrowserSwitchResult.STATUS_OK);
 
