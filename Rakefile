@@ -39,7 +39,8 @@ task :release => :unit_tests do
   prompt_for_sonatype_username_and_password
 
   sh "./gradlew clean :PopupBridge:publishToSonatype"
-  sh "./gradlew closeAndReleaseRepository"
+  sh "./gradlew closeRepository"
+  #sh "./gradlew closeAndReleaseRepository"
 
   post_release(version)
 end
