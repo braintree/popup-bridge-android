@@ -4,6 +4,7 @@
 * Support FragmentActivity overload for PopupBridge::newInstance
 * Breaking Changes
   * Update minSdkVersion to 21.
+  * Update browser-switch to 1.1.0.
 
 ## 2.0.0
 
