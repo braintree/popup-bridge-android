@@ -1,6 +1,7 @@
 # PopupBridge Android Release Notes
 
-## unreleased
+## 3.0.0
+
 * Support FragmentActivity overload for PopupBridge::newInstance
 * Breaking Changes
   * Update minSdkVersion to 21.
@@ -11,10 +12,12 @@
 * Convert to AndroidX
 
 ## 1.2.0 (2018-10-08)
+
 * Return URI fragment identifiers / URI hashes on the result object
 * Added a PayPal Checkout example
 
 ## 1.1.0 (2018-09-26)
+
 * Update SDK to 28
 * Update browser-switch to 0.1.6
 
@@ -36,3 +39,4 @@
 
 * Initial release of PopupBridge Android
 * Questions or feedback? Create an [issue](https://github.com/braintree/popup-bridge-android/issues) or [pull request](https://github.com/braintree/popup-bridge-android/pulls) on GitHub :)
+
