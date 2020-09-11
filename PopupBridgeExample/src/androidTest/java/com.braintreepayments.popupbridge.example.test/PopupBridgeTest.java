@@ -11,9 +11,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.lukekorth.deviceautomator.AutomatorAction.click;
+import static com.lukekorth.deviceautomator.AutomatorAssertion.text;
 import static com.lukekorth.deviceautomator.DeviceAutomator.onDevice;
 import static com.lukekorth.deviceautomator.UiObjectMatcher.withContentDescription;
 import static com.lukekorth.deviceautomator.UiObjectMatcher.withText;
+import static org.hamcrest.CoreMatchers.containsString;
 
 @RunWith(AndroidJUnit4.class)
 public class PopupBridgeTest {
@@ -46,7 +48,8 @@ public class PopupBridgeTest {
         onViewWithText("Launch Popup").perform(click());
         onViewWithText("I don't like any of these colors")
                 .waitForExists(BROWSER_TIMEOUT).perform(click());
-        onViewWithText("You do not like any of these colors").waitForExists();
+        onViewWithText("PopupBridge Example").waitForExists();
+        onViewWithText("You did not like any of our colors").check(text(containsString("You did not like any of our colors")));
     }
 
     @Test(timeout = 50000)
@@ -55,14 +58,15 @@ public class PopupBridgeTest {
         onViewWithText("I don't like any of these colors")
                 .waitForExists(BROWSER_TIMEOUT);
         onDevice().pressBack();
-        onViewWithText("You did not choose a color").waitForExists();
+        onViewWithText("PopupBridge Example").waitForExists();
+        onViewWithText("You did not choose a color").check(text(containsString("You did not choose a color")));
     }
 
     private void testColor(String color) {
         onViewWithText("Launch Popup").perform(click());
         onViewWithText(color).waitForExists(BROWSER_TIMEOUT).perform(click());
         onViewWithText("Your favorite color:").waitForExists();
-        onViewWithText(color.toLowerCase()).waitForExists();
+        onViewWithText(color.toLowerCase()).check(text(containsString(color.toLowerCase())));
     }
 
     private DeviceAutomator onViewWithText(String text) {
