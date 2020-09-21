@@ -12,13 +12,7 @@ android:
     - extra-android-support
     - extra-android-m2repository
     - extra-google-m2repository
-before_script:
-  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
-  - emulator -avd test -skin WXGA720 -no-audio -no-window &
-  - android-wait-for-emulator
-  - sleep 60
-  - adb shell input keyevent 82
 before_install:
   - yes | sdkmanager "platforms;android-28"
-script: ./gradlew clean lint test connectedAndroidTest
+script: ./gradlew --info clean lint test
 after_success: ./deploy_snapshot.sh
