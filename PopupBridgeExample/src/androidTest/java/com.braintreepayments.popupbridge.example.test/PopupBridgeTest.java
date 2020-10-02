@@ -4,16 +4,16 @@ import android.os.Build;
 
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
-import com.lukekorth.deviceautomator.DeviceAutomator;
+import com.braintreepayments.DeviceAutomator;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.lukekorth.deviceautomator.AutomatorAction.click;
-import static com.lukekorth.deviceautomator.DeviceAutomator.onDevice;
-import static com.lukekorth.deviceautomator.UiObjectMatcher.withContentDescription;
-import static com.lukekorth.deviceautomator.UiObjectMatcher.withText;
+import static com.braintreepayments.AutomatorAction.click;
+import static com.braintreepayments.DeviceAutomator.onDevice;
+import static com.braintreepayments.UiObjectMatcher.withContentDescription;
+import static com.braintreepayments.UiObjectMatcher.withText;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4ClassRunner.class)
