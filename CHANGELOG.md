@@ -1,5 +1,10 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Bump `compileSdkVersion` and `targetSdkVersion` to API level 30
+* Upgrade browser-switch to 1.1.2
+
 ## 3.0.0
 
 * Support FragmentActivity overload for PopupBridge::newInstance
