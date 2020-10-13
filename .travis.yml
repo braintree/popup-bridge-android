@@ -1,18 +1,14 @@
 language: android
 jdk: oraclejdk8
-sudo: true
 android:
   components:
     - tools
-    - android-28
-    - android-22
-    - sys-img-armeabi-v7a-android-22
-    - build-tools-29.0.3
+    - android-30
+    - build-tools-30.0.2
     - platform-tools
     - extra-android-support
     - extra-android-m2repository
     - extra-google-m2repository
 before_install:
-  - yes | sdkmanager "platforms;android-28"
-script: ./gradlew --info clean lint test
-after_success: ./deploy_snapshot.sh
+  - yes | sdkmanager "platforms;android-30"
+script: ./gradlew --info clean testRelease
