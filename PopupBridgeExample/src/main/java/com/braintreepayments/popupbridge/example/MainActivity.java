@@ -10,7 +10,9 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     private static final String POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/";
-    private static final String PAYPAL_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal-checkout.html";
+    private static final String PAYPAL_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal";
+    private static final String PAYPAL_CHECKOUTJS_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal-checkout.html";
+    private static final String VENMO_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/venmo";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,5 +32,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void onPayPalPopupBridgeClick(View view) {
         switchToWebView(PAYPAL_POPUP_BRIDGE_URL);
+    }
+
+    public void onPayPalCheckoutJSPopupBridgeClick(View view) {
+        switchToWebView(PAYPAL_CHECKOUTJS_POPUP_BRIDGE_URL);
+    }
+
+    public void onVenmoPopupBridgeClick(View view) {
+        switchToWebView(VENMO_POPUP_BRIDGE_URL);
     }
 }

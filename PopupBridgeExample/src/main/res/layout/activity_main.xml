@@ -10,12 +10,31 @@
         android:onClick="onPopupBridgeClick"
         android:text="Launch PopupBridge"
         android:contentDescription="Launch PopupBridge"/>
+
     <Button
         android:id="@+id/button_popup_bridge_paypal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:contentDescription="Launch PayPal SDK"
         android:onClick="onPayPalPopupBridgeClick"
-        android:text="Launch PayPal PopupBridge (checkout.js)"
-        android:contentDescription="Launch PayPal PopupBridge (checkout.js)"/>
+        android:text="Launch PayPal SDK" />
+
+    <Button
+        android:id="@+id/button_popup_bridge_venmo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="Launch Venmo"
+        android:onClick="onVenmoPopupBridgeClick"
+        android:text="Launch Venmo" />
+
+    <Button
+        android:id="@+id/button_popup_bridge_paypal_checkoutjs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onPayPalCheckoutJSPopupBridgeClick"
+        android:text="Launch PayPal (checkout.js)"
+        android:contentDescription="Launch PayPal (checkout.js)"/>
+
+
 
 </LinearLayout>
