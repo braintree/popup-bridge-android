@@ -17,7 +17,10 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 
+import com.braintreepayments.api.BrowserSwitchClient;
+import com.braintreepayments.api.BrowserSwitchException;
 import com.braintreepayments.api.BrowserSwitchListener;
+import com.braintreepayments.api.BrowserSwitchOptions;
 import com.braintreepayments.api.BrowserSwitchResult;
 
 import org.json.JSONException;
@@ -25,7 +28,7 @@ import org.json.JSONObject;
 
 import java.util.Set;
 
-public class PopupBridge implements BrowserSwitchListener {
+public class PopupBridge extends Fragment implements BrowserSwitchListener {
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
@@ -38,22 +41,6 @@ public class PopupBridge implements BrowserSwitchListener {
     private String mReturnUrlScheme;
 
     public PopupBridge() {}
-
-    /**
-     * NEXT_MAJOR_VERSION: remove this method in favor of PopupBridge#newInstance(FragmentActivity, WebView)
-     * Create a new instance of {@link PopupBridge} and add it to the {@link AppCompatActivity}'s {@link android.support.v4.app.FragmentManager}.
-     *
-     * This will enable JavaScript in your WebView.
-     *
-     * @param activity The {@link AppCompatActivity} to add the {@link Fragment} to.
-     * @param webView The {@link WebView} to enable for PopupBridge.
-     * @return {@link PopupBridge}
-     * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
-     */
-    @SuppressLint("SetJavaScriptEnabled")
-    public static PopupBridge newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
-        return newInstance((FragmentActivity)activity, webView);
-    }
 
     /**
      * Create a new instance of {@link PopupBridge} and add it to the {@link FragmentActivity}'s {@link android.support.v4.app.FragmentManager}.
@@ -181,7 +168,6 @@ public class PopupBridge implements BrowserSwitchListener {
         runJavaScriptInWebView(String.format("window.popupBridge.onComplete(%s, %s);", error, payload));
     }
 
-    @Override
     public String getReturnUrlScheme() {
         return mReturnUrlScheme;
     }
@@ -193,7 +179,16 @@ public class PopupBridge implements BrowserSwitchListener {
 
     @JavascriptInterface
     public void open(String url) {
-        browserSwitch(1, url);
+        BrowserSwitchClient browserSwitchClient = new BrowserSwitchClient();
+        BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
+                .url(Uri.parse(url))
+                .returnUrlScheme(url)
+                .requestCode(1);
+        try {
+            browserSwitchClient.start(getActivity(), browserSwitchOptions);
+        } catch (BrowserSwitchException e) {
+            e.printStackTrace();
+        }
 
         if (mNavigationListener != null) {
             mNavigationListener.onUrlOpened(url);
