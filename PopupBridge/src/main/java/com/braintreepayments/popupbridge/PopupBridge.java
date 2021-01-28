@@ -16,15 +16,16 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
-import com.braintreepayments.browserswitch.BrowserSwitchFragment;
-import com.braintreepayments.browserswitch.BrowserSwitchResult;
+
+import com.braintreepayments.api.BrowserSwitchListener;
+import com.braintreepayments.api.BrowserSwitchResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Set;
 
-public class PopupBridge extends BrowserSwitchFragment {
+public class PopupBridge implements BrowserSwitchListener {
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
@@ -133,9 +134,11 @@ public class PopupBridge extends BrowserSwitchFragment {
     }
 
     @Override
-    public void onBrowserSwitchResult(int requestCode, BrowserSwitchResult result, @Nullable Uri returnUri) {
+    public void onBrowserSwitchResult(BrowserSwitchResult result) {
         String error = null;
         String payload = null;
+
+        Uri returnUri = result.getDeepLinkUrl();
 
         if (result.getStatus() == BrowserSwitchResult.STATUS_CANCELED) {
             runJavaScriptInWebView(""
@@ -145,7 +148,7 @@ public class PopupBridge extends BrowserSwitchFragment {
                 + "  window.popupBridge.onComplete(null, null);"
                 + "}");
             return;
-        } else if (result.getStatus() == BrowserSwitchResult.STATUS_OK) {
+        } else if (result.getStatus() == BrowserSwitchResult.STATUS_SUCCESS) {
             if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
                     !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
@@ -173,8 +176,6 @@ public class PopupBridge extends BrowserSwitchFragment {
             } catch (JSONException ignored) {}
 
             payload = json.toString();
-        } else if (result.getStatus() == BrowserSwitchResult.STATUS_ERROR) {
-            error = "new Error('" + result.getErrorMessage() + "')";
         }
 
         runJavaScriptInWebView(String.format("window.popupBridge.onComplete(%s, %s);", error, payload));
