@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge;
+package com.braintreepayments.api;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

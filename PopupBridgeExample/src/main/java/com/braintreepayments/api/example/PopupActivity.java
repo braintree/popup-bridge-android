@@ -1,9 +1,9 @@
-package com.braintreepayments.popupbridge.example;
+package com.braintreepayments.api.example;
 
 import android.os.Bundle;
 import android.webkit.WebView;
 
-import com.braintreepayments.popupbridge.PopupBridge;
+import com.braintreepayments.api.PopupBridge;
 
 import androidx.appcompat.app.AppCompatActivity;
 

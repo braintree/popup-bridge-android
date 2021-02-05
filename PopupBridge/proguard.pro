@@ -1,3 +1,3 @@
--keepclassmembers class com.braintreepayments.popupbridge.PopupBridge {
+-keepclassmembers class com.braintreepayments.api.PopupBridge {
    public *;
 }

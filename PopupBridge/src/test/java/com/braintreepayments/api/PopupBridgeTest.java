@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge;
+package com.braintreepayments.api;
 
 import android.annotation.SuppressLint;
 import android.net.Uri;
@@ -9,9 +9,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import com.braintreepayments.browserswitch.BrowserSwitchResult;
-import com.braintreepayments.popupbridge.test.AppCompatTestActivity;
-import com.braintreepayments.popupbridge.test.FragmentTestActivity;
-import com.braintreepayments.popupbridge.test.MockWebView;
+import com.braintreepayments.api.test.AppCompatTestActivity;
+import com.braintreepayments.api.test.FragmentTestActivity;
+import com.braintreepayments.api.test.MockWebView;
 
 import org.json.JSONException;
 import org.json.JSONObject;

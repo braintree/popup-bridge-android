@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge.example.test;
+package com.braintreepayments.api.example.test;
 
 import android.os.Build;
 

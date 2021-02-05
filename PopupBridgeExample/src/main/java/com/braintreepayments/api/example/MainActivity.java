@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge.example;
+package com.braintreepayments.api.example;
 
 import android.content.Intent;
 import android.net.Uri;

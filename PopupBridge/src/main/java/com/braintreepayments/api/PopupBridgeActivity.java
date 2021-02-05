@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge;
+package com.braintreepayments.api;
 
 import com.braintreepayments.browserswitch.BrowserSwitchActivity;
 

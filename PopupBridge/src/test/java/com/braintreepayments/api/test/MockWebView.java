@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge.test;
+package com.braintreepayments.api.test;
 
 import android.content.Context;
 import android.webkit.ValueCallback;
