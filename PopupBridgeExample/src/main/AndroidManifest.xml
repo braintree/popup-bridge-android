@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.braintreepayments.api.example">
+    package="com.braintreepayments.popupbridge.demo">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -10,9 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light">
 
-        <activity android:name="com.braintreepayments.api.example.PopupActivity"/>
+        <activity android:name=".PopupActivity"/>
 
-        <activity android:name="com.braintreepayments.api.example.MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

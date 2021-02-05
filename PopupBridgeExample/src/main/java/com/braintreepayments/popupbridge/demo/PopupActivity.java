@@ -1,4 +1,4 @@
-package com.braintreepayments.api.example;
+package com.braintreepayments.popupbridge.demo;
 
 import android.os.Bundle;
 import android.webkit.WebView;
