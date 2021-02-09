@@ -19,13 +19,11 @@ public class PopupBridgeClient {
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
-    private static final String TAG = "com.braintreepayments.popupbridge";
-
     private WeakReference<FragmentActivity> activityRef;
     private WeakReference<WebView> webViewRef;
-    private PopupBridgeNavigationListener mNavigationListener;
-    private PopupBridgeMessageListener mMessageListener;
-    private String mReturnUrlScheme;
+    private PopupBridgeNavigationListener navigationListener;
+    private PopupBridgeMessageListener messageListener;
+    private String returnUrlScheme;
 
     private BrowserSwitchClient browserSwitchClient;
 
@@ -54,7 +52,7 @@ public class PopupBridgeClient {
         webViewRef = new WeakReference<>(webView);
 
         activityRef = new WeakReference<>(activity);
-        mReturnUrlScheme = activity.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
+        returnUrlScheme = activity.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
         browserSwitchClient = new BrowserSwitchClient();
     }
 
@@ -130,7 +128,7 @@ public class PopupBridgeClient {
     }
 
     public String getReturnUrlScheme() {
-        return mReturnUrlScheme;
+        return returnUrlScheme;
     }
 
     @JavascriptInterface
@@ -154,30 +152,30 @@ public class PopupBridgeClient {
             // TODO: handle errors thrown from browser switch and unit test
         }
 
-        if (mNavigationListener != null) {
-            mNavigationListener.onUrlOpened(url);
+        if (navigationListener != null) {
+            navigationListener.onUrlOpened(url);
         }
     }
 
     @JavascriptInterface
     public void sendMessage(String messageName) {
-        if (mMessageListener != null) {
-            mMessageListener.onMessageReceived(messageName, null);
+        if (messageListener != null) {
+            messageListener.onMessageReceived(messageName, null);
         }
     }
 
     @JavascriptInterface
     public void sendMessage(String messageName, String data) {
-        if (mMessageListener != null) {
-            mMessageListener.onMessageReceived(messageName, data);
+        if (messageListener != null) {
+            messageListener.onMessageReceived(messageName, data);
         }
     }
 
     public void setNavigationListener(PopupBridgeNavigationListener listener) {
-        mNavigationListener = listener;
+        navigationListener = listener;
     }
 
     public void setMessageListener(PopupBridgeMessageListener listener) {
-        mMessageListener = listener;
+        messageListener = listener;
     }
 }
