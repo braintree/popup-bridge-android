@@ -45,16 +45,16 @@ public class PopupBridgeClientUnitTest {
         mAppCompatActivity = Robolectric.setupActivity(AppCompatTestActivity.class);
         mFragmentActivity = Robolectric.setupActivity(FragmentTestActivity.class);
         mWebView = new MockWebView(mAppCompatActivity);
-        mPopupBridgeClient = PopupBridgeClient.newInstance(mAppCompatActivity, mWebView);
+        mPopupBridgeClient = new PopupBridgeClient(mAppCompatActivity, mWebView);
     }
 
     @Test
-    public void newInstance_whenActivityIsNull_throwsException() {
+    public void constructor_whenActivityIsNull_throwsException() {
         Exception thrownException = null;
         AppCompatTestActivity appCompatTestActivity = Robolectric.setupActivity(AppCompatTestActivity.class);
         WebView webView = new WebView(appCompatTestActivity);
         try {
-            PopupBridgeClient.newInstance(null, webView);
+            PopupBridgeClient popupBridgeClient = new PopupBridgeClient(null, webView);
         } catch (IllegalArgumentException e){
             thrownException = e;
         } finally {
@@ -63,10 +63,10 @@ public class PopupBridgeClientUnitTest {
     }
 
     @Test
-    public void newInstance_whenWebViewIsNull_throwsException() {
+    public void constructor_whenWebViewIsNull_throwsException() {
         Exception thrownException = null;
         try {
-            PopupBridgeClient.newInstance(new AppCompatTestActivity(), null);
+            PopupBridgeClient popupBridgeClient = new PopupBridgeClient(new AppCompatTestActivity(), null);
         } catch (IllegalArgumentException e){
             thrownException = e;
         } finally {
@@ -75,32 +75,23 @@ public class PopupBridgeClientUnitTest {
     }
 
     @Test
-    public void newInstance_enablesJavascriptOnWebView() {
+    public void constructor_enablesJavascriptOnWebView() {
         WebView webView = mock(WebView.class);
         WebSettings webSettings = mock(WebSettings.class);
         when(webView.getSettings()).thenReturn(webSettings);
 
-        PopupBridgeClient.newInstance(mAppCompatActivity, webView);
+        PopupBridgeClient popupBridgeClient = new PopupBridgeClient(mFragmentActivity, webView);
 
-        verify(webSettings).setJavaScriptEnabled(eq(true));
-    }
-
-    @Test
-    public void newInstance_fragmentActivity_enablesJavascriptOnWebView() {
-        WebView webView = mock(WebView.class);
-        WebSettings webSettings = mock(WebSettings.class);
-        when(webView.getSettings()).thenReturn(webSettings);
-
-        PopupBridgeClient.newInstance(mFragmentActivity, webView);
         verify(webSettings).setJavaScriptEnabled(eq(true));
     }
 
     @Test
     @SuppressLint("JavascriptInterface")
-    public void newInstance_addsJavascriptInterfaceToWebView() {
+    public void constructor_addsJavascriptInterfaceToWebView() {
         WebView webView = mock(WebView.class);
         when(webView.getSettings()).thenReturn(mock(WebSettings.class));
-        PopupBridgeClient popupBridgeClient = PopupBridgeClient.newInstance(mAppCompatActivity, webView);
+
+        PopupBridgeClient popupBridgeClient = new PopupBridgeClient(mFragmentActivity, webView);
 
         verify(webView).addJavascriptInterface(eq(popupBridgeClient), eq("popupBridge"));
     }
@@ -272,7 +263,7 @@ public class PopupBridgeClientUnitTest {
     @Test
     public void open_launchesActivityWithUrl() {
         mWebView = new MockWebView(mAppCompatActivity);
-        mPopupBridgeClient = spy(PopupBridgeClient.newInstance(mAppCompatActivity, mWebView));
+        mPopupBridgeClient = spy(new PopupBridgeClient(mAppCompatActivity, mWebView));
 
         mPopupBridgeClient.open("someUrl://");
 

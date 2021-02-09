@@ -1,20 +1,12 @@
 package com.braintreepayments.api;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.net.Uri;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
-import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +30,7 @@ public class PopupBridgeClient {
     private BrowserSwitchClient browserSwitchClient;
 
     /**
-     * Create a new instance of {@link PopupBridgeClient} and add it to the {@link FragmentActivity}'s {@link android.support.v4.app.FragmentManager}.
+     * Create a new instance of {@link PopupBridgeClient}.
      *
      * This will enable JavaScript in your WebView.
      *
