@@ -20,13 +20,13 @@ public class PopupBridgeClient {
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
-    private WeakReference<FragmentActivity> activityRef;
-    private WeakReference<WebView> webViewRef;
+    private final WeakReference<FragmentActivity> activityRef;
+    private final WeakReference<WebView> webViewRef;
     private PopupBridgeNavigationListener navigationListener;
     private PopupBridgeMessageListener messageListener;
-    private String returnUrlScheme;
+    private final String returnUrlScheme;
 
-    private BrowserSwitchClient browserSwitchClient;
+    private final BrowserSwitchClient browserSwitchClient;
 
     /**
      * Create a new instance of {@link PopupBridgeClient}.
@@ -35,7 +35,6 @@ public class PopupBridgeClient {
      *
      * @param activity The {@link FragmentActivity} to add the {@link Fragment} to.
      * @param webView The {@link WebView} to enable for PopupBridge.
-     * @return {@link PopupBridgeClient}
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     public PopupBridgeClient(FragmentActivity activity, WebView webView) throws IllegalArgumentException {
