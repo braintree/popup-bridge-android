@@ -17,8 +17,11 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+
+import java.lang.ref.WeakReference;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
@@ -26,6 +29,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -261,13 +265,18 @@ public class PopupBridgeClientUnitTest {
     }
 
     @Test
-    public void open_launchesActivityWithUrl() {
+    public void open_launchesActivityWithUrl() throws BrowserSwitchException {
         mWebView = new MockWebView(mAppCompatActivity);
-        mPopupBridgeClient = spy(new PopupBridgeClient(mAppCompatActivity, mWebView));
+        BrowserSwitchClient browserSwitchClient = mock(BrowserSwitchClient.class);
+        mPopupBridgeClient = new PopupBridgeClient(new WeakReference<FragmentActivity>(mAppCompatActivity), new WeakReference<WebView>(mWebView), browserSwitchClient);
 
         mPopupBridgeClient.open("someUrl://");
 
-        // TODO: verify browserSwitchClient.start
-//        verify(mPopupBridge).browserSwitch(1, "someUrl://");
+        ArgumentCaptor<BrowserSwitchOptions> captor = ArgumentCaptor.forClass(BrowserSwitchOptions.class);
+        verify(browserSwitchClient).start(same(mAppCompatActivity), captor.capture());
+
+        BrowserSwitchOptions browserSwitchOptions = captor.getValue();
+        assertEquals(Uri.parse("someUrl://"), browserSwitchOptions.getUrl());
+        assertEquals(1, browserSwitchOptions.getRequestCode());
     }
 }

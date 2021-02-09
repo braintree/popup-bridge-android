@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
@@ -37,23 +38,30 @@ public class PopupBridgeClient {
      * @return {@link PopupBridgeClient}
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
-    @SuppressLint("SetJavaScriptEnabled")
     public PopupBridgeClient(FragmentActivity activity, WebView webView) throws IllegalArgumentException {
+        this(new WeakReference<>(activity), new WeakReference<>(webView), new BrowserSwitchClient());
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @VisibleForTesting
+    PopupBridgeClient(WeakReference<FragmentActivity> activityRef, WeakReference<WebView> webViewRef, BrowserSwitchClient browserSwitchClient) throws IllegalArgumentException {
+        FragmentActivity activity = activityRef.get();
         if (activity == null) {
             throw new IllegalArgumentException("Activity is null");
         }
 
+        WebView webView = webViewRef.get();
         if (webView == null) {
             throw new IllegalArgumentException("WebView is null");
         }
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME);
-        webViewRef = new WeakReference<>(webView);
+        this.webViewRef = webViewRef;
+        this.activityRef = activityRef;
 
-        activityRef = new WeakReference<>(activity);
-        returnUrlScheme = activity.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
-        browserSwitchClient = new BrowserSwitchClient();
+        this.returnUrlScheme = activity.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
+        this.browserSwitchClient = browserSwitchClient;
     }
 
     public void handlePopupBridgeResult(FragmentActivity activity) {
