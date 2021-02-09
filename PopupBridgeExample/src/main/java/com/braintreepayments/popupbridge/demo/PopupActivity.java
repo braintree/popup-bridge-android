@@ -1,5 +1,6 @@
 package com.braintreepayments.popupbridge.demo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.WebView;
 
@@ -22,4 +23,11 @@ public class PopupActivity extends AppCompatActivity {
 
         mWebView.loadUrl(getIntent().getData().toString());
     }
+
+    @Override
+    protected void onNewIntent(Intent newIntent) {
+        super.onNewIntent(newIntent);
+        setIntent(newIntent);
+    }
+
 }
