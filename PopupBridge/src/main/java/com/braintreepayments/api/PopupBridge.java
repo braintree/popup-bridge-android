@@ -129,7 +129,10 @@ public class PopupBridge extends Fragment {
     public void onResume() {
         super.onResume();
 
-        browserSwitchClient.deliverResult(getActivity());
+        BrowserSwitchResult result = browserSwitchClient.deliverResult(getActivity());
+        if (result != null) {
+            onBrowserSwitchResult(result);
+        }
     }
 
     private void runJavaScriptInWebView(final String script) {
@@ -156,7 +159,7 @@ public class PopupBridge extends Fragment {
             return;
         } else if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
             if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
-                    !result.getDeepLinkUrl().getHost().equals(POPUP_BRIDGE_URL_HOST)) {
+                    !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
             }
 
