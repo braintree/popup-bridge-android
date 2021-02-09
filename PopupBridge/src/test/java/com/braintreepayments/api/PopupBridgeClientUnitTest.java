@@ -32,12 +32,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
-public class PopupBridgeTest {
+public class PopupBridgeClientUnitTest {
 
     private FragmentActivity mFragmentActivity;
     private AppCompatActivity mAppCompatActivity;
 
-    private PopupBridge mPopupBridge;
+    private PopupBridgeClient mPopupBridgeClient;
     private MockWebView mWebView;
 
     @Before
@@ -45,7 +45,7 @@ public class PopupBridgeTest {
         mAppCompatActivity = Robolectric.setupActivity(AppCompatTestActivity.class);
         mFragmentActivity = Robolectric.setupActivity(FragmentTestActivity.class);
         mWebView = new MockWebView(mAppCompatActivity);
-        mPopupBridge = PopupBridge.newInstance(mAppCompatActivity, mWebView);
+        mPopupBridgeClient = PopupBridgeClient.newInstance(mAppCompatActivity, mWebView);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class PopupBridgeTest {
         AppCompatTestActivity appCompatTestActivity = Robolectric.setupActivity(AppCompatTestActivity.class);
         WebView webView = new WebView(appCompatTestActivity);
         try {
-            PopupBridge.newInstance(null, webView);
+            PopupBridgeClient.newInstance(null, webView);
         } catch (IllegalArgumentException e){
             thrownException = e;
         } finally {
@@ -66,7 +66,7 @@ public class PopupBridgeTest {
     public void newInstance_whenWebViewIsNull_throwsException() {
         Exception thrownException = null;
         try {
-            PopupBridge.newInstance(new AppCompatTestActivity(), null);
+            PopupBridgeClient.newInstance(new AppCompatTestActivity(), null);
         } catch (IllegalArgumentException e){
             thrownException = e;
         } finally {
@@ -80,7 +80,7 @@ public class PopupBridgeTest {
         WebSettings webSettings = mock(WebSettings.class);
         when(webView.getSettings()).thenReturn(webSettings);
 
-        PopupBridge.newInstance(mAppCompatActivity, webView);
+        PopupBridgeClient.newInstance(mAppCompatActivity, webView);
 
         verify(webSettings).setJavaScriptEnabled(eq(true));
     }
@@ -91,7 +91,7 @@ public class PopupBridgeTest {
         WebSettings webSettings = mock(WebSettings.class);
         when(webView.getSettings()).thenReturn(webSettings);
 
-        PopupBridge.newInstance(mFragmentActivity, webView);
+        PopupBridgeClient.newInstance(mFragmentActivity, webView);
         verify(webSettings).setJavaScriptEnabled(eq(true));
     }
 
@@ -100,16 +100,16 @@ public class PopupBridgeTest {
     public void newInstance_addsJavascriptInterfaceToWebView() {
         WebView webView = mock(WebView.class);
         when(webView.getSettings()).thenReturn(mock(WebSettings.class));
-        PopupBridge popupBridge = PopupBridge.newInstance(mAppCompatActivity, webView);
+        PopupBridgeClient popupBridgeClient = PopupBridgeClient.newInstance(mAppCompatActivity, webView);
 
-        verify(webView).addJavascriptInterface(eq(popupBridge), eq("popupBridge"));
+        verify(webView).addJavascriptInterface(eq(popupBridgeClient), eq("popupBridge"));
     }
 
     @Test
     public void onBrowserSwitchResult_whenNotPopupBridgeRequest_doesNotCallOnComplete() {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
         when(result.getStatus()).thenReturn(BrowserSwitchStatus.SUCCESS);
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
         assertNull(mWebView.mError);
         assertNull(mWebView.mPayload);
     }
@@ -125,7 +125,7 @@ public class PopupBridgeTest {
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
 
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
 
         assertEquals(mWebView.mError, "null");
         assertEquals(mWebView.mPayload, "null");
@@ -144,7 +144,7 @@ public class PopupBridgeTest {
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
 
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
 
         assertNull(mWebView.mError);
         assertNull(mWebView.mPayload);
@@ -166,7 +166,7 @@ public class PopupBridgeTest {
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
 
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
 
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
@@ -190,7 +190,7 @@ public class PopupBridgeTest {
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
 
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
 
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
@@ -211,7 +211,7 @@ public class PopupBridgeTest {
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
 
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
 
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
@@ -230,7 +230,7 @@ public class PopupBridgeTest {
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
 
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
 
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
@@ -249,7 +249,7 @@ public class PopupBridgeTest {
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
 
-        mPopupBridge.onBrowserSwitchResult(result);
+        mPopupBridgeClient.onBrowserSwitchResult(result);
 
         assertEquals("null", mWebView.mError);
         JSONObject payload = new JSONObject(mWebView.mPayload);
@@ -259,22 +259,22 @@ public class PopupBridgeTest {
 
     @Test
     public void getReturnUrlScheme_returnsExpectedUrlScheme() {
-        assertEquals(mPopupBridge.getReturnUrlScheme(),
+        assertEquals(mPopupBridgeClient.getReturnUrlScheme(),
                 mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge");
     }
 
     @Test
     public void getReturnUrlPrefix_returnsExpectedUrlPrefix() {
-        assertEquals(mPopupBridge.getReturnUrlPrefix(),
+        assertEquals(mPopupBridgeClient.getReturnUrlPrefix(),
                 mAppCompatActivity.getApplicationContext().getPackageName() + ".popupbridge://popupbridgev1/");
     }
 
     @Test
     public void open_launchesActivityWithUrl() {
         mWebView = new MockWebView(mAppCompatActivity);
-        mPopupBridge = spy(PopupBridge.newInstance(mAppCompatActivity, mWebView));
+        mPopupBridgeClient = spy(PopupBridgeClient.newInstance(mAppCompatActivity, mWebView));
 
-        mPopupBridge.open("someUrl://");
+        mPopupBridgeClient.open("someUrl://");
 
         // TODO: verify browserSwitchClient.start
 //        verify(mPopupBridge).browserSwitch(1, "someUrl://");

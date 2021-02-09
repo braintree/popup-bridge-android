@@ -10,7 +10,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -22,7 +21,7 @@ import org.json.JSONObject;
 
 import java.util.Set;
 
-public class PopupBridge extends Fragment {
+public class PopupBridgeClient extends Fragment {
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
@@ -36,36 +35,36 @@ public class PopupBridge extends Fragment {
 
     private BrowserSwitchClient browserSwitchClient;
 
-    public PopupBridge() {}
+    public PopupBridgeClient() {}
 
     /**
      * NEXT_MAJOR_VERSION: remove this method in favor of PopupBridge#newInstance(FragmentActivity, WebView)
-     * Create a new instance of {@link PopupBridge} and add it to the {@link AppCompatActivity}'s {@link android.support.v4.app.FragmentManager}.
+     * Create a new instance of {@link PopupBridgeClient} and add it to the {@link AppCompatActivity}'s {@link android.support.v4.app.FragmentManager}.
      *
      * This will enable JavaScript in your WebView.
      *
      * @param activity The {@link AppCompatActivity} to add the {@link Fragment} to.
      * @param webView The {@link WebView} to enable for PopupBridge.
-     * @return {@link PopupBridge}
+     * @return {@link PopupBridgeClient}
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @SuppressLint("SetJavaScriptEnabled")
-    public static PopupBridge newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
+    public static PopupBridgeClient newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
         return newInstance((FragmentActivity)activity, webView);
     }
 
     /**
-     * Create a new instance of {@link PopupBridge} and add it to the {@link FragmentActivity}'s {@link android.support.v4.app.FragmentManager}.
+     * Create a new instance of {@link PopupBridgeClient} and add it to the {@link FragmentActivity}'s {@link android.support.v4.app.FragmentManager}.
      *
      * This will enable JavaScript in your WebView.
      *
      * @param activity The {@link FragmentActivity} to add the {@link Fragment} to.
      * @param webView The {@link WebView} to enable for PopupBridge.
-     * @return {@link PopupBridge}
+     * @return {@link PopupBridgeClient}
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @SuppressLint("SetJavaScriptEnabled")
-    public static PopupBridge newInstance(FragmentActivity activity, WebView webView) throws IllegalArgumentException {
+    public static PopupBridgeClient newInstance(FragmentActivity activity, WebView webView) throws IllegalArgumentException {
         if (activity == null) {
             throw new IllegalArgumentException("Activity is null");
         }
@@ -75,25 +74,25 @@ public class PopupBridge extends Fragment {
         }
 
         FragmentManager fm = activity.getSupportFragmentManager();
-        PopupBridge popupBridge = (PopupBridge) fm.findFragmentByTag(TAG);
-        if (popupBridge == null) {
-            popupBridge = new PopupBridge();
+        PopupBridgeClient popupBridgeClient = (PopupBridgeClient) fm.findFragmentByTag(TAG);
+        if (popupBridgeClient == null) {
+            popupBridgeClient = new PopupBridgeClient();
             Bundle bundle = new Bundle();
 
-            popupBridge.setArguments(bundle);
+            popupBridgeClient.setArguments(bundle);
 
             try {
                 if (VERSION.SDK_INT >= VERSION_CODES.N) {
                     try {
-                        fm.beginTransaction().add(popupBridge, TAG).commitNow();
+                        fm.beginTransaction().add(popupBridgeClient, TAG).commitNow();
                     } catch (IllegalStateException | NullPointerException e) {
-                        fm.beginTransaction().add(popupBridge, TAG).commit();
+                        fm.beginTransaction().add(popupBridgeClient, TAG).commit();
                         try {
                             fm.executePendingTransactions();
                         } catch (IllegalStateException ignored) {}
                     }
                 } else {
-                    fm.beginTransaction().add(popupBridge, TAG).commit();
+                    fm.beginTransaction().add(popupBridgeClient, TAG).commit();
                     try {
                         fm.executePendingTransactions();
                     } catch (IllegalStateException ignored) {}
@@ -105,10 +104,10 @@ public class PopupBridge extends Fragment {
 
         webView.getSettings().setJavaScriptEnabled(true);
 
-        popupBridge.mWebView = webView;
-        popupBridge.mWebView.addJavascriptInterface(popupBridge, POPUP_BRIDGE_NAME);
+        popupBridgeClient.mWebView = webView;
+        popupBridgeClient.mWebView.addJavascriptInterface(popupBridgeClient, POPUP_BRIDGE_NAME);
 
-        return popupBridge;
+        return popupBridgeClient;
     }
 
     @Override
