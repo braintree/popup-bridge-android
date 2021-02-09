@@ -16,15 +16,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
-import com.braintreepayments.browserswitch.BrowserSwitchFragment;
-import com.braintreepayments.browserswitch.BrowserSwitchResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Set;
 
-public class PopupBridge extends BrowserSwitchFragment {
+public class PopupBridge extends Fragment {
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
@@ -35,6 +33,8 @@ public class PopupBridge extends BrowserSwitchFragment {
     private PopupBridgeNavigationListener mNavigationListener;
     private PopupBridgeMessageListener mMessageListener;
     private String mReturnUrlScheme;
+
+    private BrowserSwitchClient browserSwitchClient;
 
     public PopupBridge() {}
 
@@ -121,6 +121,15 @@ public class PopupBridge extends BrowserSwitchFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+        browserSwitchClient = new BrowserSwitchClient();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        browserSwitchClient.deliverResult(getActivity());
     }
 
     private void runJavaScriptInWebView(final String script) {
@@ -132,12 +141,12 @@ public class PopupBridge extends BrowserSwitchFragment {
         });
     }
 
-    @Override
-    public void onBrowserSwitchResult(int requestCode, BrowserSwitchResult result, @Nullable Uri returnUri) {
+    public void onBrowserSwitchResult(BrowserSwitchResult result) {
         String error = null;
         String payload = null;
 
-        if (result.getStatus() == BrowserSwitchResult.STATUS_CANCELED) {
+        Uri returnUri = result.getDeepLinkUrl();
+        if (result.getStatus() == BrowserSwitchStatus.CANCELED) {
             runJavaScriptInWebView(""
                 + "if (typeof window.popupBridge.onCancel === 'function') {"
                 + "  window.popupBridge.onCancel();"
@@ -145,9 +154,9 @@ public class PopupBridge extends BrowserSwitchFragment {
                 + "  window.popupBridge.onComplete(null, null);"
                 + "}");
             return;
-        } else if (result.getStatus() == BrowserSwitchResult.STATUS_OK) {
+        } else if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
             if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
-                    !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
+                    !result.getDeepLinkUrl().getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
             }
 
@@ -170,17 +179,19 @@ public class PopupBridge extends BrowserSwitchFragment {
                 json.put("path", returnUri.getPath());
                 json.put("queryItems", queryItems);
                 json.put("hash", returnUri.getFragment());
-            } catch (JSONException ignored) {}
+            } catch (JSONException ignored) {
+            }
 
             payload = json.toString();
-        } else if (result.getStatus() == BrowserSwitchResult.STATUS_ERROR) {
-            error = "new Error('" + result.getErrorMessage() + "')";
         }
+        // TODO: handle error
+//        } else if (result.getStatus() == BrowserSwitchStatus.ERROR) {
+//            error = "new Error('" + result.getErrorMessage() + "')";
+//        }
 
         runJavaScriptInWebView(String.format("window.popupBridge.onComplete(%s, %s);", error, payload));
     }
 
-    @Override
     public String getReturnUrlScheme() {
         return mReturnUrlScheme;
     }
@@ -192,7 +203,16 @@ public class PopupBridge extends BrowserSwitchFragment {
 
     @JavascriptInterface
     public void open(String url) {
-        browserSwitch(1, url);
+        BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
+                .requestCode(1)
+                .url(Uri.parse(url))
+                .returnUrlScheme(getReturnUrlScheme());
+        try {
+            browserSwitchClient.start(getActivity(), browserSwitchOptions);
+        } catch (Exception e) {
+            Exception error = e;
+           // TODO: handle exception
+        }
 
         if (mNavigationListener != null) {
             mNavigationListener.onUrlOpened(url);

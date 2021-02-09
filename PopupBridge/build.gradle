@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    api 'com.braintreepayments:browser-switch:1.1.2'
+    api 'com.braintreepayments.api:browser-switch:2.0.0-beta1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
     testImplementation 'junit:junit:4.12'

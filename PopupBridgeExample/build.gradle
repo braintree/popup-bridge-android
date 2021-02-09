@@ -7,7 +7,7 @@ android {
     buildToolsVersion '29.0.3'
 
     defaultConfig {
-        applicationId 'com.braintreepayments.popupbridge.example'
+        applicationId 'com.braintreepayments.popupbridge.demo'
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode rootProject.versionCode
