@@ -19,23 +19,23 @@ import androidx.fragment.app.FragmentManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.Set;
 
-public class PopupBridgeClient extends Fragment {
+public class PopupBridgeClient {
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
     private static final String TAG = "com.braintreepayments.popupbridge";
 
-    private WebView mWebView;
+    private WeakReference<FragmentActivity> activityRef;
+    private WeakReference<WebView> webViewRef;
     private PopupBridgeNavigationListener mNavigationListener;
     private PopupBridgeMessageListener mMessageListener;
     private String mReturnUrlScheme;
 
     private BrowserSwitchClient browserSwitchClient;
-
-    public PopupBridgeClient() {}
 
     /**
      * Create a new instance of {@link PopupBridgeClient} and add it to the {@link FragmentActivity}'s {@link android.support.v4.app.FragmentManager}.
@@ -48,7 +48,7 @@ public class PopupBridgeClient extends Fragment {
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @SuppressLint("SetJavaScriptEnabled")
-    public static PopupBridgeClient newInstance(FragmentActivity activity, WebView webView) throws IllegalArgumentException {
+    public PopupBridgeClient(FragmentActivity activity, WebView webView) throws IllegalArgumentException {
         if (activity == null) {
             throw new IllegalArgumentException("Activity is null");
         }
@@ -57,72 +57,35 @@ public class PopupBridgeClient extends Fragment {
             throw new IllegalArgumentException("WebView is null");
         }
 
-        FragmentManager fm = activity.getSupportFragmentManager();
-        PopupBridgeClient popupBridgeClient = (PopupBridgeClient) fm.findFragmentByTag(TAG);
-        if (popupBridgeClient == null) {
-            popupBridgeClient = new PopupBridgeClient();
-            Bundle bundle = new Bundle();
-
-            popupBridgeClient.setArguments(bundle);
-
-            try {
-                if (VERSION.SDK_INT >= VERSION_CODES.N) {
-                    try {
-                        fm.beginTransaction().add(popupBridgeClient, TAG).commitNow();
-                    } catch (IllegalStateException | NullPointerException e) {
-                        fm.beginTransaction().add(popupBridgeClient, TAG).commit();
-                        try {
-                            fm.executePendingTransactions();
-                        } catch (IllegalStateException ignored) {}
-                    }
-                } else {
-                    fm.beginTransaction().add(popupBridgeClient, TAG).commit();
-                    try {
-                        fm.executePendingTransactions();
-                    } catch (IllegalStateException ignored) {}
-                }
-            } catch (IllegalStateException e) {
-                throw new IllegalArgumentException(e.getMessage());
-            }
-        }
-
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME);
+        webViewRef = new WeakReference<>(webView);
 
-        popupBridgeClient.mWebView = webView;
-        popupBridgeClient.mWebView.addJavascriptInterface(popupBridgeClient, POPUP_BRIDGE_NAME);
-
-        return popupBridgeClient;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        mReturnUrlScheme = context.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-
+        activityRef = new WeakReference<>(activity);
+        mReturnUrlScheme = activity.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
         browserSwitchClient = new BrowserSwitchClient();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        BrowserSwitchResult result = browserSwitchClient.deliverResult(getActivity());
+    public void handlePopupBridgeResult(FragmentActivity activity) {
+        BrowserSwitchResult result = browserSwitchClient.deliverResult(activity);
         if (result != null) {
             onBrowserSwitchResult(result);
         }
     }
 
     private void runJavaScriptInWebView(final String script) {
-        mWebView.post(new Runnable() {
+        WebView webView = webViewRef.get();
+        if (webView == null) {
+            return;
+        }
+        webView.post(new Runnable() {
             @Override
             public void run() {
-                mWebView.evaluateJavascript(script, null);
+                WebView webViewInternal = webViewRef.get();
+                if (webViewInternal == null) {
+                    return;
+                }
+                webViewInternal.evaluateJavascript(script, null);
             }
         });
     }
@@ -185,12 +148,16 @@ public class PopupBridgeClient extends Fragment {
 
     @JavascriptInterface
     public void open(String url) {
+        FragmentActivity activity = activityRef.get();
+        if (activity == null) {
+            return;
+        }
         BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
                 .requestCode(1)
                 .url(Uri.parse(url))
                 .returnUrlScheme(getReturnUrlScheme());
         try {
-            browserSwitchClient.start(getActivity(), browserSwitchOptions);
+            browserSwitchClient.start(activity, browserSwitchOptions);
         } catch (Exception e) {
             // TODO: handle errors thrown from browser switch and unit test
         }

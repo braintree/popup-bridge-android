@@ -19,9 +19,15 @@ public class PopupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popup);
         mWebView = findViewById(R.id.web_view);
 
-        mPopupBridgeClient = PopupBridgeClient.newInstance(this, mWebView);
+        mPopupBridgeClient = new PopupBridgeClient(this, mWebView);
 
         mWebView.loadUrl(getIntent().getStringExtra("url"));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPopupBridgeClient.handlePopupBridgeResult(this);
     }
 
     @Override
