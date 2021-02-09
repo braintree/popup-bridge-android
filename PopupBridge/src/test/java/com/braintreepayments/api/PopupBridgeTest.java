@@ -239,18 +239,6 @@ public class PopupBridgeTest {
     }
 
     @Test
-    public void onBrowserSwitchResult_whenResultIsError_reportsError() {
-//        BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-//        when(result.getStatus()).thenReturn(BrowserSwitchStatus.CANCELED);
-//        when(result.getErrorMessage()).thenReturn("Browser switch error");
-//
-//        mPopupBridge.onBrowserSwitchResult(result);
-//
-//        assertEquals("new Error('Browser switch error')", mWebView.mError);
-//        assertEquals(mWebView.mJavascriptEval, "window.popupBridge.onComplete(new Error('Browser switch error'), null);");
-    }
-
-    @Test
     public void onActivityResult_whenNoPath_returnsEmptyString() throws JSONException {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
         when(result.getStatus()).thenReturn(BrowserSwitchStatus.SUCCESS);
@@ -288,6 +276,7 @@ public class PopupBridgeTest {
 
         mPopupBridge.open("someUrl://");
 
+        // TODO: verify browserSwitchClient.start
 //        verify(mPopupBridge).browserSwitch(1, "someUrl://");
     }
 }

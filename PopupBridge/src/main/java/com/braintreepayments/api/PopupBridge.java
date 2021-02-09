@@ -187,10 +187,6 @@ public class PopupBridge extends Fragment {
 
             payload = json.toString();
         }
-        // TODO: handle error
-//        } else if (result.getStatus() == BrowserSwitchStatus.ERROR) {
-//            error = "new Error('" + result.getErrorMessage() + "')";
-//        }
 
         runJavaScriptInWebView(String.format("window.popupBridge.onComplete(%s, %s);", error, payload));
     }
@@ -213,8 +209,7 @@ public class PopupBridge extends Fragment {
         try {
             browserSwitchClient.start(getActivity(), browserSwitchOptions);
         } catch (Exception e) {
-            Exception error = e;
-           // TODO: handle exception
+            // TODO: handle errors thrown from browser switch and unit test
         }
 
         if (mNavigationListener != null) {
