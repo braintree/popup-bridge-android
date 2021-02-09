@@ -38,22 +38,6 @@ public class PopupBridgeClient extends Fragment {
     public PopupBridgeClient() {}
 
     /**
-     * NEXT_MAJOR_VERSION: remove this method in favor of PopupBridge#newInstance(FragmentActivity, WebView)
-     * Create a new instance of {@link PopupBridgeClient} and add it to the {@link AppCompatActivity}'s {@link android.support.v4.app.FragmentManager}.
-     *
-     * This will enable JavaScript in your WebView.
-     *
-     * @param activity The {@link AppCompatActivity} to add the {@link Fragment} to.
-     * @param webView The {@link WebView} to enable for PopupBridge.
-     * @return {@link PopupBridgeClient}
-     * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
-     */
-    @SuppressLint("SetJavaScriptEnabled")
-    public static PopupBridgeClient newInstance(AppCompatActivity activity, WebView webView) throws IllegalArgumentException {
-        return newInstance((FragmentActivity)activity, webView);
-    }
-
-    /**
      * Create a new instance of {@link PopupBridgeClient} and add it to the {@link FragmentActivity}'s {@link android.support.v4.app.FragmentManager}.
      *
      * This will enable JavaScript in your WebView.
