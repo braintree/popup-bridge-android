@@ -74,7 +74,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId = 'com.braintreepayments'
+                groupId = 'com.braintreepayments.api'
                 artifactId = 'popup-bridge'
                 version = rootProject.versionName
 
