@@ -28,8 +28,11 @@ import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -278,5 +281,61 @@ public class PopupBridgeClientUnitTest {
         BrowserSwitchOptions browserSwitchOptions = captor.getValue();
         assertEquals(Uri.parse("someUrl://"), browserSwitchOptions.getUrl());
         assertEquals(1, browserSwitchOptions.getRequestCode());
+    }
+
+    @Test
+    public void open_whenBrowserSwitchStartError_forwardsErrorToErrorListener() throws BrowserSwitchException {
+        mWebView = new MockWebView(mAppCompatActivity);
+        BrowserSwitchClient browserSwitchClient = mock(BrowserSwitchClient.class);
+        BrowserSwitchException error = new BrowserSwitchException("Browser switch error");
+        doThrow(error).when(browserSwitchClient).start(same(mAppCompatActivity), any(BrowserSwitchOptions.class));
+
+        mPopupBridgeClient = new PopupBridgeClient(new WeakReference<FragmentActivity>(mAppCompatActivity), new WeakReference<WebView>(mWebView), browserSwitchClient);
+
+        PopupBridgeErrorListener errorListener = mock(PopupBridgeErrorListener.class);
+        mPopupBridgeClient.setErrorListener(errorListener);
+
+        mPopupBridgeClient.open("someUrl://");
+        verify(errorListener).onError(same(error));
+    }
+
+    @Test
+    public void open_forwardsUrlToNavigationListener() {
+        mWebView = new MockWebView(mAppCompatActivity);
+        BrowserSwitchClient browserSwitchClient = mock(BrowserSwitchClient.class);
+        mPopupBridgeClient = new PopupBridgeClient(new WeakReference<FragmentActivity>(mAppCompatActivity), new WeakReference<WebView>(mWebView), browserSwitchClient);
+
+        PopupBridgeNavigationListener navigationListener = mock(PopupBridgeNavigationListener.class);
+        mPopupBridgeClient.setNavigationListener(navigationListener);
+
+        String url = "someUrl://";
+        mPopupBridgeClient.open(url);
+        verify(navigationListener).onUrlOpened(same(url));
+    }
+
+    @Test
+    public void sendMessage_forwardsMessageToMessageListener() {
+        mWebView = new MockWebView(mAppCompatActivity);
+        BrowserSwitchClient browserSwitchClient = mock(BrowserSwitchClient.class);
+        mPopupBridgeClient = new PopupBridgeClient(new WeakReference<FragmentActivity>(mAppCompatActivity), new WeakReference<WebView>(mWebView), browserSwitchClient);
+
+        PopupBridgeMessageListener messageListener = mock(PopupBridgeMessageListener.class);
+        mPopupBridgeClient.setMessageListener(messageListener);
+
+        mPopupBridgeClient.sendMessage("test-message");
+        verify(messageListener).onMessageReceived(eq("test-message"), (String) isNull());
+    }
+
+    @Test
+    public void sendMessage_withData_forwardsMessageToMessageListener() {
+        mWebView = new MockWebView(mAppCompatActivity);
+        BrowserSwitchClient browserSwitchClient = mock(BrowserSwitchClient.class);
+        mPopupBridgeClient = new PopupBridgeClient(new WeakReference<FragmentActivity>(mAppCompatActivity), new WeakReference<WebView>(mWebView), browserSwitchClient);
+
+        PopupBridgeMessageListener messageListener = mock(PopupBridgeMessageListener.class);
+        mPopupBridgeClient.setMessageListener(messageListener);
+
+        mPopupBridgeClient.sendMessage("test-message", "data-string");
+        verify(messageListener).onMessageReceived(eq("test-message"), eq("data-string"));
     }
 }

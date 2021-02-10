@@ -158,7 +158,6 @@ public class PopupBridgeClient {
             browserSwitchClient.start(activity, browserSwitchOptions);
         } catch (Exception e) {
             if (errorListener != null) {
-                // TOOD: unit test
                 errorListener.onError(e);
             }
         }
