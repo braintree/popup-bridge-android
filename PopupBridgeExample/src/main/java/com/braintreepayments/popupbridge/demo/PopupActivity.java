@@ -23,12 +23,7 @@ public class PopupActivity extends AppCompatActivity {
         mWebView = findViewById(R.id.web_view);
 
         mPopupBridgeClient = new PopupBridgeClient(this, mWebView, "my-custom-url-scheme");
-        mPopupBridgeClient.setErrorListener(new PopupBridgeErrorListener() {
-            @Override
-            public void onError(Exception error) {
-                showDialog(error.getMessage());
-            }
-        });
+        mPopupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
         mWebView.loadUrl(getIntent().getStringExtra("url"));
     }
@@ -48,12 +43,8 @@ public class PopupActivity extends AppCompatActivity {
     public void showDialog(String message) {
         new AlertDialog.Builder(this)
                 .setMessage(message)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
                 .show();
+
     }
 }
