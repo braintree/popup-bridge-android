@@ -1,10 +1,13 @@
 package com.braintreepayments.popupbridge.demo;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.WebView;
 
 import com.braintreepayments.api.PopupBridgeClient;
+import com.braintreepayments.api.PopupBridgeErrorListener;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,6 +23,12 @@ public class PopupActivity extends AppCompatActivity {
         mWebView = findViewById(R.id.web_view);
 
         mPopupBridgeClient = new PopupBridgeClient(this, mWebView);
+        mPopupBridgeClient.setErrorListener(new PopupBridgeErrorListener() {
+            @Override
+            public void onError(Exception error) {
+                showDialog(error.getMessage());
+            }
+        });
 
         mWebView.loadUrl(getIntent().getStringExtra("url"));
     }
@@ -34,5 +43,17 @@ public class PopupActivity extends AppCompatActivity {
     protected void onNewIntent(Intent newIntent) {
         super.onNewIntent(newIntent);
         setIntent(newIntent);
+    }
+
+    public void showDialog(String message) {
+        new AlertDialog.Builder(this)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .show();
     }
 }

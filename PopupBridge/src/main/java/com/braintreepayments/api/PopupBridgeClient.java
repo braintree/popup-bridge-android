@@ -24,6 +24,7 @@ public class PopupBridgeClient {
     private final WeakReference<WebView> webViewRef;
     private PopupBridgeNavigationListener navigationListener;
     private PopupBridgeMessageListener messageListener;
+    private PopupBridgeErrorListener errorListener;
     private final String returnUrlScheme;
 
     private final BrowserSwitchClient browserSwitchClient;
@@ -156,7 +157,10 @@ public class PopupBridgeClient {
         try {
             browserSwitchClient.start(activity, browserSwitchOptions);
         } catch (Exception e) {
-            // TODO: handle errors thrown from browser switch and unit test
+            if (errorListener != null) {
+                // TOOD: unit test
+                errorListener.onError(e);
+            }
         }
 
         if (navigationListener != null) {
@@ -184,5 +188,9 @@ public class PopupBridgeClient {
 
     public void setMessageListener(PopupBridgeMessageListener listener) {
         messageListener = listener;
+    }
+
+    public void setErrorListener(PopupBridgeErrorListener listener) {
+        errorListener = listener;
     }
 }
