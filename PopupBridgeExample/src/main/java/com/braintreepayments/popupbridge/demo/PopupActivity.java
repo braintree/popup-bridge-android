@@ -1,13 +1,11 @@
 package com.braintreepayments.popupbridge.demo;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.WebView;
 
 import com.braintreepayments.api.PopupBridgeClient;
-import com.braintreepayments.api.PopupBridgeErrorListener;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -31,7 +29,7 @@ public class PopupActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mPopupBridgeClient.handlePopupBridgeResult(this);
+        mPopupBridgeClient.deliverPopupBridgeResult(this);
     }
 
     @Override

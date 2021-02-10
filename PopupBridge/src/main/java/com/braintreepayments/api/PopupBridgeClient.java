@@ -36,16 +36,16 @@ public class PopupBridgeClient {
      *
      * @param activity The {@link FragmentActivity} to add the {@link Fragment} to.
      * @param webView The {@link WebView} to enable for PopupBridge.
-     * @param returnUrlScheme
+     * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     public PopupBridgeClient(FragmentActivity activity, WebView webView, String returnUrlScheme) throws IllegalArgumentException {
-        this(new WeakReference<>(activity), new WeakReference<>(webView), new BrowserSwitchClient(), returnUrlScheme);
+        this(new WeakReference<>(activity), new WeakReference<>(webView), returnUrlScheme, new BrowserSwitchClient());
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     @VisibleForTesting
-    PopupBridgeClient(WeakReference<FragmentActivity> activityRef, WeakReference<WebView> webViewRef, BrowserSwitchClient browserSwitchClient, String returnUrlScheme) throws IllegalArgumentException {
+    PopupBridgeClient(WeakReference<FragmentActivity> activityRef, WeakReference<WebView> webViewRef, String returnUrlScheme, BrowserSwitchClient browserSwitchClient) throws IllegalArgumentException {
         FragmentActivity activity = activityRef.get();
         if (activity == null) {
             throw new IllegalArgumentException("Activity is null");
@@ -65,7 +65,18 @@ public class PopupBridgeClient {
         this.browserSwitchClient = browserSwitchClient;
     }
 
-    public void handlePopupBridgeResult(FragmentActivity activity) {
+    /**
+     * Deliver a pending popup bridge result to an Android activity.
+     *
+     * We recommend you call this method in onResume to receive a browser switch result once your
+     * app has re-entered the foreground.
+     *
+     * Cancel and Success results will be delivered only once. If there are no pending
+     * browser switch results, this method does nothing.
+     *
+     * @param activity the activity that received the deep link back into the app
+     */
+    public void deliverPopupBridgeResult(FragmentActivity activity) {
         BrowserSwitchResult result = browserSwitchClient.deliverResult(activity);
         if (result != null) {
             onBrowserSwitchResult(result);
@@ -89,7 +100,7 @@ public class PopupBridgeClient {
         });
     }
 
-    public void onBrowserSwitchResult(BrowserSwitchResult result) {
+    private void onBrowserSwitchResult(BrowserSwitchResult result) {
         String error = null;
         String payload = null;
 
