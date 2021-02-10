@@ -7,9 +7,6 @@ import android.webkit.WebView;
 
 import androidx.fragment.app.FragmentActivity;
 
-import com.braintreepayments.api.test.FragmentTestActivity;
-import com.braintreepayments.api.test.MockWebView;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -50,7 +47,7 @@ public class PopupBridgeClientUnitTest {
 
     @Before
     public void setup() {
-        fragmentActivity = Robolectric.setupActivity(FragmentTestActivity.class);
+        fragmentActivity = Robolectric.setupActivity(FragmentActivity.class);
         browserSwitchClient = mock(BrowserSwitchClient.class);
 
         webView = spy(new MockWebView(fragmentActivity));
