@@ -68,11 +68,8 @@ public class PopupBridgeClient {
     /**
      * Deliver a pending popup bridge result to an Android activity.
      *
-     * We recommend you call this method in onResume to receive a browser switch result once your
+     * We recommend you call this method in onResume to deliver a result once your
      * app has re-entered the foreground.
-     *
-     * Cancel and Success results will be delivered only once. If there are no pending
-     * browser switch results, this method does nothing.
      *
      * @param activity the activity that received the deep link back into the app
      */
