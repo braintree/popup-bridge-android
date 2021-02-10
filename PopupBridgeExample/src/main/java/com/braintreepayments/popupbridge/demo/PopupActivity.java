@@ -22,7 +22,7 @@ public class PopupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popup);
         mWebView = findViewById(R.id.web_view);
 
-        mPopupBridgeClient = new PopupBridgeClient(this, mWebView);
+        mPopupBridgeClient = new PopupBridgeClient(this, mWebView, "my-custom-url-scheme");
         mPopupBridgeClient.setErrorListener(new PopupBridgeErrorListener() {
             @Override
             public void onError(Exception error) {

@@ -15,7 +15,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="${applicationId}.popupbridge" />
+                <data android:scheme="my-custom-url-scheme" />
             </intent-filter>
         </activity>
 

@@ -36,15 +36,16 @@ public class PopupBridgeClient {
      *
      * @param activity The {@link FragmentActivity} to add the {@link Fragment} to.
      * @param webView The {@link WebView} to enable for PopupBridge.
+     * @param returnUrlScheme
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
-    public PopupBridgeClient(FragmentActivity activity, WebView webView) throws IllegalArgumentException {
-        this(new WeakReference<>(activity), new WeakReference<>(webView), new BrowserSwitchClient());
+    public PopupBridgeClient(FragmentActivity activity, WebView webView, String returnUrlScheme) throws IllegalArgumentException {
+        this(new WeakReference<>(activity), new WeakReference<>(webView), new BrowserSwitchClient(), returnUrlScheme);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     @VisibleForTesting
-    PopupBridgeClient(WeakReference<FragmentActivity> activityRef, WeakReference<WebView> webViewRef, BrowserSwitchClient browserSwitchClient) throws IllegalArgumentException {
+    PopupBridgeClient(WeakReference<FragmentActivity> activityRef, WeakReference<WebView> webViewRef, BrowserSwitchClient browserSwitchClient, String returnUrlScheme) throws IllegalArgumentException {
         FragmentActivity activity = activityRef.get();
         if (activity == null) {
             throw new IllegalArgumentException("Activity is null");
@@ -60,7 +61,7 @@ public class PopupBridgeClient {
         this.webViewRef = webViewRef;
         this.activityRef = activityRef;
 
-        this.returnUrlScheme = activity.getPackageName().toLowerCase().replace("_", "") + ".popupbridge";
+        this.returnUrlScheme = returnUrlScheme;
         this.browserSwitchClient = browserSwitchClient;
     }
 
@@ -102,7 +103,7 @@ public class PopupBridgeClient {
                 + "}");
             return;
         } else if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
-            if (returnUri == null || !returnUri.getScheme().equals(getReturnUrlScheme()) ||
+            if (returnUri == null || !returnUri.getScheme().equals(returnUrlScheme) ||
                     !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
             }
@@ -135,13 +136,9 @@ public class PopupBridgeClient {
         runJavaScriptInWebView(String.format("window.popupBridge.onComplete(%s, %s);", error, payload));
     }
 
-    public String getReturnUrlScheme() {
-        return returnUrlScheme;
-    }
-
     @JavascriptInterface
     public String getReturnUrlPrefix() {
-        return String.format("%s://%s/", getReturnUrlScheme(), POPUP_BRIDGE_URL_HOST);
+        return String.format("%s://%s/", returnUrlScheme, POPUP_BRIDGE_URL_HOST);
     }
 
     @JavascriptInterface
@@ -153,7 +150,7 @@ public class PopupBridgeClient {
         BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
                 .requestCode(1)
                 .url(Uri.parse(url))
-                .returnUrlScheme(getReturnUrlScheme());
+                .returnUrlScheme(returnUrlScheme);
         try {
             browserSwitchClient.start(activity, browserSwitchOptions);
         } catch (Exception e) {
