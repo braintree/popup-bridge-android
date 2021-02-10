@@ -43,6 +43,5 @@ public class PopupActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
                 .show();
-
     }
 }
