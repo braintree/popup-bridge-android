@@ -1,6 +1,6 @@
 # Android Popup Bridge v4 (Beta) Migration Guide
 
-See the [CHANGELOG](/CHANGELOG.md) for a complete list of changes. This migration guide outlines the basics for updating your popup bridge integration from v3 to v3.
+See the [CHANGELOG](/CHANGELOG.md) for a complete list of changes. This migration guide outlines the basics for updating your popup bridge integration from v3 to v4.
 
 ## Setup
 
