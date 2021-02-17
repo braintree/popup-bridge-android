@@ -16,7 +16,7 @@ See the [Frequently Asked Questions](#frequently-asked-questions) to learn more 
 Requirements
 ------------
 
-- Android SDK 19
+- Android SDK 21
 
 Installation
 ------------
