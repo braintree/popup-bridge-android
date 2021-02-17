@@ -67,64 +67,11 @@ If these requirements are not met, an error will be reported to the `PopupBridge
 
 2. Use PopupBridge from the web page by writing some JavaScript:
 
-   ```javascript
-   var url = 'http://localhost:4567/'; // the url you wish to open in a popup
-
-   if (window.popupBridge) {
-     // Open the popup in a browser, and give it the deep link back to the app
-     popupBridge.open(url + '?popupBridgeReturnUrlPrefix=' + popupBridge.getReturnUrlPrefix());
-
-     // Optional: define a callback to process results of interaction with the popup
-     popupBridge.onComplete = function (err, payload) {
-       if (err) {
-         console.error('PopupBridge onComplete Error:', err);
-       } else if (!err && !payload) {
-         console.log('User closed popup.');
-       } else {
-         alert('Your favorite color is ' + payload.queryItems.color);
-
-         console.log(payload.path) // defaults to ""
-         console.log(payload.hash) // defaults to ""
-       }
-     };
-   } else {
-     var popup = window.open(url);
-
-     window.addEventListener('message', function (event) {
-       var color = JSON.parse(event.data).color;
-
-       if (color) {
-         popup.close();
-         alert('Your favorite color is ' + color);
-       }
-     });
-   }
-   ```
+See [README](README.md) for sample code.
 
 3. Redirect back to the app inside of the popup:
 
-   ```html
-   <h1>What is your favorite color?</h1>
-
-   <a href="#" data-color="red">Red</a>
-   <a href="#" data-color="green">Green</a>
-   <a href="#" data-color="blue">Blue</a>
-
-   <script src="jquery.js"></script>
-   <script>
-   $('a').on('click', function (event) {
-     var color = $(this).data('color');
-
-     if (location.search.indexOf('popupBridgeReturnUrlPrefix') !== -1) {
-       var prefix = location.search.split('popupBridgeReturnUrlPrefix=')[1];
-       // Open the deep link back to the app, and send some data
-       location.href = prefix + '?color=' + color;
-     } else {
-       window.opener.postMessage(JSON.stringify({ color: color }), '*');
-     }
-   });
-   </script>
-   ```
+See [README](README.md) for sample code.
    
 
 ## Launch Modes
