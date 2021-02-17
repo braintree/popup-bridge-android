@@ -67,11 +67,11 @@ If these requirements are not met, an error will be reported to the `PopupBridge
 
 2. Use PopupBridge from the web page by writing some JavaScript:
 
-See [README](README.md) for sample code.
+  - Refer to `v3` docs in [README](README.md) for sample code.
 
 3. Redirect back to the app inside of the popup:
 
-See [README](README.md) for sample code.
+  - Refer to `v3` docs in [README](README.md) for sample code.
    
 
 ## Launch Modes
