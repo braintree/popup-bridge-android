@@ -1,5 +1,15 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Add `PopupBridgeClient`
+* Add `PopupBridgeErrorListener`
+* Breaking Changes
+  * Update browser-switch to 2.0.0-beta1
+  * Change package from `com.braintreepayments` to `com.braintreepayments.api`
+  * Remove `PopupBridge`
+  * Remove `PopupBridgeActivity`
+
 ## 3.1.0
 
 * Bump `compileSdkVersion` and `targetSdkVersion` to API level 30

@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge.example.test;
+package com.braintreepayments.popupbridge.demo.test;
 
 import android.os.Build;
 
@@ -23,7 +23,7 @@ public class PopupBridgeTest {
 
     @Before
     public void setup() {
-        onDevice().onHomeScreen().launchApp("com.braintreepayments.popupbridge.example");
+        onDevice().onHomeScreen().launchApp("com.braintreepayments.popupbridge.demo");
         onDevice(withContentDescription("Launch PopupBridge")).perform(click());
     }
 

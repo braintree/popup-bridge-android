@@ -22,7 +22,7 @@ android {
 }
 
 dependencies {
-    api 'com.braintreepayments:browser-switch:1.1.2'
+    implementation 'com.braintreepayments.api:browser-switch:2.0.0-beta1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
     testImplementation 'junit:junit:4.12'
@@ -74,7 +74,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId = 'com.braintreepayments'
+                groupId = 'com.braintreepayments.api'
                 artifactId = 'popup-bridge'
                 version = rootProject.versionName
 

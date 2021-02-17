@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.braintreepayments.popupbridge.example">
+    package="com.braintreepayments.popupbridge.demo">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -10,7 +10,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light">
 
-        <activity android:name=".PopupActivity"/>
+        <activity android:name=".PopupActivity" android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="my-custom-url-scheme" />
+            </intent-filter>
+        </activity>
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -19,14 +26,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.braintreepayments.popupbridge.PopupBridgeActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="${applicationId}.popupbridge" />
-            </intent-filter>
-        </activity>
     </application>
 </manifest>
+
