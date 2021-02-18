@@ -4,7 +4,7 @@ See the [CHANGELOG](/CHANGELOG.md) for a complete list of changes. This migratio
 
 ## Setup
 
-Add the library to your dependencies in your `build.gradle`:
+First, update the popup bridge dependency version in your `build.gradle` file:
 
 ```groovy
 dependencies {
@@ -12,7 +12,9 @@ dependencies {
 }
 ```
 
-Then, add an `intent-filter` in the `AndroidManifest.xml` to your deep link destination activity:
+> In v3, `com.braintreepayments.popupbridge.PopupBridgeActivity` was the designated deep link destination activity maintained by the Braintree SDK. In v4, we've removed `PopupBridgeActivity` to give apps more control over their deep link configuration.
+
+Next, in the `AndroidManifest.xml`, migrate the `intent-filter` from your v3 integration into an activity you own:
 
 ```xml
 <activity android:name="com.company.app.MyPopupBridgeActivity">
@@ -28,57 +30,42 @@ Then, add an `intent-filter` in the `AndroidManifest.xml` to your deep link dest
 
 **Note**: The scheme you define must use all lowercase letters. This is due to [scheme matching on the Android framework being case sensitive, expecting lower case](https://developer.android.com/guide/topics/manifest/data-element#scheme).
 
-If these requirements are not met, an error will be reported to the `PopupBridgeErrorListener`, if registered.
-
 ## Usage
 
-1. Include PopupBridge in your app code:
+To use PopupBridge, instantiate a `PopupBridgeClient`:
 
-   ```java
-   package com.company.myapp;
-   
-   import com.braintreepayments.api.PopupBridgeClient;
+```java
+package com.company.myapp;
 
-   class MyWebViewActivity extends Activity {
-       private WebView mWebView;
-       private PopupBridgeClient mPopupBridgeClient;
+import com.braintreepayments.api.PopupBridgeClient;
 
-       @Override
-       public void onCreate() {
-           // Connect your web view.
-           // ...
+class MyWebViewActivity extends Activity {
 
-           // ...and then attach PopupBridge.
-           mPopupBridgeClient = new PopupBridgeClient(this, mWebView, "my-custom-url-scheme");
-   
-           // register error listener
-           mPopupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
-       }
-   
-       @Override
-       protected void onResume() {
-           super.onResume();
-   
-           // call 'deliverResult' in onResume to capture a pending result
-           mPopupBridgeClient.deliverPopupBridgeResult(this);
-       }
-   }
-   ```
-
-2. Use PopupBridge from the web page by writing some JavaScript:
-
-  - Refer to `v3` docs in [README](README.md) for sample code.
-
-3. Redirect back to the app inside of the popup:
-
-  - Refer to `v3` docs in [README](README.md) for sample code.
-   
+  private WebView webView;
+  private PopupBridgeClient popupBridgeClient;
+  
+  @Override
+  public void onCreate() {
+    popupBridgeClient = new PopupBridgeClient(this, webView, "my-custom-url-scheme");
+  
+    // register error listener
+    popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
+  }
+  
+  @Override
+  protected void onResume() {
+    super.onResume();
+  
+    // call 'deliverResult' in onResume to capture a pending result
+    popupBridgeClient.deliverPopupBridgeResult(this);
+  }
+}
+```
 
 ## Launch Modes
 
 If your deep link destination activity is configured in the `AndroidManifest.xml` with `android:launchMode="singleTop"`, 
 `android:launchMode="singleTask"` or `android:launchMode="singleInstance"` add the following code snippet:
-
 
 ```java
 package com.company.app;
