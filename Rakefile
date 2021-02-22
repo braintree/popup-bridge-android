@@ -141,7 +141,7 @@ end
 def update_version(version)
   IO.write("build.gradle",
     File.open("build.gradle") do |file|
-      file.read.gsub(/^version '\d+\.\d+\.\d+(-SNAPSHOT)?'/, "version '#{version}'")
+      file.read.gsub(/^version '\d+\.\d+\.\d+(-beta\d+)?(-SNAPSHOT)?'/, "version '#{version}'")
     end
   )
 end
@@ -165,7 +165,7 @@ end
 def update_migration_guide_version(version)
   IO.write("v4_MIGRATION.md",
     File.open("v4_MIGRATION.md") do |file|
-    file.read.gsub(/:popup-bridge:\d+\.\d+\.\d+-.*'/, ":popup-bridge:#{version}'")
+      file.read.gsub(/:popup-bridge:\d+\.\d+\.\d+-.*'/, ":popup-bridge:#{version}'")
     end
   )
 end
