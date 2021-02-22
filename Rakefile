@@ -54,6 +54,40 @@ task :assumptions do
     $stdin.gets
 end
 
+desc "Interactive release to publish new beta version"
+task :release_beta => :unit_tests do
+  Rake::Task["assumptions"].invoke
+
+  puts "What version are you releasing? (x.x.x format)"
+  version = $stdin.gets.chomp
+
+  update_version(version)
+  update_migration_guide_version(version)
+
+  prompt_for_sonatype_username_and_password
+
+  sh "./gradlew clean :PopupBridge:publishToSonatype"
+  sh "./gradlew closeAndReleaseRepository"
+
+  puts "\nArchives are uploaded! Committing and tagging #{version} and preparing for the next development iteration"
+
+  sh "git commit -am 'Release #{version}'"
+  sh "git tag #{version} -a -m 'Release #{version}'"
+
+  version_match = version.match /(\d+\.\d+\.\d+-beta)(\d+)/
+  beta_version_prefix = version_match[1]
+  next_beta_version_number = version_match[2].to_i + 1
+
+  update_version("#{beta_version_prefix}#{next_beta_version_number}-SNAPSHOT")
+  increment_version_code
+  sh "git commit -am 'Prepare for deployment'"
+
+  puts "\nDone. Commits and tags have been created. If everything appears to be in order, hit ENTER to push."
+  $stdin.gets
+
+  sh "git push origin master #{version}"
+end
+
 def prompt_for_sonatype_username_and_password
   puts "Enter Sonatype username:"
   ENV["SONATYPE_USERNAME"] = $stdin.gets.chomp
@@ -124,6 +158,14 @@ def update_readme_snapshot_version(snapshot_version)
   IO.write("README.md",
     File.open("README.md") do |file|
       file.read.gsub(/:popup-bridge:\d+\.\d+\.\d+-SNAPSHOT'/, ":popup-bridge:#{snapshot_version}-SNAPSHOT'")
+    end
+  )
+end
+
+def update_migration_guide_version(version)
+  IO.write("v4_MIGRATION.md",
+    File.open("v4_MIGRATION.md") do |file|
+    file.read.gsub(/:popup-bridge:\d+\.\d+\.\d+-.*'/, ":popup-bridge:#{version}'")
     end
   )
 end
