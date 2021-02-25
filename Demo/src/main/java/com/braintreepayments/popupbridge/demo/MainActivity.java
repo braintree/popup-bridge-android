@@ -1,4 +1,4 @@
-package com.braintreepayments.popupbridge.example;
+package com.braintreepayments.popupbridge.demo;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void switchToWebView(String url) {
         Intent intent = new Intent(this, PopupActivity.class);
-        intent.setData(Uri.parse(url));
+        intent.putExtra("url", url);
         startActivity(intent);
     }
 

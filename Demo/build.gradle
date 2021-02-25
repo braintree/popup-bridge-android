@@ -7,13 +7,17 @@ android {
     buildToolsVersion '29.0.3'
 
     defaultConfig {
-        applicationId 'com.braintreepayments.popupbridge.example'
+        applicationId 'com.braintreepayments.popupbridge.demo'
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode rootProject.versionCode
         versionName rootProject.versionName
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

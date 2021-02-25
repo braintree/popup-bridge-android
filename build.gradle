@@ -34,7 +34,7 @@ allprojects {
 }
 
 nexusStaging {
-    packageGroup = "com.braintreepayments"
+    packageGroup = "com.braintreepayments.api"
     // give nexus sonatype more time to close the staging repository
     delayBetweenRetriesInMillis = 20000
     username = System.env['SONATYPE_USERNAME']

@@ -1,1 +1,1 @@
-include ':PopupBridgeExample', ':PopupBridge'
+include ':Demo', ':PopupBridge'

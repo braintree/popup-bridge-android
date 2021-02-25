@@ -7,6 +7,8 @@ PopupBridge is an Android library that allows WebViews to open popup windows in 
 
 ![PopupBridge Demo gif](popup-bridge-android.gif)
 
+:mega:&nbsp;&nbsp;A new major version of the SDK is available in beta. See the [v4 migration guide](v4_MIGRATION.md) for details.
+
 PopupBridge is also available for [iOS](https://github.com/braintree/popup-bridge-ios).
 
 See the [Frequently Asked Questions](#frequently-asked-questions) to learn more about PopupBridge. See [Using PayPal in a WebView](#using-paypal-in-a-webview) to use PopupBridge with PayPal.
@@ -14,7 +16,7 @@ See the [Frequently Asked Questions](#frequently-asked-questions) to learn more 
 Requirements
 ------------
 
-- Android SDK 19
+- Android SDK 21
 
 Installation
 ------------
