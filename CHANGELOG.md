@@ -1,6 +1,6 @@
 # PopupBridge Android Release Notes
 
-## unreleased
+## 4.0.0-beta1
 
 * Add `PopupBridgeClient`
 * Add `PopupBridgeErrorListener`
