@@ -104,21 +104,21 @@ public class PopupBridgeClient {
         Uri returnUri = result.getDeepLinkUrl();
         if (result.getStatus() == BrowserSwitchStatus.CANCELED) {
             runJavaScriptInWebView(""
-                + "function notifyCanceled() {"
-                + "  if (typeof window.popupBridge.onCancel === 'function') {"
-                + "    window.popupBridge.onCancel();"
-                + "  } else {"
-                + "    window.popupBridge.onComplete(null, null);"
-                + "  }"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  notifyCanceled();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    notifyCanceled();"
-                + "  });"
-                + "}");
+                + "function notifyCanceled() {\n"
+                + "  if (typeof window.popupBridge.onCancel === 'function') {\n"
+                + "    window.popupBridge.onCancel();\n"
+                + "  } else {\n"
+                + "    window.popupBridge.onComplete(null, null);\n"
+                + "  }\n"
+                + "}\n"
+                + "\n"
+                + "if (document.readyState === 'complete') {\n"
+                + "  notifyCanceled();\n"
+                + "} else {\n"
+                + "  window.addEventListener('load', function () {\n"
+                + "    notifyCanceled();\n"
+                + "  });\n"
+                + "}\n");
             return;
         } else if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
             if (returnUri == null || !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
@@ -151,17 +151,17 @@ public class PopupBridgeClient {
         }
 
         String successJavascript = String.format(""
-            + "function notifyComplete() { "
-            + "  window.popupBridge.onComplete(%s, %s);"
-            + "}"
-            + ""
-            + "if (document.readyState === 'complete') {"
-            + "  notifyComplete();"
-            + "} else {"
-            + "  window.addEventListener('load', function () {"
-            + "    notifyComplete();"
-            + "  });"
-            + "}", error, payload);
+            + "function notifyComplete() {\n"
+            + "  window.popupBridge.onComplete(%s, %s);\n"
+            + "}\n"
+            + "\n"
+            + "if (document.readyState === 'complete') {\n"
+            + "  notifyComplete();\n"
+            + "} else {\n"
+            + "  window.addEventListener('load', function () {\n"
+            + "    notifyComplete();\n"
+            + "  });\n"
+            + "}\n", error, payload);
 
         runJavaScriptInWebView(successJavascript);
     }

@@ -71,7 +71,7 @@ public class PopupBridgeClientUnitTest {
         try {
             new PopupBridgeClient(fragmentActivity, null, "my-custom-url-scheme");
             fail("Should throw");
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             assertEquals(e.getMessage(), "WebView is null");
         }
     }
@@ -190,7 +190,7 @@ public class PopupBridgeClientUnitTest {
     }
 
     @Test
-    public void  onBrowserSwitchResult_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
+    public void onBrowserSwitchResult_whenReturnUrlIncludesFragmentIdentifier_reportsPayloadWithFragmentIdentifier()
             throws JSONException {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
         when(result.getStatus()).thenReturn(BrowserSwitchStatus.SUCCESS);
@@ -242,8 +242,8 @@ public class PopupBridgeClientUnitTest {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
         when(result.getStatus()).thenReturn(BrowserSwitchStatus.SUCCESS);
 
-         Uri uri = new Uri.Builder()
-                 .scheme("my-custom-url-scheme")
+        Uri uri = new Uri.Builder()
+                .scheme("my-custom-url-scheme")
                 .authority("popupbridgev1")
                 .build();
         when(result.getDeepLinkUrl()).thenReturn(uri);
