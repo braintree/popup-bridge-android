@@ -19,7 +19,7 @@ public class MockWebView extends WebView {
 
     @Override
     public void evaluateJavascript(String script, ValueCallback<String> resultCallback) {
-        String expression = "window\\.popupBridge\\.onComplete\\((.*), (.*)\\);\\n";
+        String expression = "window\\.popupBridge\\.onComplete\\((.*), (.*)\\);";
         mJavascriptEval = script;
         Pattern pattern = Pattern.compile(expression);
         Matcher match = pattern.matcher(script);
