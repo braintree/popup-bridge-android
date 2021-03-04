@@ -103,6 +103,7 @@ public class PopupBridgeClient {
 
         Uri returnUri = result.getDeepLinkUrl();
         if (result.getStatus() == BrowserSwitchStatus.CANCELED) {
+            // TODO: find way to get unit test to pass without trailing new lines
             runJavaScriptInWebView(""
                 + "function notifyCanceled() {\n"
                 + "  if (typeof window.popupBridge.onCancel === 'function') {\n"
@@ -150,6 +151,7 @@ public class PopupBridgeClient {
             payload = json.toString();
         }
 
+        // TODO: find way to get unit test to pass without trailing new lines
         String successJavascript = String.format(""
             + "function notifyComplete() {\n"
             + "  window.popupBridge.onComplete(%s, %s);\n"
