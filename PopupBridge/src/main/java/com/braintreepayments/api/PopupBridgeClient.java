@@ -104,10 +104,20 @@ public class PopupBridgeClient {
         Uri returnUri = result.getDeepLinkUrl();
         if (result.getStatus() == BrowserSwitchStatus.CANCELED) {
             runJavaScriptInWebView(""
-                + "if (typeof window.popupBridge.onCancel === 'function') {"
-                + "  window.popupBridge.onCancel();"
+                + "function notifyCanceled() {"
+                + "  if (typeof window.popupBridge.onCancel === 'function') {"
+                + "    window.popupBridge.onCancel();"
+                + "  } else {"
+                + "    window.popupBridge.onComplete(null, null);"
+                + "  }"
+                + "}"
+                + ""
+                + "if (document.readyState === 'complete') {"
+                + "  notifyCanceled();"
                 + "} else {"
-                + "  window.popupBridge.onComplete(null, null);"
+                + "  window.addEventListener('load', function () {"
+                + "    notifyCanceled();"
+                + "  });"
                 + "}");
             return;
         } else if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
@@ -140,7 +150,20 @@ public class PopupBridgeClient {
             payload = json.toString();
         }
 
-        runJavaScriptInWebView(String.format("window.popupBridge.onComplete(%s, %s);", error, payload));
+        String successJavascript = String.format(""
+            + "function notifyComplete() { "
+            + "  window.popupBridge.onComplete(%s, %s);"
+            + "}"
+            + ""
+            + "if (document.readyState === 'complete') {"
+            + "  notifyComplete();"
+            + "} else {"
+            + "  window.addEventListener('load', function () {"
+            + "    notifyComplete();"
+            + "  });"
+            + "}", error, payload);
+
+        runJavaScriptInWebView(successJavascript);
     }
 
     @JavascriptInterface
