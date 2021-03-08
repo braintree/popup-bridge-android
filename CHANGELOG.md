@@ -1,5 +1,9 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Update browser-switch to 2.0.0-beta2
+
 ## 4.0.0-beta1
 
 * Add `PopupBridgeClient`

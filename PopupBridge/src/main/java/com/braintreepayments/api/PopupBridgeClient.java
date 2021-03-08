@@ -111,8 +111,7 @@ public class PopupBridgeClient {
                 + "}");
             return;
         } else if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
-            if (returnUri == null || !returnUri.getScheme().equals(returnUrlScheme) ||
-                    !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
+            if (returnUri == null || !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
             }
 
