@@ -135,28 +135,6 @@ public class PopupBridgeClientUnitTest {
     }
 
     @Test
-    public void onBrowserSwitchResult_whenDifferentScheme_doesNotCallOnComplete() {
-        BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(result.getStatus()).thenReturn(BrowserSwitchStatus.SUCCESS);
-
-        Uri uri = new Uri.Builder()
-                .scheme("com.oranges.popupbridge")
-                .path("mypath")
-                .build();
-        when(result.getDeepLinkUrl()).thenReturn(uri);
-
-        when(browserSwitchClient.deliverResult(fragmentActivity)).thenReturn(result);
-
-        PopupBridgeClient sut =
-                new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
-        sut.deliverPopupBridgeResult(fragmentActivity);
-
-        assertNull(webView.mError);
-        assertNull(webView.mPayload);
-        assertNull(webView.mJavascriptEval);
-    }
-
-    @Test
     public void onBrowserSwitchResult_whenReturnUrlHasQueryParams_reportsPayloadWithQueryItems()
             throws JSONException {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
