@@ -1,6 +1,6 @@
 # PopupBridge Android Release Notes
 
-## unreleased
+## 4.0.0-beta2
 
 * Update browser-switch to 2.0.0-beta2
 * Run `onComplete` and `onCancel` callbacks after WebView window has loaded (fixes #26)
