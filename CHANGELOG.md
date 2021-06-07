@@ -1,5 +1,11 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Upgrade browser-switch to 2.0.0
+
+**Note:** Includes all changes in [2.0.0-beta1](#200-beta1), [2.0.0-beta2](#200-beta2), and [2.0.0-beta3](#200-beta3)
+
 ## 4.0.0-beta3
 
 * Upgrade browser-switch to 2.0.0-beta3
