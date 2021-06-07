@@ -4,7 +4,7 @@
 
 * Upgrade browser-switch to 2.0.0
 
-**Note:** Includes all changes in [2.0.0-beta1](#200-beta1), [2.0.0-beta2](#200-beta2), and [2.0.0-beta3](#200-beta3)
+**Note:** Includes all changes in [4.0.0-beta1](#400-beta1), [4.0.0-beta2](#400-beta2), and [4.0.0-beta3](#400-beta3)
 
 ## 4.0.0-beta3
 
