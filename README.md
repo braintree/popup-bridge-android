@@ -25,7 +25,7 @@ Add the dependency in your `build.gradle`:
 
 ```groovy
 dependencies {
-  implementation 'com.braintreepayments:popup-bridge:4.0.1'
+  implementation 'com.braintreepayments.api:popup-bridge:4.0.1'
 }
 ```
 
@@ -55,7 +55,8 @@ Quick Start
        private WebView mWebView;
 
        @Override
-       public void onCreate() {
+       protected void onCreate(@Nullable Bundle savedInstanceState) {
+           super.onCreate(savedInstanceState);
            // Connect your web view.
            // ...
 
