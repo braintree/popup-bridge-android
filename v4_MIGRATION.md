@@ -45,7 +45,9 @@ class MyWebViewActivity extends Activity {
   private PopupBridgeClient popupBridgeClient;
   
   @Override
-  public void onCreate() {
+  protected void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    
     popupBridgeClient = new PopupBridgeClient(this, webView, "my-custom-url-scheme");
   
     // register error listener
