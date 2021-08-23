@@ -8,7 +8,7 @@ First, update the popup bridge dependency version in your `build.gradle` file:
 
 ```groovy
 dependencies {
-  implementation 'com.braintreepayments.api:popup-bridge:4.0.0-beta3'
+  implementation 'com.braintreepayments.api:popup-bridge:4.0.1'
 }
 ```
 
@@ -17,7 +17,8 @@ dependencies {
 Next, in the `AndroidManifest.xml`, migrate the `intent-filter` from your v3 integration into an activity you own:
 
 ```xml
-<activity android:name="com.company.app.MyPopupBridgeActivity">
+<activity android:name="com.company.app.MyPopupBridgeActivity"
+    android:exported="true">
     ...
     <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
@@ -29,6 +30,7 @@ Next, in the `AndroidManifest.xml`, migrate the `intent-filter` from your v3 int
 ```
 
 **Note**: The scheme you define must use all lowercase letters. This is due to [scheme matching on the Android framework being case sensitive, expecting lower case](https://developer.android.com/guide/topics/manifest/data-element#scheme).
+**Note**: `android:exported` is required if your app compile SDK version is API 31 (Android 12) or later.
 
 ## Usage
 

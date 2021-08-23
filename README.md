@@ -36,7 +36,8 @@ Quick Start
 
   ```xml
   <activity android:name="com.braintreepayments.popupbridge.PopupBridgeActivity"
-      android:launchMode="singleTask">
+      android:launchMode="singleTask"
+      android:exported="true">
       <intent-filter>
           <action android:name="android.intent.action.VIEW" />
           <category android:name="android.intent.category.DEFAULT" />
@@ -45,6 +46,7 @@ Quick Start
       </intent-filter>
   </activity>
   ```
+Note: `android:exported` is required if your app compile SDK version is API 31 (Android 12) or later.
 
 1. Include PopupBridge in your app code:
 
