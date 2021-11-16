@@ -11,7 +11,7 @@
         android:theme="@style/Theme.AppCompat.Light">
 
         <activity android:name=".PopupActivity"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
