@@ -1,5 +1,10 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Upgrade `targetSdkVersion` and `compileSdkVersion` to API 31
+* Bump `browser-switch` version to `2.1.0`
+
 ## 3.1.1
 
 * Upgrade browser-switch to 1.1.4
