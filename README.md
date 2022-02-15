@@ -185,7 +185,7 @@ WebView-based checkout flows can accept PayPal with PopupBridge and the [Braintr
 1. Create a native mobile app that opens the checkout in a WebView (see steps 1-2 in quick start)
 1. Integrate the PopupBridge library
 1. Collect device data
-    - To help detect fraudulent activity, collect device data before performing PayPal transactions. This is similar to collecting device data with our [native Android SDK](https://developer.paypal.com/braintree/docs/guides/paypal/vault/android/v4#setup):
+    - To help detect fraudulent activity, collect device data before performing PayPal transactions. This is similar to collecting device data with our [native Android SDK](https://developer.paypal.com/braintree/docs/guides/paypal/vault/android/v4#collecting-device-data):
       1. Include `PayPalDataCollector` in your `build.gradle` dependencies, e.g. `compile 'com.paypal.android.sdk:data-collector:2.+'`
       1. Implement a method in your native app for sending device data. See the [Android code snippet for PayPal + PopupBridge](popupbridge-paypaldatacollector-android.md)
 1. Profit!
