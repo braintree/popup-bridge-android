@@ -35,6 +35,13 @@
         android:text="Launch PayPal (checkout.js)"
         android:contentDescription="Launch PayPal (checkout.js)"/>
 
+    <Button
+        android:id="@+id/button_popup_bridge_lpm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onLPMPopupBridgeClick"
+        android:text="Launch Local Payment Methods"
+        android:contentDescription="Launch Local Payment Methods"/>
 
 
 </LinearLayout>
