@@ -20,7 +20,7 @@ public class PopupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popup);
         mWebView = findViewById(R.id.web_view);
 
-        mPopupBridgeClient = new PopupBridgeClient(this, mWebView, "my-custom-url-scheme");
+        mPopupBridgeClient = new PopupBridgeClient(this, mWebView, "com.braintreepayments.popupbridgeexample");
         mPopupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
         mWebView.loadUrl(getIntent().getStringExtra("url"));
