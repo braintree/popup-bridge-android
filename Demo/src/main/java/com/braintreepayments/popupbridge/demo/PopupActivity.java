@@ -29,7 +29,7 @@ public class PopupActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mPopupBridgeClient.deliverPopupBridgeResult(this);
+        mPopupBridgeClient.deliverPopupBridgeResultFromCache(this);
     }
 
     @Override

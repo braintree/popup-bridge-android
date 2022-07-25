@@ -1,6 +1,7 @@
 package com.braintreepayments.api;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.Uri;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -52,12 +53,14 @@ public class PopupBridgeClient {
         }
 
         WebView webView = webViewRef.get();
-        if (webView == null) {
-            throw new IllegalArgumentException("WebView is null");
-        }
+//        if (webView == null) {
+//            throw new IllegalArgumentException("WebView is null");
+//        }
 
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME);
+        if (webView != null) {
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME);
+        }
         this.webViewRef = webViewRef;
         this.activityRef = activityRef;
 
@@ -75,6 +78,17 @@ public class PopupBridgeClient {
      */
     public void deliverPopupBridgeResult(FragmentActivity activity) {
         BrowserSwitchResult result = browserSwitchClient.deliverResult(activity);
+        if (result != null) {
+            onBrowserSwitchResult(result);
+        }
+    }
+
+    public void captureBrowserSwitchResult(FragmentActivity activity) {
+        browserSwitchClient.captureResult(activity);
+    }
+
+    public void deliverPopupBridgeResultFromCache(Context context) {
+        BrowserSwitchResult result = browserSwitchClient.deliverResultFromCache(context);
         if (result != null) {
             onBrowserSwitchResult(result);
         }
