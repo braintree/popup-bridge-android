@@ -19,6 +19,7 @@ public class PopupBridgeClient {
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
+    public static final String ALLOW_RECREATION = "allow-recreation";
 
     private final WeakReference<FragmentActivity> activityRef;
     private final WeakReference<WebView> webViewRef;
@@ -179,7 +180,7 @@ public class PopupBridgeClient {
         }
         BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
                 .requestCode(1)
-                .url(Uri.parse(url))
+                .url(urlToURI(url))
                 .returnUrlScheme(returnUrlScheme);
         try {
             browserSwitchClient.start(activity, browserSwitchOptions);
@@ -192,6 +193,13 @@ public class PopupBridgeClient {
         if (navigationListener != null) {
             navigationListener.onUrlOpened(url);
         }
+    }
+
+    private Uri urlToURI(String url) {
+        return Uri.parse(url)
+                .buildUpon()
+                .appendQueryParameter(ALLOW_RECREATION, String.valueOf(0))
+                .build();
     }
 
     @JavascriptInterface
