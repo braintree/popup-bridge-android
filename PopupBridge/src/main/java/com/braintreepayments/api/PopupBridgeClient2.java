@@ -31,10 +31,13 @@ public class PopupBridgeClient2 {
     private PopupBridgeListener listener;
     private String pendingBrowserSwitchId;
 
+    private PopupBridgeState state;
+
     public PopupBridgeClient2(FragmentActivity activity, String returnUrlScheme) {
         this.activity = activity;
         this.returnUrlScheme = returnUrlScheme;
         this.browserSwitchClient = new BrowserSwitchClient();
+        this.state = new PopupBridgeState("IDLE", true, null, null);
     }
 
     public void setListener(PopupBridgeListener listener) {
@@ -48,9 +51,20 @@ public class PopupBridgeClient2 {
     }
 
     public void onResume(FragmentActivity activity) {
+
         BrowserSwitchResult result = browserSwitchClient.deliverResult(activity);
         if (result != null) {
             onBrowserSwitchResult(result);
+        } else if (isBrowserSwitchInProgress()) {
+            state = new PopupBridgeState("UNKNOWN", true, null, null);
+            notifyStateChange();
+
+        } else if (isBrowserSwitchAbandoned()) {
+            state = new PopupBridgeState("UNKNOWN", false, null, null);
+            notifyStateChange();
+        } else {
+            // notify web app that popup bridge is idle
+            notifyStateChange();
         }
     }
 
@@ -118,7 +132,6 @@ public class PopupBridgeClient2 {
         }
     }
 
-    @JavascriptInterface
     public boolean isBrowserSwitchInProgress() {
         if (pendingBrowserSwitchId != null) {
             return browserSwitchClient.isBrowserSwitchInProgress(activity, pendingBrowserSwitchId);
@@ -126,9 +139,13 @@ public class PopupBridgeClient2 {
         return false;
     }
 
+    private boolean isBrowserSwitchAbandoned() {
+        return browserSwitchClient.isBrowserSwitchAbandoned(activity, POPUP_BRIDGE_REQUEST_CODE);
+    }
+
     private void onBrowserSwitchResult(BrowserSwitchResult result) {
         String error = null;
-        String payload = null;
+        JSONObject payload;
 
         Uri returnUri = result.getDeepLinkUrl();
         if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
@@ -158,21 +175,33 @@ public class PopupBridgeClient2 {
             } catch (JSONException ignored) {
             }
 
-            payload = json.toString();
+            payload = json;
+
+            boolean isOriginalActivity =
+                    result.getRequestPendingId().equalsIgnoreCase(pendingBrowserSwitchId);
+
+            String status = (error == null) ? "COMPLETE" : "ERROR";
+            state = new PopupBridgeState(status, isOriginalActivity, payload, error);
+            notifyStateChange();
         }
+    }
+
+    private void notifyStateChange() {
 
         String successJavascript = String.format(""
-                + "function notifyComplete() {"
-                + "  window.popupBridge.onComplete(%s, %s);"
+                + "function notifyStateChange() {"
+                + "  if (window.popupBridge.onStateChange) {"
+                + "     window.popupBridge.onStateChange(%s);"
+                + "  }"
                 + "}"
                 + ""
                 + "if (document.readyState === 'complete') {"
-                + "  notifyComplete();"
+                + "  notifyStateChange();"
                 + "} else {"
                 + "  window.addEventListener('load', function () {"
-                + "    notifyComplete();"
+                + "    notifyStateChange();"
                 + "  });"
-                + "}", error, payload);
+                + "}", state.toJSONString());
 
         runJavaScriptInWebView(successJavascript);
     }
