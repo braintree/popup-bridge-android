@@ -11,6 +11,8 @@ import com.braintreepayments.api.PopupBridgeClient;
 
 public class PopupActivity extends AppCompatActivity {
 
+    private static final String RETURN_URL_SCHEME = "com.braintreepayments.popupbridgeexample";
+
     private WebView mWebView;
     private PopupBridgeClient mPopupBridgeClient;
 
@@ -20,7 +22,7 @@ public class PopupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popup);
         mWebView = findViewById(R.id.web_view);
 
-        mPopupBridgeClient = new PopupBridgeClient(this, mWebView, "com.braintreepayments.popupbridgeexample");
+        mPopupBridgeClient = new PopupBridgeClient(this, mWebView, RETURN_URL_SCHEME);
         mPopupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
         mWebView.loadUrl(getIntent().getStringExtra("url"));
