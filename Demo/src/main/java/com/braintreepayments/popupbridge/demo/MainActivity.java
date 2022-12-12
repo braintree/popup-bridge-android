@@ -9,7 +9,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/";
+    private static final String POPUP_BRIDGE_URL = "http://10.0.2.2:3000/popup_bridge/";
+//    private static final String POPUP_BRIDGE_URL = "https://sshropshire.github.io/popup_bridge_demo";
+//    private static final String POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/";
     private static final String PAYPAL_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal";
     private static final String PAYPAL_CHECKOUTJS_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal-checkout.html";
     private static final String VENMO_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/venmo";

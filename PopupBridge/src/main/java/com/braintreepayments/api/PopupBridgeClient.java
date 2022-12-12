@@ -1,7 +1,10 @@
 package com.braintreepayments.api;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -19,6 +22,8 @@ public class PopupBridgeClient {
 
     public static final String POPUP_BRIDGE_NAME = "popupBridge";
     public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
+
+    private static final int POPUP_BRIDGE_REQUEST_CODE = 1;
 
     private final WeakReference<FragmentActivity> activityRef;
     private final WeakReference<WebView> webViewRef;
@@ -102,25 +107,7 @@ public class PopupBridgeClient {
         String payload = null;
 
         Uri returnUri = result.getDeepLinkUrl();
-        if (result.getStatus() == BrowserSwitchStatus.CANCELED) {
-            runJavaScriptInWebView(""
-                + "function notifyCanceled() {"
-                + "  if (typeof window.popupBridge.onCancel === 'function') {"
-                + "    window.popupBridge.onCancel();"
-                + "  } else {"
-                + "    window.popupBridge.onComplete(null, null);"
-                + "  }"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  notifyCanceled();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    notifyCanceled();"
-                + "  });"
-                + "}");
-            return;
-        } else if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
+        if (result.getStatus() == BrowserSwitchStatus.SUCCESS) {
             if (returnUri == null || !returnUri.getHost().equals(POPUP_BRIDGE_URL_HOST)) {
                 return;
             }
@@ -178,7 +165,7 @@ public class PopupBridgeClient {
             return;
         }
         BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
-                .requestCode(1)
+                .requestCode(POPUP_BRIDGE_REQUEST_CODE)
                 .url(Uri.parse(url))
                 .returnUrlScheme(returnUrlScheme);
         try {
@@ -218,5 +205,16 @@ public class PopupBridgeClient {
 
     public void setErrorListener(PopupBridgeErrorListener listener) {
         errorListener = listener;
+    }
+
+    public void onResume(FragmentActivity activity) {
+        deliverPopupBridgeResult(activity);
+    }
+
+    public void onFragmentResumed(Fragment fragment) {
+        FragmentActivity activity = fragment.getActivity();
+        if (activity != null) {
+            deliverPopupBridgeResult(activity);
+        }
     }
 }

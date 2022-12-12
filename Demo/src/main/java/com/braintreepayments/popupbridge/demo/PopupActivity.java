@@ -5,23 +5,31 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.braintreepayments.api.PopupBridgeClient;
+import com.braintreepayments.api.PopupBridgeClient2;
+import com.braintreepayments.api.PopupBridgeListener;
 
-public class PopupActivity extends AppCompatActivity {
+public class PopupActivity extends AppCompatActivity implements PopupBridgeListener {
+
+    private static final String RETURN_URL_SCHEME = "com.braintreepayments.popupbridgeexample";
 
     private WebView mWebView;
-    private PopupBridgeClient mPopupBridgeClient;
+    private PopupBridgeClient2 popupBridgeClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popup);
+        setTitle("Host Activity");
+
         mWebView = findViewById(R.id.web_view);
 
-        mPopupBridgeClient = new PopupBridgeClient(this, mWebView, "com.braintreepayments.popupbridgeexample");
-        mPopupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
+        popupBridgeClient = new PopupBridgeClient2(this, RETURN_URL_SCHEME);
+        popupBridgeClient.setListener(this);
+        popupBridgeClient.onCreate(savedInstanceState);
+        popupBridgeClient.bindToWebView(mWebView);
 
         mWebView.loadUrl(getIntent().getStringExtra("url"));
     }
@@ -29,13 +37,19 @@ public class PopupActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mPopupBridgeClient.deliverPopupBridgeResult(this);
+        popupBridgeClient.onResume(this);
     }
 
     @Override
     protected void onNewIntent(Intent newIntent) {
         super.onNewIntent(newIntent);
-        setIntent(newIntent);
+        popupBridgeClient.onNewIntent(this, newIntent);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        popupBridgeClient.onSaveInstanceState(outState);
     }
 
     public void showDialog(String message) {
@@ -43,5 +57,20 @@ public class PopupActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
                 .show();
+    }
+
+    @Override
+    public void onPopupBridgeError(Exception error) {
+        showDialog(error.getMessage());
+    }
+
+    @Override
+    public void onPopupBridgeUrlOpened(String url) {
+
+    }
+
+    @Override
+    public void onPopupBridgeMessageReceived(String messageName, String data) {
+
     }
 }
