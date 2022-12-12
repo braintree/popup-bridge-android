@@ -27,12 +27,6 @@ public class PopupActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mPopupBridgeClient.deliverPopupBridgeResult(this);
-    }
-
-    @Override
     protected void onNewIntent(Intent newIntent) {
         super.onNewIntent(newIntent);
         setIntent(newIntent);
