@@ -6,7 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
@@ -16,7 +16,8 @@ import java.lang.ref.WeakReference;
 
 class PopupBridgeLifecycleObserver implements LifecycleEventObserver {
 
-    private final PopupBridgeClient popupBridgeClient;
+    @VisibleForTesting
+    final PopupBridgeClient popupBridgeClient;
 
     PopupBridgeLifecycleObserver(PopupBridgeClient popupBridgeClient) {
         this.popupBridgeClient = popupBridgeClient;

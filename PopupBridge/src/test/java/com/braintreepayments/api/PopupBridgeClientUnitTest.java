@@ -23,6 +23,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Lifecycle;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,11 +46,13 @@ public class PopupBridgeClientUnitTest {
     private WeakReference<WebView> webViewRef;
 
     private MockWebView webView;
+    private Lifecycle lifecycle;
 
     @Before
     public void setup() {
-        fragmentActivity = Robolectric.setupActivity(FragmentActivity.class);
+        fragmentActivity = spy(Robolectric.setupActivity(FragmentActivity.class));
         browserSwitchClient = mock(BrowserSwitchClient.class);
+        lifecycle = mock(Lifecycle.class);
 
         webView = spy(new MockWebView(fragmentActivity));
 
@@ -99,7 +102,22 @@ public class PopupBridgeClientUnitTest {
     }
 
     @Test
-    public void deliverPopupBridgeResult_whenNotPopupBridgeRequest_doesNotCallOnComplete() {
+    public void constructor_setsLifecycleObserver() {
+        when(fragmentActivity.getLifecycle()).thenReturn(lifecycle);
+
+        PopupBridgeClient sut =
+                new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
+
+        ArgumentCaptor<PopupBridgeLifecycleObserver> captor =
+            ArgumentCaptor.forClass(PopupBridgeLifecycleObserver.class);
+        verify(lifecycle).addObserver(captor.capture());
+
+        PopupBridgeLifecycleObserver observer = captor.getValue();
+        assertSame(sut, observer.popupBridgeClient);
+    }
+
+    @Test
+    public void onBrowserSwitchResult_whenNotPopupBridgeRequest_doesNotCallOnComplete() {
         BrowserSwitchResult result = mock(BrowserSwitchResult.class);
         when(result.getStatus()).thenReturn(BrowserSwitchStatus.SUCCESS);
         when(browserSwitchClient.deliverResult(fragmentActivity)).thenReturn(result);
