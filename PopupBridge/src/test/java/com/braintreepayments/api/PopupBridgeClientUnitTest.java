@@ -1,5 +1,21 @@
 package com.braintreepayments.api;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.webkit.WebSettings;
@@ -17,22 +33,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 
 import java.lang.ref.WeakReference;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 public class PopupBridgeClientUnitTest {
@@ -106,7 +106,7 @@ public class PopupBridgeClientUnitTest {
         PopupBridgeClient sut =
                 new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
 
-        sut.deliverPopupBridgeResult(fragmentActivity);
+        sut.onBrowserSwitchResult(result);
         assertNull(webView.mError);
         assertNull(webView.mPayload);
     }
@@ -126,7 +126,7 @@ public class PopupBridgeClientUnitTest {
 
         PopupBridgeClient sut =
                 new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
-        sut.deliverPopupBridgeResult(fragmentActivity);
+        sut.onBrowserSwitchResult(result);
 
         assertEquals(webView.mError, "null");
         assertEquals(webView.mPayload, "null");
@@ -153,7 +153,7 @@ public class PopupBridgeClientUnitTest {
 
         PopupBridgeClient sut =
                 new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
-        sut.deliverPopupBridgeResult(fragmentActivity);
+        sut.onBrowserSwitchResult(result);
 
         assertEquals("null", webView.mError);
         JSONObject payload = new JSONObject(webView.mPayload);
@@ -181,7 +181,7 @@ public class PopupBridgeClientUnitTest {
 
         PopupBridgeClient sut =
                 new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
-        sut.deliverPopupBridgeResult(fragmentActivity);
+        sut.onBrowserSwitchResult(result);
 
         assertEquals("null", webView.mError);
         JSONObject payload = new JSONObject(webView.mPayload);
@@ -206,7 +206,7 @@ public class PopupBridgeClientUnitTest {
 
         PopupBridgeClient sut =
                 new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
-        sut.deliverPopupBridgeResult(fragmentActivity);
+        sut.onBrowserSwitchResult(result);
 
         assertEquals("null", webView.mError);
         JSONObject payload = new JSONObject(webView.mPayload);
@@ -229,7 +229,7 @@ public class PopupBridgeClientUnitTest {
 
         PopupBridgeClient sut =
                 new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
-        sut.deliverPopupBridgeResult(fragmentActivity);
+        sut.onBrowserSwitchResult(result);
 
         assertEquals("null", webView.mError);
         JSONObject payload = new JSONObject(webView.mPayload);
@@ -252,7 +252,7 @@ public class PopupBridgeClientUnitTest {
 
         PopupBridgeClient sut =
                 new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient);
-        sut.deliverPopupBridgeResult(fragmentActivity);
+        sut.onBrowserSwitchResult(result);
 
         assertEquals("null", webView.mError);
         JSONObject payload = new JSONObject(webView.mPayload);
