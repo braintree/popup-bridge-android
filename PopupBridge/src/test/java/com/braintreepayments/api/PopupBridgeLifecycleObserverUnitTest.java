@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
-public class PopupBridgeLifecycleObserverTest {
+public class PopupBridgeLifecycleObserverUnitTest {
 
     private FragmentActivity activity;
     private PopupBridgeClient popupBridgeClient;
