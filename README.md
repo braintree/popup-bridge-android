@@ -68,6 +68,8 @@ Note: The scheme you define must use all lowercase letters.
           
             // register error listener
             popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
+   
+            webView.loadUrl("https://www.example.com/my_web_app");
         }
 
         @Override
