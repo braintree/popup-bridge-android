@@ -14,7 +14,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import java.lang.ref.WeakReference;
 
-public class PopupBridgeLifecycleObserver implements LifecycleEventObserver {
+class PopupBridgeLifecycleObserver implements LifecycleEventObserver {
 
     private final PopupBridgeClient popupBridgeClient;
 
@@ -28,8 +28,6 @@ public class PopupBridgeLifecycleObserver implements LifecycleEventObserver {
             FragmentActivity activity = null;
             if (lifecycleOwner instanceof FragmentActivity) {
                 activity = (FragmentActivity) lifecycleOwner;
-            } else if (lifecycleOwner instanceof Fragment) {
-                activity = ((Fragment) lifecycleOwner).getActivity();
             }
 
             if (activity != null) {
