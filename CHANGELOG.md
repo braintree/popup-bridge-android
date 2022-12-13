@@ -2,6 +2,8 @@
 
 ## unreleased
 
+* Upgrade `targetSdkVersion` and `compileSdkVersion` to API 33
+* Disable Jetifier
 * Breaking Changes
   * Remove `PopupBridgeClient#deliverPopupBridgeResult(FragmentActivity)`
   * Make `PopupBridgeClient#POPUP_BRIDGE_NAME` package-private
