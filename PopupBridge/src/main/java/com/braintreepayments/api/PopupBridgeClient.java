@@ -21,8 +21,8 @@ public class PopupBridgeClient {
     // to prevent shared preferences collisions with other braintree libs that use browser switch
     static final int REQUEST_CODE = 1;
 
-    public static final String POPUP_BRIDGE_NAME = "popupBridge";
-    public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
+    static final String POPUP_BRIDGE_NAME = "popupBridge";
+    static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
     private final WeakReference<FragmentActivity> activityRef;
     private final WeakReference<WebView> webViewRef;

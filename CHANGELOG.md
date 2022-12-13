@@ -1,5 +1,12 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Breaking Changes
+  * Remove `PopupBridgeClient#deliverPopupBridgeResult(FragmentActivity)`
+  * Make `PopupBridgeClient#POPUP_BRIDGE_NAME` package-private
+  * Make `PopupBridgeClient#POPUP_BRIDGE_URL_HOST` package-private
+
 ## 4.1.0
 
 * Upgrade `targetSdkVersion` and `compileSdkVersion` to API 31
