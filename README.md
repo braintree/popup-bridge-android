@@ -71,13 +71,6 @@ Note: The scheme you define must use all lowercase letters.
         }
 
         @Override
-        protected void onResume() {
-            super.onResume();
-            // call 'deliverResult' in onResume to capture a pending result
-            popupBridgeClient.deliverPopupBridgeResult(this);
-        }
-   
-        @Override
         protected void onNewIntent(Intent newIntent) {
             // required if your deep link destination activity launch mode is `singleTop`, `singleTask`, or `singleInstance`
             super.onNewIntent(newIntent);
