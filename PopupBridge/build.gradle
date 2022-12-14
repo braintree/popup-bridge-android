@@ -1,17 +1,16 @@
 plugins {
     id 'com.android.library'
-    id 'de.marcphilipp.nexus-publish'
+    id 'maven-publish'
     id 'signing'
 }
 
 android {
+    namespace 'com.braintreepayments.api.popupbridge'
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode rootProject.versionCode
-        versionName rootProject.versionName
 
         consumerProguardFiles 'proguard.pro'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -54,58 +53,48 @@ task sourcesJar(type: Jar) {
 }
 
 signing {
-    required {
-        !version.endsWith("SNAPSHOT") && !version.endsWith("DEVELOPMENT")
-    }
+    required { !version.endsWith("SNAPSHOT") }
     sign publishing.publications
 }
 
-nexusPublishing {
-    // give nexus sonatype more time to initialize the staging repository
-    clientTimeout = Duration.ofMinutes(3)
-    repositories {
-        sonatype()
-    }
-}
+publishing {
+    publications {
+        release(MavenPublication) {
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
+            afterEvaluate {
                 from components.release
+            }
+            groupId = 'com.braintreepayments.api'
+            artifactId = 'popup-bridge'
+            version = rootProject.versionName
 
-                artifact sourcesJar
-                artifact javadocsJar
+            artifact sourcesJar
+            artifact javadocsJar
 
-                groupId = 'com.braintreepayments.api'
-                artifactId = 'popup-bridge'
-                version = rootProject.versionName
+            pom {
+                name = 'popup-bridge'
+                packaging = 'aar'
+                description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
+                url = 'https://github.com/braintree/popup-bridge-android'
 
-                pom {
-                    name = 'popup-bridge'
-                    packaging = 'aar'
-                    description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
-                    url = 'https://github.com/braintree/popup-bridge-android'
+                scm {
+                    url = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                    connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                    developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                }
 
-                    scm {
-                        url = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                        connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                        developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                developers {
+                    developer {
+                        id = 'devs'
+                        name = 'Braintree Payments'
                     }
+                }
 
-                    developers {
-                        developer {
-                            id = 'devs'
-                            name = 'Braintree Payments'
-                        }
-                    }
-
-                    licenses {
-                        license {
-                            name = 'MIT'
-                            url = 'http://opensource.org/licenses/MIT'
-                            distribution = 'repo'
-                        }
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'http://opensource.org/licenses/MIT'
+                        distribution = 'repo'
                     }
                 }
             }
