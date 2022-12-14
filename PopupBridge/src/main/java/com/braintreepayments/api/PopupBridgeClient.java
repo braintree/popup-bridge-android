@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class PopupBridgeClient {
 
-    // TODO: consider using a `com.braintreepayments...` prefixed request key
+    // NEXT MAJOR VERSION: consider using a `com.braintreepayments...` prefixed request key
     // to prevent shared preferences collisions with other braintree libs that use browser switch
     static final int REQUEST_CODE = 1;
 
