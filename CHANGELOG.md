@@ -1,5 +1,15 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Android 13 Support
+  * Upgrade `targetSdkVersion` and `compileSdkVersion` to API 33
+* Disable Jetifier
+* Breaking Changes
+  * Remove `PopupBridgeClient#deliverPopupBridgeResult(FragmentActivity)`
+  * Make `PopupBridgeClient#POPUP_BRIDGE_NAME` package-private
+  * Make `PopupBridgeClient#POPUP_BRIDGE_URL_HOST` package-private
+
 ## 4.1.0
 
 * Upgrade `targetSdkVersion` and `compileSdkVersion` to API 31

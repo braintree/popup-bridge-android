@@ -68,15 +68,10 @@ Note: The scheme you define must use all lowercase letters.
           
             // register error listener
             popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
+   
+            webView.loadUrl("https://www.example.com/my_web_app");
         }
 
-        @Override
-        protected void onResume() {
-            super.onResume();
-            // call 'deliverResult' in onResume to capture a pending result
-            popupBridgeClient.deliverPopupBridgeResult(this);
-        }
-   
         @Override
         protected void onNewIntent(Intent newIntent) {
             // required if your deep link destination activity launch mode is `singleTop`, `singleTask`, or `singleInstance`

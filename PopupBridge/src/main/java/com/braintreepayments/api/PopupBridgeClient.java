@@ -17,8 +17,12 @@ import java.util.Set;
 
 public class PopupBridgeClient {
 
-    public static final String POPUP_BRIDGE_NAME = "popupBridge";
-    public static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
+    // NEXT MAJOR VERSION: consider using a `com.braintreepayments...` prefixed request key
+    // to prevent shared preferences collisions with other braintree libs that use browser switch
+    static final int REQUEST_CODE = 1;
+
+    static final String POPUP_BRIDGE_NAME = "popupBridge";
+    static final String POPUP_BRIDGE_URL_HOST = "popupbridgev1";
 
     private final WeakReference<FragmentActivity> activityRef;
     private final WeakReference<WebView> webViewRef;
@@ -63,21 +67,10 @@ public class PopupBridgeClient {
 
         this.returnUrlScheme = returnUrlScheme;
         this.browserSwitchClient = browserSwitchClient;
-    }
 
-    /**
-     * Deliver a pending popup bridge result to an Android activity.
-     *
-     * We recommend you call this method in onResume to deliver a result once your
-     * app has re-entered the foreground.
-     *
-     * @param activity the activity that received the deep link back into the app
-     */
-    public void deliverPopupBridgeResult(FragmentActivity activity) {
-        BrowserSwitchResult result = browserSwitchClient.deliverResult(activity);
-        if (result != null) {
-            onBrowserSwitchResult(result);
-        }
+        PopupBridgeLifecycleObserver observer =
+            new PopupBridgeLifecycleObserver(this);
+        activity.getLifecycle().addObserver(observer);
     }
 
     private void runJavaScriptInWebView(final String script) {
@@ -97,7 +90,15 @@ public class PopupBridgeClient {
         });
     }
 
-    private void onBrowserSwitchResult(BrowserSwitchResult result) {
+    BrowserSwitchResult getBrowserSwitchResult(FragmentActivity activity) {
+        return browserSwitchClient.getResult(activity);
+    }
+
+    BrowserSwitchResult deliverBrowserSwitchResult(FragmentActivity activity) {
+        return browserSwitchClient.deliverResult(activity);
+    }
+
+    void onBrowserSwitchResult(BrowserSwitchResult result) {
         String error = null;
         String payload = null;
 
@@ -178,7 +179,7 @@ public class PopupBridgeClient {
             return;
         }
         BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
-                .requestCode(1)
+                .requestCode(REQUEST_CODE)
                 .url(Uri.parse(url))
                 .returnUrlScheme(returnUrlScheme);
         try {
