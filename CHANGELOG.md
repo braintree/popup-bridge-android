@@ -2,7 +2,8 @@
 
 ## unreleased
 
-* Upgrade `targetSdkVersion` and `compileSdkVersion` to API 33
+* Android 13 Support
+  * Upgrade `targetSdkVersion` and `compileSdkVersion` to API 33
 * Disable Jetifier
 * Breaking Changes
   * Remove `PopupBridgeClient#deliverPopupBridgeResult(FragmentActivity)`
