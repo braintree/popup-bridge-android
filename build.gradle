@@ -15,6 +15,10 @@ plugins {
     id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
+ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID') ?: ''
+ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
+ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
+
 version = '4.1.1-SNAPSHOT'
 group = "com.braintreepayments"
 
