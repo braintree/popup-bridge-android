@@ -7,17 +7,17 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
-        classpath 'de.marcphilipp.gradle:nexus-publish-plugin:0.4.0'
-        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.2'
+        classpath 'com.android.tools.build:gradle:7.3.1'
     }
 }
 
 plugins {
-    id 'io.codearte.nexus-staging' version '0.21.2'
+    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
-version '4.1.1-SNAPSHOT'
+version = '4.1.1-SNAPSHOT'
+group = "com.braintreepayments"
+
 ext {
     compileSdkVersion = 33
     minSdkVersion = 21
@@ -33,10 +33,15 @@ allprojects {
     }
 }
 
-nexusStaging {
-    packageGroup = "com.braintreepayments"
-    // give nexus sonatype more time to close the staging repository
-    delayBetweenRetriesInMillis = 20000
-    username = System.env['SONATYPE_USERNAME']
-    password = System.env['SONATYPE_PASSWORD']
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = System.getenv('SONATYPE_USERNAME')
+            password = System.getenv('SONATYPE_PASSWORD')
+        }
+    }
+    transitionCheckOptions {
+        // give nexus sonatype more time to close the staging repository
+        delayBetween.set(Duration.ofSeconds(20))
+    }
 }

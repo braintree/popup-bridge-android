@@ -3,8 +3,8 @@ plugins {
 }
 
 android {
+    namespace 'com.braintreepayments.popupbridge.demo'
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion '29.0.3'
 
     defaultConfig {
         applicationId 'com.braintreepayments.popupbridge.demo'
