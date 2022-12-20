@@ -93,12 +93,12 @@ task incrementSNAPSHOTVersion {
         def (major, minor, patch) = versionParam.tokenize('.')
         def patchInteger = patch.toInteger()
         def newVersion = "$major.$minor.${patchInteger + 1}-SNAPSHOT"
-        def gradleFileText = gradleFile.text.replaceFirst("\\nversion '\\d+\\.\\d+\\.\\d+(-.*)?'", "\nversion '" + newVersion + "'")
+        def gradleFileText = gradleFile.text.replaceFirst("\\nversion = '\\d+\\.\\d+\\.\\d+(-.*)?'", "\nversion = '" + newVersion + "'")
         gradleFile.write(gradleFileText)
 
         // update README snapshot version
         def readmeFile = new File('README.md')
-        def readmeFileText = readmeFile.text.replaceFirst(":card:\\d+\\.\\d+\\.\\d+-SNAPSHOT'", ":card:" + newVersion + "'")
+        def readmeFileText = readmeFile.text.replaceFirst(":popup-bridge:\\d+\\.\\d+\\.\\d+-SNAPSHOT'", ":popup-bridge:" + newVersion + "'")
         readmeFile.write(readmeFileText)
     }
 }
