@@ -62,7 +62,7 @@ task changeREADMEVersion {
     doLast {
 
         def readmeFile = new File('README.md')
-        def readmeFileText = readmeFile.text.replaceFirst(":card:\\d+\\.\\d+\\.\\d+'", ":card:" + versionParam + "'")
+        def readmeFileText = readmeFile.text.replaceFirst(":popup-bridge:\\d+\\.\\d+\\.\\d+'", ":popup-bridge:" + versionParam + "'")
         readmeFile.write(readmeFileText)
     }
 }
