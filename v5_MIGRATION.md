@@ -20,7 +20,7 @@ The primary difference betwen v4 and v5 is the host activity no longer has to ca
 
 To use PopupBridge, instantiate a `PopupBridgeClient`:
 
-```java
+```diff
 package com.company.myapp;
 
 import com.braintreepayments.api.PopupBridgeClient;
@@ -35,13 +35,19 @@ class MyWebViewActivity extends Activity {
     super.onCreate(savedInstanceState);
     
     popupBridgeClient = new PopupBridgeClient(this, webView, "my-custom-url-scheme");
-  
-    // register error listener
-    popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
+    popupBridgeClient.setErrorListener(error -> {
+      // handle popup bridge errors
+    });
 
     // load webpage URL
     webView.loadUrl("https://www.example.com/my_web_app");
   }
+
+  - @Override
+  - protected void onResume() {
+  -   super.onResume();
+  -   popupBridgeClient.deliverPopupBridgeResult(this);
+  - }
 
   @Override
   protected void onNewIntent(Intent newIntent) {
