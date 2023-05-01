@@ -29,6 +29,26 @@ dependencies {
 }
 ```
 
+To preview the latest work in progress builds, add the following SNAPSHOT dependency in your `build.gradle`:
+
+```groovy
+dependencies {
+  implementation 'com.braintreepayments.api:popup-bridge:4.1.1-SNAPSHOT'
+}
+```
+
+You will also need to add the Sonatype snapshots repo to your top-level `build.gradle` to import SNAPSHOT builds:
+
+```groovy
+allprojects {
+    repositories {
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/snapshots/'
+        }
+    }
+}
+```
+
 Quick Start
 -----------
 
