@@ -43,6 +43,7 @@ class MyWebViewActivity extends Activity {
     webView.loadUrl("https://www.example.com/my_web_app");
   }
 
+- // no longer required in v5
 - @Override
 - protected void onResume() {
 -   super.onResume();
