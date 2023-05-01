@@ -43,11 +43,11 @@ class MyWebViewActivity extends Activity {
     webView.loadUrl("https://www.example.com/my_web_app");
   }
 
-  - @Override
-  - protected void onResume() {
-  -   super.onResume();
-  -   popupBridgeClient.deliverPopupBridgeResult(this);
-  - }
+- @Override
+- protected void onResume() {
+-   super.onResume();
+-   popupBridgeClient.deliverPopupBridgeResult(this);
+- }
 
   @Override
   protected void onNewIntent(Intent newIntent) {
