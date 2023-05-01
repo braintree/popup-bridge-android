@@ -56,5 +56,4 @@ class MyWebViewActivity extends Activity {
     setIntent(newIntent);
   }
 }
-
 ```
