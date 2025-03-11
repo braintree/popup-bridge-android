@@ -85,7 +85,7 @@ task :release_beta => :unit_tests do
   puts "\nDone. Commits and tags have been created. If everything appears to be in order, hit ENTER to push."
   $stdin.gets
 
-  sh "git push origin master #{version}"
+  sh "git push origin main #{version}"
 end
 
 def prompt_for_sonatype_username_and_password
@@ -112,7 +112,7 @@ def post_release(version)
   puts "\nDone. Commits and tags have been created. If everything appears to be in order, hit ENTER to push."
   $stdin.gets
 
-  sh "git push origin master #{version}"
+  sh "git push origin main #{version}"
 end
 
 def get_current_version
