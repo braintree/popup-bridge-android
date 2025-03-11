@@ -28,8 +28,8 @@ android {
 
 dependencies {
     implementation project(':PopupBridge')
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation libs.appcompat
 
-    androidTestImplementation 'com.braintreepayments:device-automator:1.0.0'
-    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation libs.device.automator
+    androidTestImplementation libs.core
 }
