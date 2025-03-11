@@ -52,8 +52,8 @@ internal class PopupBridgeLifecycleObserver(
     }
 
     companion object {
-        private fun isPopupBridgeResult(result: BrowserSwitchResult?): Boolean {
-            return (result != null && result.requestCode == PopupBridgeClient.REQUEST_CODE)
+        private fun isPopupBridgeResult(result: BrowserSwitchResult): Boolean {
+            return result.requestCode == PopupBridgeClient.REQUEST_CODE
         }
     }
 }
