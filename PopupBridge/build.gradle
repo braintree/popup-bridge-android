@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'maven-publish'
     id 'signing'
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -22,16 +23,20 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
 }
 
 dependencies {
-    implementation 'com.braintreepayments.api:browser-switch:2.3.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.7.0'
+    implementation libs.browser.switch
+    implementation libs.appcompat
+    implementation libs.lifecycle.runtime
 
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.7.0'
-    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation libs.junit
+    testImplementation libs.mockito.core
+    testImplementation libs.robolectric
 }
 
 // region signing and publishing
