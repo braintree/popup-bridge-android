@@ -1,7 +1,6 @@
 package com.braintreepayments.api
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.annotation.VisibleForTesting
@@ -9,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import java.lang.ref.WeakReference
 import org.json.JSONException
 import org.json.JSONObject
+import androidx.core.net.toUri
 
 class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting internal constructor(
     private val activityRef: WeakReference<FragmentActivity>,
@@ -102,7 +102,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
             val queryItems = JSONObject()
 
             val queryParams = returnUri.queryParameterNames
-            if (queryParams != null && !queryParams.isEmpty()) {
+            if (queryParams.isNotEmpty()) {
                 for (queryParam in queryParams) {
                     try {
                         queryItems.put(queryParam, returnUri.getQueryParameter(queryParam))
@@ -154,33 +154,25 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
         val activity = activityRef.get() ?: return
         val browserSwitchOptions = BrowserSwitchOptions()
             .requestCode(REQUEST_CODE)
-            .url(Uri.parse(url))
+            .url(url?.toUri())
             .returnUrlScheme(returnUrlScheme)
         try {
             browserSwitchClient.start(activity, browserSwitchOptions)
         } catch (e: Exception) {
-            if (errorListener != null) {
-                errorListener!!.onError(e)
-            }
+            errorListener?.onError(e)
         }
 
-        if (navigationListener != null) {
-            navigationListener!!.onUrlOpened(url)
-        }
+        navigationListener?.onUrlOpened(url)
     }
 
     @JavascriptInterface
     fun sendMessage(messageName: String?) {
-        if (messageListener != null) {
-            messageListener!!.onMessageReceived(messageName, null)
-        }
+        messageListener?.onMessageReceived(messageName, null)
     }
 
     @JavascriptInterface
     fun sendMessage(messageName: String?, data: String?) {
-        if (messageListener != null) {
-            messageListener!!.onMessageReceived(messageName, data)
-        }
+        messageListener?.onMessageReceived(messageName, data)
     }
 
     fun setNavigationListener(listener: PopupBridgeNavigationListener?) {
