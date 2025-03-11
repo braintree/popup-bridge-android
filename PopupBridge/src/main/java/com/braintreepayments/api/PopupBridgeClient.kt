@@ -11,19 +11,14 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting internal constructor(
-    activityRef: WeakReference<FragmentActivity>,
-    webViewRef: WeakReference<WebView>,
-    returnUrlScheme: String?,
-    browserSwitchClient: BrowserSwitchClient
+    private val activityRef: WeakReference<FragmentActivity>,
+    private val webViewRef: WeakReference<WebView>,
+    private val returnUrlScheme: String,
+    private val browserSwitchClient: BrowserSwitchClient
 ) {
-    private val activityRef: WeakReference<FragmentActivity>
-    private val webViewRef: WeakReference<WebView>
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
     private var errorListener: PopupBridgeErrorListener? = null
-    private val returnUrlScheme: String?
-
-    private val browserSwitchClient: BrowserSwitchClient
 
     /**
      * Create a new instance of [PopupBridgeClient].
@@ -35,7 +30,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
      * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
-    constructor(activity: FragmentActivity, webView: WebView, returnUrlScheme: String?) : this(
+    constructor(activity: FragmentActivity, webView: WebView, returnUrlScheme: String) : this(
         WeakReference<FragmentActivity>(activity),
         WeakReference<WebView>(webView),
         returnUrlScheme,
@@ -51,11 +46,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
 
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME)
-        this.webViewRef = webViewRef
-        this.activityRef = activityRef
-
-        this.returnUrlScheme = returnUrlScheme
-        this.browserSwitchClient = browserSwitchClient
 
         val observer =
             PopupBridgeLifecycleObserver(this)
