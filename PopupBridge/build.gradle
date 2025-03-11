@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace 'com.braintreepayments.api.popupbridge'
-    compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
+        compileSdk rootProject.compileSdkVersion
 
         consumerProguardFiles 'proguard.pro'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -26,12 +26,12 @@ android {
 
 dependencies {
     implementation 'com.braintreepayments.api:browser-switch:2.3.1'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.5.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime:2.7.0'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:3.6.0'
-    testImplementation 'org.robolectric:robolectric:4.7.3'
+    testImplementation 'org.mockito:mockito-core:5.7.0'
+    testImplementation 'org.robolectric:robolectric:4.11.1'
 }
 
 // region signing and publishing
