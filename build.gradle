@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.android.tools.build:gradle:8.3.2'
     }
 }
 
@@ -23,9 +23,9 @@ version = '4.1.1-SNAPSHOT'
 group = "com.braintreepayments"
 
 ext {
-    compileSdkVersion = 33
-    minSdkVersion = 21
-    targetSdkVersion = 33
+    compileSdkVersion = 35
+    minSdkVersion = 23
+    targetSdkVersion = 35
     versionCode = 16
     versionName = version
 }

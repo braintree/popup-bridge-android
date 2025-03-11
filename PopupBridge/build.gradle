@@ -57,49 +57,48 @@ signing {
     sign publishing.publications
 }
 
-publishing {
-    publications {
-        release(MavenPublication) {
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = 'com.braintreepayments.api'
+                artifactId = 'popup-bridge'
+                version = rootProject.versionName
 
-            afterEvaluate {
-                from components.release
-            }
-            groupId = 'com.braintreepayments.api'
-            artifactId = 'popup-bridge'
-            version = rootProject.versionName
+                artifact sourcesJar
+                artifact javadocsJar
 
-            artifact sourcesJar
-            artifact javadocsJar
+                pom {
+                    name = 'popup-bridge'
+                    packaging = 'aar'
+                    description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
+                    url = 'https://github.com/braintree/popup-bridge-android'
 
-            pom {
-                name = 'popup-bridge'
-                packaging = 'aar'
-                description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
-                url = 'https://github.com/braintree/popup-bridge-android'
-
-                scm {
-                    url = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                    connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                    developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                }
-
-                developers {
-                    developer {
-                        id = 'devs'
-                        name = 'Braintree Payments'
+                    scm {
+                        url = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                        connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                        developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
                     }
-                }
 
-                licenses {
-                    license {
-                        name = 'MIT'
-                        url = 'http://opensource.org/licenses/MIT'
-                        distribution = 'repo'
+                    developers {
+                        developer {
+                            id = 'devs'
+                            name = 'Braintree Payments'
+                        }
+                    }
+
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'http://opensource.org/licenses/MIT'
+                            distribution = 'repo'
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 // endregion
