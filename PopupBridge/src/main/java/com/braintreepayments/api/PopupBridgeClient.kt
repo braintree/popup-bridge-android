@@ -4,17 +4,18 @@ import android.annotation.SuppressLint
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.annotation.VisibleForTesting
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
-import java.lang.ref.WeakReference
 import org.json.JSONException
 import org.json.JSONObject
-import androidx.core.net.toUri
+import java.lang.ref.WeakReference
 
 class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting internal constructor(
     private val activityRef: WeakReference<FragmentActivity>,
     private val webViewRef: WeakReference<WebView>,
     private val returnUrlScheme: String,
-    private val browserSwitchClient: BrowserSwitchClient
+    private val browserSwitchClient: BrowserSwitchClient = BrowserSwitchClient(),
+    popupBridgeLifecycleObserver: PopupBridgeLifecycleObserver = PopupBridgeLifecycleObserver(browserSwitchClient)
 ) {
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
@@ -31,10 +32,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     constructor(activity: FragmentActivity, webView: WebView, returnUrlScheme: String) : this(
-        WeakReference<FragmentActivity>(activity),
-        WeakReference<WebView>(webView),
-        returnUrlScheme,
-        BrowserSwitchClient()
+        activityRef = WeakReference<FragmentActivity>(activity),
+        webViewRef = WeakReference<WebView>(webView),
+        returnUrlScheme = returnUrlScheme
     )
 
     init {
@@ -47,9 +47,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME)
 
-        val observer =
-            PopupBridgeLifecycleObserver(this)
-        activity.lifecycle.addObserver(observer)
+        popupBridgeLifecycleObserver.onBrowserSwitchResult = { result -> onBrowserSwitchResult(result) }
+        activity.lifecycle.addObserver(popupBridgeLifecycleObserver)
     }
 
     private fun runJavaScriptInWebView(script: String) {
@@ -76,21 +75,21 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
         if (result.status == BrowserSwitchStatus.CANCELED) {
             runJavaScriptInWebView(
                 (""
-                    + "function notifyCanceled() {"
-                    + "  if (typeof window.popupBridge.onCancel === 'function') {"
-                    + "    window.popupBridge.onCancel();"
-                    + "  } else {"
-                    + "    window.popupBridge.onComplete(null, null);"
-                    + "  }"
-                    + "}"
-                    + ""
-                    + "if (document.readyState === 'complete') {"
-                    + "  notifyCanceled();"
-                    + "} else {"
-                    + "  window.addEventListener('load', function () {"
-                    + "    notifyCanceled();"
-                    + "  });"
-                    + "}")
+                        + "function notifyCanceled() {"
+                        + "  if (typeof window.popupBridge.onCancel === 'function') {"
+                        + "    window.popupBridge.onCancel();"
+                        + "  } else {"
+                        + "    window.popupBridge.onComplete(null, null);"
+                        + "  }"
+                        + "}"
+                        + ""
+                        + "if (document.readyState === 'complete') {"
+                        + "  notifyCanceled();"
+                        + "} else {"
+                        + "  window.addEventListener('load', function () {"
+                        + "    notifyCanceled();"
+                        + "  });"
+                        + "}")
             )
             return
         } else if (result.status == BrowserSwitchStatus.SUCCESS) {
@@ -108,7 +107,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
                         queryItems.put(queryParam, returnUri.getQueryParameter(queryParam))
                     } catch (e: JSONException) {
                         error = "new Error('Failed to parse query items from return URL. " +
-                            e.localizedMessage + "')"
+                                e.localizedMessage + "')"
                     }
                 }
             }

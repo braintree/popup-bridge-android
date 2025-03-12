@@ -9,8 +9,11 @@ import androidx.lifecycle.LifecycleOwner
 import java.lang.ref.WeakReference
 
 internal class PopupBridgeLifecycleObserver(
-    private val popupBridgeClient: PopupBridgeClient
+    private val browserSwitchClient: BrowserSwitchClient
 ) : LifecycleEventObserver {
+
+    var onBrowserSwitchResult: ((BrowserSwitchResult) -> Unit)? = null
+
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         if (event == Lifecycle.Event.ON_RESUME) {
             var activity: FragmentActivity? = null
@@ -40,10 +43,10 @@ internal class PopupBridgeLifecycleObserver(
                 val activityRef = WeakReference(activity)
                 Handler(Looper.getMainLooper()).post {
                     activityRef.get()?.let { hostActivity ->
-                        val pendingResult = popupBridgeClient.getBrowserSwitchResult(hostActivity)
+                        val pendingResult = browserSwitchClient.getResult(hostActivity)
                         if (isPopupBridgeResult(pendingResult)) {
-                            val result = popupBridgeClient.deliverBrowserSwitchResult(hostActivity)
-                            popupBridgeClient.onBrowserSwitchResult(result)
+                            val result = browserSwitchClient.deliverResult(hostActivity)
+                            onBrowserSwitchResult?.invoke(result)
                         }
                     }
                 }
@@ -52,8 +55,8 @@ internal class PopupBridgeLifecycleObserver(
     }
 
     companion object {
-        private fun isPopupBridgeResult(result: BrowserSwitchResult): Boolean {
-            return result.requestCode == PopupBridgeClient.REQUEST_CODE
+        private fun isPopupBridgeResult(result: BrowserSwitchResult?): Boolean {
+            return result?.requestCode == PopupBridgeClient.REQUEST_CODE
         }
     }
 }
