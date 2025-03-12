@@ -59,14 +59,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
         })
     }
 
-    fun getBrowserSwitchResult(activity: FragmentActivity): BrowserSwitchResult {
-        return browserSwitchClient.getResult(activity)
-    }
-
-    fun deliverBrowserSwitchResult(activity: FragmentActivity): BrowserSwitchResult {
-        return browserSwitchClient.deliverResult(activity)
-    }
-
     fun onBrowserSwitchResult(result: BrowserSwitchResult) {
         var error: String? = null
         var payload: String? = null

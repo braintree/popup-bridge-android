@@ -331,26 +331,4 @@ public class PopupBridgeClientUnitTest {
         sut.sendMessage("test-message", "data-string");
         verify(messageListener).onMessageReceived(eq("test-message"), eq("data-string"));
     }
-
-    @Test
-    public void getBrowserSwitchResult_forwardsInvocationToBrowserSwitchClient() {
-        BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(browserSwitchClient.getResult(fragmentActivity)).thenReturn(result);
-
-        PopupBridgeClient sut =
-            new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient, popupBridgeLifecycleObserver);
-
-        assertSame(result, sut.getBrowserSwitchResult(fragmentActivity));
-    }
-
-    @Test
-    public void deliverBrowserSwitchResult_forwardsInvocationToBrowserSwitchClient() {
-        BrowserSwitchResult result = mock(BrowserSwitchResult.class);
-        when(browserSwitchClient.deliverResult(fragmentActivity)).thenReturn(result);
-
-        PopupBridgeClient sut =
-            new PopupBridgeClient(activityRef, webViewRef, "my-custom-url-scheme", browserSwitchClient, popupBridgeLifecycleObserver);
-
-        assertSame(result, sut.deliverBrowserSwitchResult(fragmentActivity));
-    }
 }
