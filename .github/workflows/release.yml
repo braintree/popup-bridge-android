@@ -14,11 +14,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Set up Java 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11.0.10'
-          distribution: 'zulu'
+      - name: Set up Java
+        uses: ./.github/actions/setup_java
       # After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
       - name: Decode Signing Key
         uses: ./.github/actions/decode_signing_key_action
@@ -37,11 +34,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Set up Java 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11.0.10'
-          distribution: 'zulu'
+      - name: Set up Java
+        uses: ./.github/actions/setup_java
       - name: Unit Tests
         run: ./gradlew --stacktrace testRelease
   publish:
@@ -51,11 +45,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Set up Java 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11.0.10'
-          distribution: 'zulu'
+      - name: Set up Java
+        uses: ./.github/actions/setup_java
       - name: Decode Signing Key
         uses: ./.github/actions/decode_signing_key_action
         with:

@@ -2,15 +2,16 @@ plugins {
     id 'com.android.library'
     id 'maven-publish'
     id 'signing'
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
     namespace 'com.braintreepayments.api.popupbridge'
-    compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
+        compileSdk rootProject.compileSdkVersion
 
         consumerProguardFiles 'proguard.pro'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -19,19 +20,23 @@ android {
     testOptions.unitTests.includeAndroidResources = true
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
     }
 }
 
 dependencies {
-    implementation 'com.braintreepayments.api:browser-switch:2.3.1'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.5.1'
+    implementation libs.browser.switch
+    implementation libs.appcompat
+    implementation libs.lifecycle.runtime
 
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:3.6.0'
-    testImplementation 'org.robolectric:robolectric:4.7.3'
+    testImplementation libs.junit
+    testImplementation libs.mockito.core
+    testImplementation libs.robolectric
 }
 
 // region signing and publishing
@@ -57,49 +62,48 @@ signing {
     sign publishing.publications
 }
 
-publishing {
-    publications {
-        release(MavenPublication) {
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = 'com.braintreepayments.api'
+                artifactId = 'popup-bridge'
+                version = rootProject.versionName
 
-            afterEvaluate {
-                from components.release
-            }
-            groupId = 'com.braintreepayments.api'
-            artifactId = 'popup-bridge'
-            version = rootProject.versionName
+                artifact sourcesJar
+                artifact javadocsJar
 
-            artifact sourcesJar
-            artifact javadocsJar
+                pom {
+                    name = 'popup-bridge'
+                    packaging = 'aar'
+                    description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
+                    url = 'https://github.com/braintree/popup-bridge-android'
 
-            pom {
-                name = 'popup-bridge'
-                packaging = 'aar'
-                description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
-                url = 'https://github.com/braintree/popup-bridge-android'
-
-                scm {
-                    url = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                    connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                    developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                }
-
-                developers {
-                    developer {
-                        id = 'devs'
-                        name = 'Braintree Payments'
+                    scm {
+                        url = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                        connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
+                        developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
                     }
-                }
 
-                licenses {
-                    license {
-                        name = 'MIT'
-                        url = 'http://opensource.org/licenses/MIT'
-                        distribution = 'repo'
+                    developers {
+                        developer {
+                            id = 'devs'
+                            name = 'Braintree Payments'
+                        }
+                    }
+
+                    licenses {
+                        license {
+                            name = 'MIT'
+                            url = 'http://opensource.org/licenses/MIT'
+                            distribution = 'repo'
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 // endregion
