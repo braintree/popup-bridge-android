@@ -1,7 +1,7 @@
 [versions]
 # Demo App
 appcompatVersion = "1.7.0"
-browserSwitchVersion = "2.3.1"
+browserSwitchVersion = "3.0.0"
 coreVersion = "1.6.1"
 deviceAutomatorVersion = "1.0.0"
 gradleVersion = "8.9.0"
@@ -9,6 +9,7 @@ junitVersion = "4.13.2"
 kotlinAndroidVersion = "2.1.10"
 lifecycleRuntimeVersion = "2.8.7"
 mockitoCoreVersion = "5.7.0"
+mockkVersion = "1.13.17"
 robolectricVersion = "4.11.1"
 
 [libraries]
@@ -20,6 +21,7 @@ gradle = { module = "com.android.tools.build:gradle", version.ref = "gradleVersi
 junit = { module = "junit:junit", version.ref = "junitVersion" }
 lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "lifecycleRuntimeVersion" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCoreVersion" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectricVersion" }
 
 [plugins]

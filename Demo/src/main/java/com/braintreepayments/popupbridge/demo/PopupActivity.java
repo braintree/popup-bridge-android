@@ -13,31 +13,37 @@ public class PopupActivity extends AppCompatActivity {
 
     private static final String RETURN_URL_SCHEME = "com.braintreepayments.popupbridgeexample";
 
-    private WebView mWebView;
-    private PopupBridgeClient mPopupBridgeClient;
+    private WebView webView;
+    private PopupBridgeClient popupBridgeClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popup);
-        mWebView = findViewById(R.id.web_view);
+        webView = findViewById(R.id.web_view);
 
-        mPopupBridgeClient = new PopupBridgeClient(this, mWebView, RETURN_URL_SCHEME);
-        mPopupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
+        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME);
+        popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
-        mWebView.loadUrl(getIntent().getStringExtra("url"));
+        webView.loadUrl(getIntent().getStringExtra("url"));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        popupBridgeClient.handleReturnToApp(getIntent());
     }
 
     @Override
     protected void onNewIntent(Intent newIntent) {
         super.onNewIntent(newIntent);
-        setIntent(newIntent);
+        popupBridgeClient.handleReturnToApp(newIntent);
     }
 
     public void showDialog(String message) {
         new AlertDialog.Builder(this)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
-                .show();
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
+            .show();
     }
 }
