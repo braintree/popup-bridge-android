@@ -121,7 +121,7 @@ class PopupBridgeClientUnitTest {
         every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
         every { browserSwitchFinalResult.returnUrl } returns returnUrl
 
-        val payLoadJson = JSONObject().apply {
+        val payloadJson = JSONObject().apply {
             val queryItems = JSONObject().apply {
                 put("first", "first_value")
                 put("second", "second_value")
@@ -130,7 +130,7 @@ class PopupBridgeClientUnitTest {
             put("queryItems", queryItems)
             put("hash", returnUrl.fragment)
         }
-        val expectedJavascriptString = getExpectedSuccessJavascript(null, payLoadJson)
+        val expectedJavascriptString = getExpectedSuccessJavascript(null, payloadJson)
 
         initializeClient()
 
