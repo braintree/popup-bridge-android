@@ -186,10 +186,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     companion object {
-        // NEXT MAJOR VERSION: consider using a `com.braintreepayments...` prefixed request key
-        // to prevent shared preferences collisions with other braintree libs that use browser switch
         private const val REQUEST_CODE: Int = 1
-
         private const val POPUP_BRIDGE_NAME: String = "popupBridge"
         private const val POPUP_BRIDGE_URL_HOST: String = "popupbridgev1"
     }
