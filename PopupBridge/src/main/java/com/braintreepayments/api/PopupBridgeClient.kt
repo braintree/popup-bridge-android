@@ -1,21 +1,22 @@
 package com.braintreepayments.api
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import androidx.annotation.VisibleForTesting
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting internal constructor(
+class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal constructor(
     private val activityRef: WeakReference<FragmentActivity>,
     private val webViewRef: WeakReference<WebView>,
     private val returnUrlScheme: String,
     private val browserSwitchClient: BrowserSwitchClient = BrowserSwitchClient(),
-    popupBridgeLifecycleObserver: PopupBridgeLifecycleObserver = PopupBridgeLifecycleObserver(browserSwitchClient)
+    private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository()
 ) {
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
@@ -31,7 +32,11 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
      * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
-    constructor(activity: FragmentActivity, webView: WebView, returnUrlScheme: String) : this(
+    constructor(
+        activity: FragmentActivity,
+        webView: WebView,
+        returnUrlScheme: String
+    ) : this(
         activityRef = WeakReference<FragmentActivity>(activity),
         webViewRef = WeakReference<WebView>(webView),
         returnUrlScheme = returnUrlScheme
@@ -46,90 +51,88 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
 
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME)
-
-        popupBridgeLifecycleObserver.onBrowserSwitchResult = { result -> onBrowserSwitchResult(result) }
-        activity.lifecycle.addObserver(popupBridgeLifecycleObserver)
     }
 
-    private fun runJavaScriptInWebView(script: String) {
-        val webView = webViewRef.get() ?: return
-        webView.post(Runnable {
-            val webViewInternal = webViewRef.get() ?: return@Runnable
-            webViewInternal.evaluateJavascript(script, null)
-        })
+    fun handleReturnToApp(intent: Intent) {
+        val pendingRequest = pendingRequestRepository.getPendingRequest()
+        if (pendingRequest == null) return
+
+        pendingRequestRepository.clearPendingRequest()
+
+        when (val browserSwitchFinalResult = browserSwitchClient.completeRequest(intent, pendingRequest)) {
+            is BrowserSwitchFinalResult.Success -> runSuccessJavaScript(browserSwitchFinalResult.returnUrl)
+            is BrowserSwitchFinalResult.Failure -> runCanceledJavaScript()
+            is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
+        }
     }
 
-    fun onBrowserSwitchResult(result: BrowserSwitchResult) {
+    private fun runSuccessJavaScript(returnUri: Uri) {
+        if (returnUri.host != POPUP_BRIDGE_URL_HOST) return
+
         var error: String? = null
-        var payload: String? = null
 
-        val returnUri = result.deepLinkUrl
-        if (result.status == BrowserSwitchStatus.CANCELED) {
-            runJavaScriptInWebView(
-                (""
-                        + "function notifyCanceled() {"
-                        + "  if (typeof window.popupBridge.onCancel === 'function') {"
-                        + "    window.popupBridge.onCancel();"
-                        + "  } else {"
-                        + "    window.popupBridge.onComplete(null, null);"
-                        + "  }"
-                        + "}"
-                        + ""
-                        + "if (document.readyState === 'complete') {"
-                        + "  notifyCanceled();"
-                        + "} else {"
-                        + "  window.addEventListener('load', function () {"
-                        + "    notifyCanceled();"
-                        + "  });"
-                        + "}")
-            )
-            return
-        } else if (result.status == BrowserSwitchStatus.SUCCESS) {
-            if (returnUri == null || returnUri.host != POPUP_BRIDGE_URL_HOST) {
-                return
-            }
+        val payLoadJson = JSONObject()
+        val queryItems = JSONObject()
 
-            val json = JSONObject()
-            val queryItems = JSONObject()
-
-            val queryParams = returnUri.queryParameterNames
-            if (queryParams.isNotEmpty()) {
-                for (queryParam in queryParams) {
-                    try {
-                        queryItems.put(queryParam, returnUri.getQueryParameter(queryParam))
-                    } catch (e: JSONException) {
-                        error = "new Error('Failed to parse query items from return URL. " +
-                                e.localizedMessage + "')"
-                    }
-                }
-            }
-
+        for (queryParam in returnUri.queryParameterNames) {
             try {
-                json.put("path", returnUri.path)
-                json.put("queryItems", queryItems)
-                json.put("hash", returnUri.fragment)
-            } catch (ignored: JSONException) {
+                queryItems.put(queryParam, returnUri.getQueryParameter(queryParam))
+            } catch (e: JSONException) {
+                error = "new Error('Failed to parse query items from return URL. " +
+                        e.localizedMessage + "')"
             }
+        }
 
-            payload = json.toString()
+        try {
+            payLoadJson.put("path", returnUri.path)
+            payLoadJson.put("queryItems", queryItems)
+            payLoadJson.put("hash", returnUri.fragment)
+        } catch (ignored: JSONException) {
         }
 
         val successJavascript = String.format(
             (""
-                + "function notifyComplete() {"
-                + "  window.popupBridge.onComplete(%s, %s);"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  notifyComplete();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    notifyComplete();"
-                + "  });"
-                + "}"), error, payload
+                    + "function notifyComplete() {"
+                    + "  window.popupBridge.onComplete(%s, %s);"
+                    + "}"
+                    + ""
+                    + "if (document.readyState === 'complete') {"
+                    + "  notifyComplete();"
+                    + "} else {"
+                    + "  window.addEventListener('load', function () {"
+                    + "    notifyComplete();"
+                    + "  });"
+                    + "}"), error, payLoadJson.toString()
         )
 
         runJavaScriptInWebView(successJavascript)
+    }
+
+    private fun runCanceledJavaScript() {
+        runJavaScriptInWebView(
+            ""
+                    + "function notifyCanceled() {"
+                    + "  if (typeof window.popupBridge.onCancel === 'function') {"
+                    + "    window.popupBridge.onCancel();"
+                    + "  } else {"
+                    + "    window.popupBridge.onComplete(null, null);"
+                    + "  }"
+                    + "}"
+                    + ""
+                    + "if (document.readyState === 'complete') {"
+                    + "  notifyCanceled();"
+                    + "} else {"
+                    + "  window.addEventListener('load', function () {"
+                    + "    notifyCanceled();"
+                    + "  });"
+                    + "}"
+        )
+    }
+
+    private fun runJavaScriptInWebView(script: String) {
+        webViewRef.get()?.post(
+            Runnable { webViewRef.get()?.evaluateJavascript(script, null) }
+        )
     }
 
     @get:JavascriptInterface
@@ -147,12 +150,16 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
             .requestCode(REQUEST_CODE)
             .url(url?.toUri())
             .returnUrlScheme(returnUrlScheme)
-        try {
-            browserSwitchClient.start(activity, browserSwitchOptions)
-        } catch (e: Exception) {
-            errorListener?.onError(e)
-        }
+        val browserSwitchStartResult = browserSwitchClient.start(activity, browserSwitchOptions)
+        when (browserSwitchStartResult) {
+            is BrowserSwitchStartResult.Started -> {
+                pendingRequestRepository.storePendingRequest(browserSwitchStartResult.pendingRequest)
+            }
 
+            is BrowserSwitchStartResult.Failure -> {
+                errorListener?.onError(browserSwitchStartResult.error)
+            }
+        }
         navigationListener?.onUrlOpened(url)
     }
 
@@ -179,11 +186,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") @VisibleForTesting
     }
 
     companion object {
-        // NEXT MAJOR VERSION: consider using a `com.braintreepayments...` prefixed request key
-        // to prevent shared preferences collisions with other braintree libs that use browser switch
-        const val REQUEST_CODE: Int = 1
-
-        const val POPUP_BRIDGE_NAME: String = "popupBridge"
-        const val POPUP_BRIDGE_URL_HOST: String = "popupbridgev1"
+        private const val REQUEST_CODE: Int = 1
+        private const val POPUP_BRIDGE_NAME: String = "popupBridge"
+        private const val POPUP_BRIDGE_URL_HOST: String = "popupbridgev1"
     }
 }

@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <Button
         android:id="@+id/button_popup_bridge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:contentDescription="Launch PopupBridge"
         android:onClick="onPopupBridgeClick"
-        android:text="Launch PopupBridge"
-        android:contentDescription="Launch PopupBridge"/>
+        android:text="Launch PopupBridge" />
 
     <Button
         android:id="@+id/button_popup_bridge_paypal"
@@ -31,17 +33,17 @@
         android:id="@+id/button_popup_bridge_paypal_checkoutjs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:contentDescription="Launch PayPal (checkout.js)"
         android:onClick="onPayPalCheckoutJSPopupBridgeClick"
-        android:text="Launch PayPal (checkout.js)"
-        android:contentDescription="Launch PayPal (checkout.js)"/>
+        android:text="Launch PayPal (checkout.js)" />
 
     <Button
         android:id="@+id/button_popup_bridge_lpm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:contentDescription="Launch Local Payment Methods"
         android:onClick="onLPMPopupBridgeClick"
-        android:text="Launch Local Payment Methods"
-        android:contentDescription="Launch Local Payment Methods"/>
+        android:text="Launch Local Payment Methods" />
 
 
 </LinearLayout>
