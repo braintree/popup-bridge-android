@@ -7,6 +7,7 @@ deviceAutomatorVersion = "1.0.0"
 gradleVersion = "8.9.0"
 junitVersion = "4.13.2"
 kotlinAndroidVersion = "2.1.10"
+kotlinxCoroutinesTestVersion = "1.10.2"
 lifecycleRuntimeVersion = "2.8.7"
 mockitoCoreVersion = "5.7.0"
 mockkVersion = "1.13.17"
@@ -19,6 +20,8 @@ core = { module = "androidx.test:core", version.ref = "coreVersion" }
 device-automator = { module = "com.braintreepayments:device-automator", version.ref = "deviceAutomatorVersion" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradleVersion" }
 junit = { module = "junit:junit", version.ref = "junitVersion" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlinAndroidVersion" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
 lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "lifecycleRuntimeVersion" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCoreVersion" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
