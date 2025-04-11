@@ -18,13 +18,11 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLSocketFactory
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class PostRequestExecutorUnitTest {
 
-    private val socketFactory = mockk<SSLSocketFactory>(relaxed = true)
     private val responseParser = mockk<ResponseParser>(relaxed = true)
 
     private lateinit var subject: PostRequestExecutor
@@ -38,7 +36,7 @@ class PostRequestExecutorUnitTest {
         every { url.openConnection() } returns connection
         every { connection.responseCode } returns 200
 
-        subject = PostRequestExecutor(socketFactory, responseParser, StandardTestDispatcher(testScheduler))
+        subject = PostRequestExecutor(responseParser, StandardTestDispatcher(testScheduler))
     }
 
     @After
@@ -54,7 +52,6 @@ class PostRequestExecutorUnitTest {
 
         verify {
             with(connection) {
-                sslSocketFactory = socketFactory
                 requestMethod = "POST"
                 doOutput = true
                 connectTimeout = 10000
