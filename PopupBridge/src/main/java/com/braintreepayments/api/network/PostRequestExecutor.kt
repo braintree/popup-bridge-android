@@ -9,13 +9,11 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLSocketFactory
 
 /**
  * Executes a POST request and returns the response.
  */
 internal class PostRequestExecutor(
-    private val socketFactory: SSLSocketFactory = TLSSocketFactory(TLSCertificate.createCertificateInputStream()),
     private val responseParser: ResponseParser = ResponseParser(),
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
@@ -27,7 +25,6 @@ internal class PostRequestExecutor(
         var connection: HttpURLConnection? = null
         try {
             connection = (url.openConnection() as? HttpsURLConnection)?.apply {
-                sslSocketFactory = socketFactory
                 requestMethod = "POST"
                 doOutput = true
                 connectTimeout = CONNECT_TIMEOUT
