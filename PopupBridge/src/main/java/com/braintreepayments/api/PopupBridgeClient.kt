@@ -7,6 +7,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import com.braintreepayments.api.internal.isVenmoInstalled
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
@@ -21,6 +22,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
     private var errorListener: PopupBridgeErrorListener? = null
+    private var venmoInstalled: Boolean = false
 
     /**
      * Create a new instance of [PopupBridgeClient].
@@ -48,6 +50,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
         val webView = webViewRef.get()
         requireNotNull(webView) { "WebView is null" }
+
+        venmoInstalled = activity.isVenmoInstalled()
 
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME)
@@ -142,6 +146,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             returnUrlScheme,
             POPUP_BRIDGE_URL_HOST
         )
+
+    @get:JavascriptInterface
+    val isVenmoInstalled: Boolean
+        get() = venmoInstalled
 
     @JavascriptInterface
     fun open(url: String?) {
