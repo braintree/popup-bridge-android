@@ -9,11 +9,14 @@ import androidx.fragment.app.FragmentActivity
 import com.braintreepayments.api.internal.isVenmoInstalled
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkAll
 import io.mockk.verify
 import java.lang.ref.WeakReference
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
+import kotlin.test.assertFalse
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Test
@@ -38,10 +41,13 @@ class PopupBridgeClientUnitTest {
 
     private fun initializeClient(
         activity: FragmentActivity? = fragmentActivityMock,
-        webView: WebView? = webViewMock
+        webView: WebView? = webViewMock,
+        additionalMocks: () -> Unit = {}
     ) {
         every { webViewMock.post(capture(runnableSlot)) } returns true
         every { pendingRequestRepository.getPendingRequest() } returns pendingRequest
+
+        additionalMocks()
 
         subject = PopupBridgeClient(
             activityRef = WeakReference(activity),
@@ -217,13 +223,26 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `isVenmoInstalled returns expected result`() {
-        initializeClient()
-
-        val mockContext = mockk<Context>()
-        every { mockContext.isVenmoInstalled() } returns true
+    fun `isVenmoInstalled returns true when venmo installed`() {
+        initializeClient {
+            mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
+            every { fragmentActivityMock.isVenmoInstalled() } returns true
+        }
 
         assertTrue(subject.isVenmoInstalled)
+
+        unmockkAll()
+    }
+
+    @Test
+    fun `isVenmoInstalled returns false when venmo not installed`() {
+        initializeClient {
+            mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
+            every { fragmentActivityMock.isVenmoInstalled() } returns false
+        }
+        assertFalse(subject.isVenmoInstalled)
+
+        unmockkAll()
     }
 
     @Test
