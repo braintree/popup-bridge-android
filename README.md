@@ -14,7 +14,7 @@ See the [Frequently Asked Questions](#frequently-asked-questions) to learn more 
 Requirements
 ------------
 
-- Android SDK 21
+- Android SDK 23
 
 Installation
 ------------
