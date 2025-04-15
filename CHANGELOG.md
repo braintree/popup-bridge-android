@@ -11,6 +11,7 @@
   * Make `PopupBridgeClient#POPUP_BRIDGE_NAME` package-private
   * Make `PopupBridgeClient#POPUP_BRIDGE_URL_HOST` package-private
   * Remove `PopupBridgeLifecycleObserver`
+* Add JS interface for Venmo app installed check
 
 ## 4.1.0
 
