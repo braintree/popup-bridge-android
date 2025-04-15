@@ -1,14 +1,17 @@
 package com.braintreepayments.api
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import com.braintreepayments.api.internal.isVenmoInstalled
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import java.lang.ref.WeakReference
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.json.JSONException
@@ -16,7 +19,6 @@ import org.json.JSONObject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.lang.ref.WeakReference
 
 @RunWith(RobolectricTestRunner::class)
 class PopupBridgeClientUnitTest {
@@ -212,6 +214,16 @@ class PopupBridgeClientUnitTest {
     fun `returnUrlPrefix returns expected url prefix`() {
         initializeClient()
         assertEquals(subject.returnUrlPrefix, "com.braintreepayments.popupbridgeexample://popupbridgev1/")
+    }
+
+    @Test
+    fun `isVenmoInstalled returns expected result`() {
+        initializeClient()
+
+        val mockContext = mockk<Context>()
+        every { mockContext.isVenmoInstalled() } returns true
+
+        assertTrue(subject.isVenmoInstalled)
     }
 
     @Test
