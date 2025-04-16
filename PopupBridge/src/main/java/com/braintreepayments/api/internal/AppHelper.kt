@@ -13,11 +13,11 @@ internal class AppHelper {
 
     fun isAppInstalled(context: Context, packageName: String): Boolean {
         val packageManager: PackageManager = context.packageManager
-        try {
+        return try {
             packageManager.getApplicationInfo(packageName, NO_FLAGS)
-            return true;
+            true
         } catch (_: PackageManager.NameNotFoundException) {
-            return false;
+            false
         }
     }
 }
