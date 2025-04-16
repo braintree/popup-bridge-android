@@ -2,9 +2,7 @@ package com.braintreepayments.api.internal
 
 import android.content.Context
 import android.content.pm.PackageManager
-import androidx.annotation.RestrictTo
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 internal class AppHelper {
 
     companion object {
