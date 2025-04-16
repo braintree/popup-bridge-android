@@ -1,6 +1,5 @@
 package com.braintreepayments.api
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebView
