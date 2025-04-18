@@ -22,7 +22,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
     private var errorListener: PopupBridgeErrorListener? = null
-    private val venmoInstalled: Boolean = false
+    private val venmoInstalled: Boolean
 
     /**
      * Create a new instance of [PopupBridgeClient].
