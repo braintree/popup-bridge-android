@@ -5,6 +5,7 @@ import android.net.Uri
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.isVenmoInstalled
 import io.mockk.every
 import io.mockk.mockk
@@ -12,15 +13,14 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
-import java.lang.ref.WeakReference
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
-import kotlin.test.assertFalse
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.lang.ref.WeakReference
 
 @RunWith(RobolectricTestRunner::class)
 class PopupBridgeClientUnitTest {
@@ -29,6 +29,7 @@ class PopupBridgeClientUnitTest {
     private val webViewMock: WebView = mockk(relaxed = true)
     private val browserSwitchClient: BrowserSwitchClient = mockk(relaxed = true)
     private val pendingRequestRepository: PendingRequestRepository = mockk(relaxed = true)
+    private val popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = mockk(relaxed = true)
 
     private lateinit var subject: PopupBridgeClient
 
@@ -37,6 +38,8 @@ class PopupBridgeClientUnitTest {
 
     private val intent: Intent = mockk(relaxed = true)
     val runnableSlot = slot<Runnable>()
+    val onOpenSlot = slot<(String?) -> Unit>()
+    val onSendMessageSlot = slot<(String?, String?) -> Unit>()
 
     private fun initializeClient(
         activity: FragmentActivity? = fragmentActivityMock,
@@ -45,6 +48,8 @@ class PopupBridgeClientUnitTest {
     ) {
         every { webViewMock.post(capture(runnableSlot)) } returns true
         every { pendingRequestRepository.getPendingRequest() } returns pendingRequest
+        every { popupBridgeJavascriptInterface.onOpen = capture(onOpenSlot) } returns Unit
+        every { popupBridgeJavascriptInterface.onSendMessage = capture(onSendMessageSlot) } returns Unit
 
         additionalMocks()
 
@@ -53,7 +58,8 @@ class PopupBridgeClientUnitTest {
             webViewRef = WeakReference(webView),
             returnUrlScheme = returnUrlScheme,
             browserSwitchClient = browserSwitchClient,
-            pendingRequestRepository = pendingRequestRepository
+            pendingRequestRepository = pendingRequestRepository,
+            popupBridgeJavascriptInterface = popupBridgeJavascriptInterface
         )
     }
 
@@ -72,7 +78,7 @@ class PopupBridgeClientUnitTest {
         initializeClient()
 
         verify { webViewMock.settings.javaScriptEnabled = true }
-        verify { webViewMock.addJavascriptInterface(subject, "popupBridge") }
+        verify { webViewMock.addJavascriptInterface(popupBridgeJavascriptInterface, "popupBridge") }
     }
 
     @Test
@@ -216,39 +222,22 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `returnUrlPrefix returns expected url prefix`() {
-        initializeClient()
-        assertEquals(subject.returnUrlPrefix, "com.braintreepayments.popupbridgeexample://popupbridgev1/")
-    }
-
-    @Test
-    fun `isVenmoInstalled returns true when venmo installed`() {
+    fun `on init, venmoInstalled is set on the popupBridgeJavascriptInterface`() {
         initializeClient {
             mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
             every { fragmentActivityMock.isVenmoInstalled() } returns true
         }
 
-        assertTrue(subject.isVenmoInstalled)
+        verify { popupBridgeJavascriptInterface.venmoInstalled = true }
 
         unmockkAll()
     }
 
     @Test
-    fun `isVenmoInstalled returns false when venmo not installed`() {
-        initializeClient {
-            mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-            every { fragmentActivityMock.isVenmoInstalled() } returns false
-        }
-        assertFalse(subject.isVenmoInstalled)
-
-        unmockkAll()
-    }
-
-    @Test
-    fun `when open is called, the correct BrowserSwitchOptions are created`() {
+    fun `when popupBridgeJavascriptInterface onOpen is called, the correct BrowserSwitchOptions are created`() {
         initializeClient()
 
-        subject.open("https://example.com")
+        onOpenSlot.captured.invoke("https://example.com")
 
         verify(exactly = 1) {
             browserSwitchClient.start(fragmentActivityMock, withArg { browserSwitchOptions ->
@@ -265,7 +254,7 @@ class PopupBridgeClientUnitTest {
                 BrowserSwitchStartResult.Started(pendingRequest)
         initializeClient()
 
-        subject.open("https://example.com")
+        onOpenSlot.captured.invoke("https://example.com")
 
         verify { pendingRequestRepository.storePendingRequest(pendingRequest) }
     }
@@ -279,7 +268,7 @@ class PopupBridgeClientUnitTest {
         initializeClient()
 
         subject.setErrorListener(errorListener)
-        subject.open("https://example.com")
+        onOpenSlot.captured.invoke("https://example.com")
 
         verify { errorListener.onError(exception) }
     }
@@ -291,7 +280,7 @@ class PopupBridgeClientUnitTest {
         initializeClient()
 
         subject.setNavigationListener(navigationListener)
-        subject.open(url)
+        onOpenSlot.captured.invoke(url)
 
         verify { navigationListener.onUrlOpened(url) }
     }
@@ -304,7 +293,7 @@ class PopupBridgeClientUnitTest {
         initializeClient()
 
         subject.setMessageListener(messageListener)
-        subject.sendMessage(messageName, data)
+        onSendMessageSlot.captured.invoke(messageName, data)
 
         verify { messageListener.onMessageReceived(messageName, data) }
     }
@@ -316,7 +305,7 @@ class PopupBridgeClientUnitTest {
         initializeClient()
 
         subject.setMessageListener(messageListener)
-        subject.sendMessage(messageName)
+        onSendMessageSlot.captured.invoke(messageName, null)
 
         verify { messageListener.onMessageReceived(messageName, null) }
     }

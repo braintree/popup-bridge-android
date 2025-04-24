@@ -3,10 +3,11 @@ package com.braintreepayments.api
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
+import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
 import com.braintreepayments.api.internal.isVenmoInstalled
 import org.json.JSONException
 import org.json.JSONObject
@@ -17,12 +18,12 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private val webViewRef: WeakReference<WebView>,
     private val returnUrlScheme: String,
     private val browserSwitchClient: BrowserSwitchClient = BrowserSwitchClient(),
-    private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository()
+    private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(),
+    popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(returnUrlScheme),
 ) {
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
     private var errorListener: PopupBridgeErrorListener? = null
-    private val venmoInstalled: Boolean
 
     /**
      * Create a new instance of [PopupBridgeClient].
@@ -51,10 +52,28 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         val webView = webViewRef.get()
         requireNotNull(webView) { "WebView is null" }
 
-        venmoInstalled = activity.isVenmoInstalled()
-
         webView.settings.javaScriptEnabled = true
-        webView.addJavascriptInterface(this, POPUP_BRIDGE_NAME)
+        webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
+
+        with(popupBridgeJavascriptInterface) {
+            venmoInstalled = activity.isVenmoInstalled()
+            onOpen = { url -> openUrl(url) }
+            onSendMessage = { messageName, data ->
+                messageListener?.onMessageReceived(messageName, data)
+            }
+        }
+    }
+
+    fun setNavigationListener(listener: PopupBridgeNavigationListener?) {
+        navigationListener = listener
+    }
+
+    fun setMessageListener(listener: PopupBridgeMessageListener?) {
+        messageListener = listener
+    }
+
+    fun setErrorListener(listener: PopupBridgeErrorListener?) {
+        errorListener = listener
     }
 
     fun handleReturnToApp(intent: Intent) {
@@ -68,6 +87,25 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             is BrowserSwitchFinalResult.Failure -> runCanceledJavaScript()
             is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
         }
+    }
+
+    private fun openUrl(url: String?) {
+        val activity = activityRef.get() ?: return
+        val browserSwitchOptions = BrowserSwitchOptions()
+            .requestCode(REQUEST_CODE)
+            .url(url?.toUri())
+            .returnUrlScheme(returnUrlScheme)
+        val browserSwitchStartResult = browserSwitchClient.start(activity, browserSwitchOptions)
+        when (browserSwitchStartResult) {
+            is BrowserSwitchStartResult.Started -> {
+                pendingRequestRepository.storePendingRequest(browserSwitchStartResult.pendingRequest)
+            }
+
+            is BrowserSwitchStartResult.Failure -> {
+                errorListener?.onError(browserSwitchStartResult.error)
+            }
+        }
+        navigationListener?.onUrlOpened(url)
     }
 
     private fun runSuccessJavaScript(returnUri: Uri) {
@@ -139,63 +177,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         )
     }
 
-    @get:JavascriptInterface
-    val returnUrlPrefix: String
-        get() = String.format(
-            "%s://%s/",
-            returnUrlScheme,
-            POPUP_BRIDGE_URL_HOST
-        )
-
-    @get:JavascriptInterface
-    val isVenmoInstalled: Boolean
-        get() = venmoInstalled
-
-    @JavascriptInterface
-    fun open(url: String?) {
-        val activity = activityRef.get() ?: return
-        val browserSwitchOptions = BrowserSwitchOptions()
-            .requestCode(REQUEST_CODE)
-            .url(url?.toUri())
-            .returnUrlScheme(returnUrlScheme)
-        val browserSwitchStartResult = browserSwitchClient.start(activity, browserSwitchOptions)
-        when (browserSwitchStartResult) {
-            is BrowserSwitchStartResult.Started -> {
-                pendingRequestRepository.storePendingRequest(browserSwitchStartResult.pendingRequest)
-            }
-
-            is BrowserSwitchStartResult.Failure -> {
-                errorListener?.onError(browserSwitchStartResult.error)
-            }
-        }
-        navigationListener?.onUrlOpened(url)
-    }
-
-    @JavascriptInterface
-    fun sendMessage(messageName: String?) {
-        messageListener?.onMessageReceived(messageName, null)
-    }
-
-    @JavascriptInterface
-    fun sendMessage(messageName: String?, data: String?) {
-        messageListener?.onMessageReceived(messageName, data)
-    }
-
-    fun setNavigationListener(listener: PopupBridgeNavigationListener?) {
-        navigationListener = listener
-    }
-
-    fun setMessageListener(listener: PopupBridgeMessageListener?) {
-        messageListener = listener
-    }
-
-    fun setErrorListener(listener: PopupBridgeErrorListener?) {
-        errorListener = listener
-    }
-
     companion object {
         private const val REQUEST_CODE: Int = 1
         private const val POPUP_BRIDGE_NAME: String = "popupBridge"
-        private const val POPUP_BRIDGE_URL_HOST: String = "popupbridgev1"
     }
 }
