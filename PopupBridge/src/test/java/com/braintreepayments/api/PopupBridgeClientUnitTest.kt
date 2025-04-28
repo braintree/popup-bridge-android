@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.isVenmoInstalled
+import com.braintreepayments.api.util.CoroutineTestRule
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

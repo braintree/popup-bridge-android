@@ -1,4 +1,4 @@
-package com.braintreepayments.api
+package com.braintreepayments.api.util
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

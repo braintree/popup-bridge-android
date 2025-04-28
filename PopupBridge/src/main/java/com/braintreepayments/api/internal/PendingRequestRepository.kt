@@ -7,45 +7,46 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "popup_bridge_preferences")
 
 /**
- * Repository responsible for storing and retrieving the pending request.
+ * Repository responsible for storing and retrieving the pending request using [DataStore].
  */
 internal class PendingRequestRepository(
     context: Context,
     private val dataStore: DataStore<Preferences> = context.dataStore,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
     private val pendingRequestKey = stringPreferencesKey("pending_request")
 
-    /**
-     * Stores the pending request in the DataStore.
-     */
     suspend fun storePendingRequest(pendingRequest: String) {
-        dataStore.edit { preferences: MutablePreferences ->
-            preferences[pendingRequestKey] = pendingRequest
+        withContext(dispatcher) {
+            dataStore.edit { preferences: MutablePreferences ->
+                preferences[pendingRequestKey] = pendingRequest
+            }
         }
     }
 
-    /**
-     * Retrieves the pending request from the DataStore.
-     */
     suspend fun getPendingRequest(): String? {
-        return dataStore.data.map { preferences: Preferences ->
-            preferences[pendingRequestKey]
-        }.firstOrNull()
+        return withContext(dispatcher) {
+            dataStore.data.map { preferences: Preferences ->
+                preferences[pendingRequestKey]
+            }.firstOrNull()
+        }
     }
 
-    /**
-     * Clears the pending request from the DataStore.
-     */
     suspend fun clearPendingRequest() {
-        dataStore.edit { preferences: MutablePreferences ->
-            preferences.remove(pendingRequestKey)
+        withContext(dispatcher) {
+            dataStore.edit { preferences: MutablePreferences ->
+                preferences.remove(pendingRequestKey)
+            }
         }
     }
 }
