@@ -5,6 +5,7 @@ import android.net.Uri
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.isVenmoInstalled
 import io.mockk.every
@@ -30,6 +31,7 @@ class PopupBridgeClientUnitTest {
     private val browserSwitchClient: BrowserSwitchClient = mockk(relaxed = true)
     private val pendingRequestRepository: PendingRequestRepository = mockk(relaxed = true)
     private val popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = mockk(relaxed = true)
+    private val analyticsParamRepository: AnalyticsParamRepository = mockk(relaxed = true)
 
     private lateinit var subject: PopupBridgeClient
 
@@ -59,7 +61,8 @@ class PopupBridgeClientUnitTest {
             returnUrlScheme = returnUrlScheme,
             browserSwitchClient = browserSwitchClient,
             pendingRequestRepository = pendingRequestRepository,
-            popupBridgeJavascriptInterface = popupBridgeJavascriptInterface
+            analyticsParamRepository = analyticsParamRepository,
+            popupBridgeJavascriptInterface = popupBridgeJavascriptInterface,
         )
     }
 
@@ -79,6 +82,13 @@ class PopupBridgeClientUnitTest {
 
         verify { webViewMock.settings.javaScriptEnabled = true }
         verify { webViewMock.addJavascriptInterface(popupBridgeJavascriptInterface, "popupBridge") }
+    }
+
+    @Test
+    fun `on init, analyticsParamRepository reset is called`() {
+        initializeClient()
+
+        verify { analyticsParamRepository.reset() }
     }
 
     @Test

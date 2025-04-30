@@ -15,6 +15,8 @@ android {
 
         consumerProguardFiles 'proguard.pro'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+        buildConfigField "String", "VERSION_NAME", "\"${rootProject.versionName}\""
     }
 
     testOptions.unitTests.includeAndroidResources = true
@@ -22,6 +24,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     kotlinOptions {
