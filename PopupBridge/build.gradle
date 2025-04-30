@@ -39,6 +39,7 @@ dependencies {
     implementation libs.browser.switch
     implementation libs.appcompat
     implementation libs.lifecycle.runtime
+    implementation libs.datastore.preferences
 
     testImplementation libs.junit
     testImplementation libs.mockito.core
