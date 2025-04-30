@@ -5,8 +5,12 @@ import android.net.Uri
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.isVenmoInstalled
+import com.braintreepayments.api.util.CoroutineTestRule
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -15,15 +19,22 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 import org.json.JSONException
 import org.json.JSONObject
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.lang.ref.WeakReference
 
 @RunWith(RobolectricTestRunner::class)
 class PopupBridgeClientUnitTest {
+
+    @get:Rule
+    val coroutineTestRule = CoroutineTestRule()
+
+    private val testDispatcher = coroutineTestRule.testDispatcher
 
     private val fragmentActivityMock: FragmentActivity = mockk(relaxed = true)
     private val webViewMock: WebView = mockk(relaxed = true)
@@ -37,40 +48,31 @@ class PopupBridgeClientUnitTest {
     private val pendingRequest = "stored-pending-request"
 
     private val intent: Intent = mockk(relaxed = true)
-    val runnableSlot = slot<Runnable>()
-    val onOpenSlot = slot<(String?) -> Unit>()
-    val onSendMessageSlot = slot<(String?, String?) -> Unit>()
+    private val runnableSlot = slot<Runnable>()
+    private val onOpenSlot = slot<(String?) -> Unit>()
+    private val onSendMessageSlot = slot<(String?, String?) -> Unit>()
 
     private fun initializeClient(
-        activity: FragmentActivity? = fragmentActivityMock,
-        webView: WebView? = webViewMock,
+        activity: FragmentActivity = fragmentActivityMock,
+        webView: WebView = webViewMock,
         additionalMocks: () -> Unit = {}
     ) {
         every { webViewMock.post(capture(runnableSlot)) } returns true
-        every { pendingRequestRepository.getPendingRequest() } returns pendingRequest
+        coEvery { pendingRequestRepository.getPendingRequest() } returns pendingRequest
         every { popupBridgeJavascriptInterface.onOpen = capture(onOpenSlot) } returns Unit
         every { popupBridgeJavascriptInterface.onSendMessage = capture(onSendMessageSlot) } returns Unit
 
         additionalMocks()
 
         subject = PopupBridgeClient(
-            activityRef = WeakReference(activity),
-            webViewRef = WeakReference(webView),
+            activity = activity,
+            webView = webView,
             returnUrlScheme = returnUrlScheme,
             browserSwitchClient = browserSwitchClient,
             pendingRequestRepository = pendingRequestRepository,
+            coroutineScope = TestScope(testDispatcher),
             popupBridgeJavascriptInterface = popupBridgeJavascriptInterface
         )
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun `on init when activity is null, IllegalArgumentException is thrown`() {
-        initializeClient(activity = null)
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun `on init when webView is null, IllegalArgumentException is thrown`() {
-        initializeClient(webView = null)
     }
 
     @Test
@@ -82,46 +84,61 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when handleReturnToApp is called with a null pending request, nothing happens`() {
+    fun `when handleReturnToApp is called multiple times, only one is executed`() = runTest {
         initializeClient()
-        every { pendingRequestRepository.getPendingRequest() } returns null
 
         subject.handleReturnToApp(intent)
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+
+        coVerify(exactly = 1) { pendingRequestRepository.getPendingRequest() }
+    }
+
+    @Test
+    fun `when handleReturnToApp is called with a null pending request, nothing happens`() = runTest {
+        initializeClient()
+        coEvery { pendingRequestRepository.getPendingRequest() } returns null
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
 
         verify(exactly = 0) { browserSwitchClient.completeRequest(any(), any()) }
     }
 
     @Test
-    fun `when handleReturnToApp is called, the request in pendingRequestRepository is cleared`() {
+    fun `when handleReturnToApp is called, the request in pendingRequestRepository is cleared`() = runTest {
         initializeClient()
 
         subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
 
-        verify { pendingRequestRepository.clearPendingRequest() }
+        coVerify { pendingRequestRepository.clearPendingRequest() }
     }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch succeeds but uri host doesn't match, nothing happens`() {
-        val returnUrl = Uri.Builder()
-            .scheme("my-custom-url-scheme")
-            .authority("unknown-host") // non popup bridge host
-            .path("mypath")
-            .appendQueryParameter("foo", "bar")
-            .appendQueryParameter("baz", "qux")
-            .build()
+    fun `when handleReturnToApp is called and browser switch succeeds but uri host doesn't match, nothing happens`() =
+        runTest {
+            val returnUrl = Uri.Builder()
+                .scheme("my-custom-url-scheme")
+                .authority("unknown-host") // non popup bridge host
+                .path("mypath")
+                .appendQueryParameter("foo", "bar")
+                .appendQueryParameter("baz", "qux")
+                .build()
 
-        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
-        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
-        every { browserSwitchFinalResult.returnUrl } returns returnUrl
-        initializeClient()
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+            every { browserSwitchFinalResult.returnUrl } returns returnUrl
+            initializeClient()
 
-        subject.handleReturnToApp(intent)
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
 
-        verify(exactly = 0) { webViewMock.post(any()) }
-    }
+            verify(exactly = 0) { webViewMock.post(any()) }
+        }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch succeeds, success javascript is run`() {
+    fun `when handleReturnToApp is called and browser switch succeeds, success javascript is run`() = runTest {
         val returnUrl = Uri.Builder()
             .scheme("my-custom-url-scheme")
             .authority("popupbridgev1")
@@ -148,6 +165,7 @@ class PopupBridgeClientUnitTest {
         initializeClient()
 
         subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
         runnableSlot.captured.run()
 
         verify {
@@ -158,41 +176,44 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch succeeds but throws a JSONException, error is populated`() {
-        val exception = JSONException("exception message")
-        val returnUrl: Uri = mockk(relaxed = true)
-        every { returnUrl.getQueryParameter(any()) } throws exception
-        every { returnUrl.host } returns "popupbridgev1"
-        every { returnUrl.queryParameterNames } returns setOf("first", "second")
+    fun `when handleReturnToApp is called and browser switch succeeds but throws a JSONException, error is populated`() =
+        runTest {
+            val exception = JSONException("exception message")
+            val returnUrl: Uri = mockk(relaxed = true)
+            every { returnUrl.getQueryParameter(any()) } throws exception
+            every { returnUrl.host } returns "popupbridgev1"
+            every { returnUrl.queryParameterNames } returns setOf("first", "second")
 
-        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
-        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
-        every { browserSwitchFinalResult.returnUrl } returns returnUrl
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+            every { browserSwitchFinalResult.returnUrl } returns returnUrl
 
-        initializeClient()
+            initializeClient()
 
-        subject.handleReturnToApp(intent)
-        runnableSlot.captured.run()
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
 
-        verify {
-            webViewMock.evaluateJavascript(withArg { javascriptString ->
-                assertTrue(
-                    javascriptString.contains(
-                        "new Error('Failed to parse query items from return URL. ${exception.localizedMessage}')"
+            verify {
+                webViewMock.evaluateJavascript(withArg { javascriptString ->
+                    assertTrue(
+                        javascriptString.contains(
+                            "new Error('Failed to parse query items from return URL. ${exception.localizedMessage}')"
+                        )
                     )
-                )
-            }, null)
+                }, null)
+            }
         }
-    }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch fails, canceled javascript is run`() {
+    fun `when handleReturnToApp is called and browser switch fails, canceled javascript is run`() = runTest {
         val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Failure>()
         every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
 
         initializeClient()
 
         subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
         runnableSlot.captured.run()
 
         verify {
@@ -205,21 +226,23 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch returns no result, canceled javascript is run`() {
-        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.NoResult>()
-        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+    fun `when handleReturnToApp is called and browser switch returns no result, canceled javascript is run`() =
+        runTest {
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.NoResult>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
 
-        initializeClient()
+            initializeClient()
 
-        subject.handleReturnToApp(intent)
-        runnableSlot.captured.run()
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
 
-        verify {
-            webViewMock.evaluateJavascript(withArg { javascriptString ->
-                assertEquals(CANCELED_JAVASCRIPT, javascriptString)
-            }, null)
+            verify {
+                webViewMock.evaluateJavascript(withArg { javascriptString ->
+                    assertEquals(CANCELED_JAVASCRIPT, javascriptString)
+                }, null)
+            }
         }
-    }
 
     @Test
     fun `on init, venmoInstalled is set on the popupBridgeJavascriptInterface`() {
@@ -249,15 +272,17 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when open is called with BrowserSwitchStartResult Started, the pendingRequest is stored in pendingRequestRepository`() {
-        every { browserSwitchClient.start(fragmentActivityMock, any()) } returns
-                BrowserSwitchStartResult.Started(pendingRequest)
-        initializeClient()
+    fun `when open is called with BrowserSwitchStartResult Started, the pendingRequest is stored in pendingRequestRepository`() =
+        runTest {
+            every { browserSwitchClient.start(fragmentActivityMock, any()) } returns
+                    BrowserSwitchStartResult.Started(pendingRequest)
+            initializeClient()
 
-        onOpenSlot.captured.invoke("https://example.com")
+            onOpenSlot.captured.invoke("https://example.com")
+            testScheduler.advanceUntilIdle()
 
-        verify { pendingRequestRepository.storePendingRequest(pendingRequest) }
-    }
+            coVerify { pendingRequestRepository.storePendingRequest(pendingRequest) }
+        }
 
     @Test
     fun `when open is called with BrowserSwitchStartResult Failure, the error listener is invoked`() {

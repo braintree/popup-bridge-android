@@ -6,24 +6,44 @@ import android.net.Uri
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
 import com.braintreepayments.api.internal.isVenmoInstalled
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
 class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal constructor(
-    private val activityRef: WeakReference<FragmentActivity>,
-    private val webViewRef: WeakReference<WebView>,
+    activity: FragmentActivity,
+    webView: WebView,
     private val returnUrlScheme: String,
-    private val browserSwitchClient: BrowserSwitchClient = BrowserSwitchClient(),
-    private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(),
+    private val browserSwitchClient: BrowserSwitchClient,
+    private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(activity.applicationContext),
+    private val coroutineScope: CoroutineScope = activity.lifecycleScope,
     popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(returnUrlScheme),
 ) {
+    private val activityRef = WeakReference(activity)
+    private val webViewRef = WeakReference(webView)
+
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
     private var errorListener: PopupBridgeErrorListener? = null
+
+    /**
+     * Ensures that [handleReturnToApp] is only called once, even if both `onResume` and `onNewIntent` invoke it.
+     *
+     * If the host app's Activity has a launch type of singleTop, singleTask, or singleInstance, [handleReturnToApp]
+     * should be called in both onResume and onNewIntent. This is to cover all cases where the user cancels the flow.
+     *
+     * Since the [PendingRequestRepository] functions are suspend functions, we need to ensure that the
+     * [handleReturnToApp] logic is only invoked once.
+     */
+    @Volatile
+    private var isHandlingReturnToApp = false
 
     /**
      * Create a new instance of [PopupBridgeClient].
@@ -40,9 +60,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView: WebView,
         returnUrlScheme: String
     ) : this(
-        activityRef = WeakReference<FragmentActivity>(activity),
-        webViewRef = WeakReference<WebView>(webView),
-        returnUrlScheme = returnUrlScheme
+        activity = activity,
+        webView = webView,
+        returnUrlScheme = returnUrlScheme,
+        browserSwitchClient = BrowserSwitchClient()
     )
 
     init {
@@ -77,15 +98,24 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     fun handleReturnToApp(intent: Intent) {
-        val pendingRequest = pendingRequestRepository.getPendingRequest()
-        if (pendingRequest == null) return
+        if (isHandlingReturnToApp) return
+        isHandlingReturnToApp = true
 
-        pendingRequestRepository.clearPendingRequest()
+        coroutineScope.launch {
+            val pendingRequest = pendingRequestRepository.getPendingRequest()
+            if (pendingRequest == null) {
+                isHandlingReturnToApp = false
+                return@launch
+            }
 
-        when (val browserSwitchFinalResult = browserSwitchClient.completeRequest(intent, pendingRequest)) {
-            is BrowserSwitchFinalResult.Success -> runSuccessJavaScript(browserSwitchFinalResult.returnUrl)
-            is BrowserSwitchFinalResult.Failure -> runCanceledJavaScript()
-            is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
+            pendingRequestRepository.clearPendingRequest()
+
+            when (val browserSwitchFinalResult = browserSwitchClient.completeRequest(intent, pendingRequest)) {
+                is BrowserSwitchFinalResult.Success -> runSuccessJavaScript(browserSwitchFinalResult.returnUrl)
+                is BrowserSwitchFinalResult.Failure -> runCanceledJavaScript()
+                is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
+            }
+            isHandlingReturnToApp = false
         }
     }
 
@@ -98,7 +128,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         val browserSwitchStartResult = browserSwitchClient.start(activity, browserSwitchOptions)
         when (browserSwitchStartResult) {
             is BrowserSwitchStartResult.Started -> {
-                pendingRequestRepository.storePendingRequest(browserSwitchStartResult.pendingRequest)
+                coroutineScope.launch {
+                    pendingRequestRepository.storePendingRequest(browserSwitchStartResult.pendingRequest)
+                }
             }
 
             is BrowserSwitchStartResult.Failure -> {
