@@ -77,8 +77,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     )
 
     init {
-        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_STARTED)
-
         val activity = activityRef.get()
         requireNotNull(activity) { "Activity is null" }
 
@@ -134,6 +132,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     private fun openUrl(url: String?) {
+        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_STARTED)
+
         val activity = activityRef.get() ?: return
         val browserSwitchOptions = BrowserSwitchOptions()
             .requestCode(REQUEST_CODE)

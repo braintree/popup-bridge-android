@@ -84,14 +84,7 @@ class PopupBridgeClientUnitTest {
             popupBridgeJavascriptInterface = popupBridgeJavascriptInterface,
         )
     }
-
-    @Test
-    fun `on init, analyticsClient sends POPUP_BRIDGE_STARTED event`() {
-        initializeClient()
-
-        verify { analyticsClient.sendEvent(POPUP_BRIDGE_STARTED) }
-    }
-
+    
     @Test
     fun `on init, webView is set up`() {
         initializeClient()
@@ -333,6 +326,15 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
+    fun `when popupBridgeJavascriptInterface onOpen is called, analyticsClient sends POPUP_BRIDGE_STARTED event`() {
+        initializeClient()
+
+        onOpenSlot.captured.invoke("https://example.com")
+
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_STARTED) }
+    }
+
+    @Test
     fun `when popupBridgeJavascriptInterface onOpen is called, the correct BrowserSwitchOptions are created`() {
         initializeClient()
 
@@ -447,3 +449,4 @@ class PopupBridgeClientUnitTest {
                 + "}")
     }
 }
+
