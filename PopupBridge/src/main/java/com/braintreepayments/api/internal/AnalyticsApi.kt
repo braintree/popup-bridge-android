@@ -59,7 +59,7 @@ internal class AnalyticsApi(
     }
 
     companion object {
-        private const val FPTI_URL = "https://api-m.paypal.com/v1/tracking/batch/events"
+        private const val FPTI_URL = "https://api.paypal.com/v1/tracking/batch/events"
 
         private const val KEY_APP_ID = "app_id"
         private const val KEY_APP_NAME = "app_name"

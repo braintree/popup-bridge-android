@@ -57,7 +57,7 @@ class AnalyticsApiUnitTest {
 
         coVerify(exactly = 1) {
             postRequestExecutor.execute(
-                url = URL("https://api-m.paypal.com/v1/tracking/batch/events"),
+                url = URL("https://api.paypal.com/v1/tracking/batch/events"),
                 jsonBody = withArg { jsonBody ->
                     val capturedJson = JSONObject(jsonBody)
                     val events = capturedJson.getJSONArray("events")
