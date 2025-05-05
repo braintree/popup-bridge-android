@@ -11,6 +11,7 @@
   * Make `PopupBridgeClient#POPUP_BRIDGE_NAME` package-private
   * Make `PopupBridgeClient#POPUP_BRIDGE_URL_HOST` package-private
   * Remove `PopupBridgeLifecycleObserver`
+  * Replace `FragmentActivity` with `ComponentActivity` in `PopupBridgeClient`'s constructor
 * Add validation to check if the Venmo app is installed on the device.
 
 ## 4.1.0

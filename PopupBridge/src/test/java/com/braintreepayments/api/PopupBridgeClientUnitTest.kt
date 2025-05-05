@@ -3,8 +3,8 @@ package com.braintreepayments.api
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
-import androidx.fragment.app.FragmentActivity
 import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
@@ -37,7 +37,7 @@ class PopupBridgeClientUnitTest {
 
     private val testDispatcher = coroutineTestRule.testDispatcher
 
-    private val fragmentActivityMock: FragmentActivity = mockk(relaxed = true)
+    private val activityMock: ComponentActivity = mockk(relaxed = true)
     private val webViewMock: WebView = mockk(relaxed = true)
     private val browserSwitchClient: BrowserSwitchClient = mockk(relaxed = true)
     private val pendingRequestRepository: PendingRequestRepository = mockk(relaxed = true)
@@ -55,7 +55,7 @@ class PopupBridgeClientUnitTest {
     private val onSendMessageSlot = slot<(String?, String?) -> Unit>()
 
     private fun initializeClient(
-        activity: FragmentActivity = fragmentActivityMock,
+        activity: ComponentActivity = activityMock,
         webView: WebView = webViewMock,
         additionalMocks: () -> Unit = {}
     ) {
@@ -258,7 +258,7 @@ class PopupBridgeClientUnitTest {
     fun `on init, venmoInstalled is set on the popupBridgeJavascriptInterface`() {
         initializeClient {
             mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-            every { fragmentActivityMock.isVenmoInstalled() } returns true
+            every { activityMock.isVenmoInstalled() } returns true
         }
 
         verify { popupBridgeJavascriptInterface.venmoInstalled = true }
@@ -273,7 +273,7 @@ class PopupBridgeClientUnitTest {
         onOpenSlot.captured.invoke("https://example.com")
 
         verify(exactly = 1) {
-            browserSwitchClient.start(fragmentActivityMock, withArg { browserSwitchOptions ->
+            browserSwitchClient.start(activityMock, withArg { browserSwitchOptions ->
                 assertEquals("https://example.com".toUri(), browserSwitchOptions.url)
                 assertEquals(1, browserSwitchOptions.requestCode)
                 assertEquals(returnUrlScheme, browserSwitchOptions.returnUrlScheme)
@@ -284,7 +284,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when open is called with BrowserSwitchStartResult Started, the pendingRequest is stored in pendingRequestRepository`() =
         runTest {
-            every { browserSwitchClient.start(fragmentActivityMock, any()) } returns
+            every { browserSwitchClient.start(activityMock, any()) } returns
                     BrowserSwitchStartResult.Started(pendingRequest)
             initializeClient()
 
@@ -297,7 +297,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when open is called with BrowserSwitchStartResult Failure, the error listener is invoked`() {
         val exception = Exception()
-        every { browserSwitchClient.start(fragmentActivityMock, any()) } returns
+        every { browserSwitchClient.start(activityMock, any()) } returns
                 BrowserSwitchStartResult.Failure(exception)
         val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
         initializeClient()
