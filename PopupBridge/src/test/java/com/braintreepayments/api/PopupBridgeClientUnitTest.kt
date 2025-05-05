@@ -5,6 +5,11 @@ import android.net.Uri
 import android.webkit.WebView
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_STARTED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_CANCELED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_FAILED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_SUCCEEDED
+import com.braintreepayments.api.internal.AnalyticsClient
 import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
@@ -41,6 +46,7 @@ class PopupBridgeClientUnitTest {
     private val webViewMock: WebView = mockk(relaxed = true)
     private val browserSwitchClient: BrowserSwitchClient = mockk(relaxed = true)
     private val pendingRequestRepository: PendingRequestRepository = mockk(relaxed = true)
+    private val analyticsClient: AnalyticsClient = mockk(relaxed = true)
     private val popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = mockk(relaxed = true)
     private val analyticsParamRepository: AnalyticsParamRepository = mockk(relaxed = true)
 
@@ -73,9 +79,17 @@ class PopupBridgeClientUnitTest {
             browserSwitchClient = browserSwitchClient,
             pendingRequestRepository = pendingRequestRepository,
             coroutineScope = TestScope(testDispatcher),
+            analyticsClient = analyticsClient,
             analyticsParamRepository = analyticsParamRepository,
             popupBridgeJavascriptInterface = popupBridgeJavascriptInterface,
         )
+    }
+
+    @Test
+    fun `on init, analyticsClient sends POPUP_BRIDGE_STARTED event`() {
+        initializeClient()
+
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_STARTED) }
     }
 
     @Test
@@ -253,6 +267,58 @@ class PopupBridgeClientUnitTest {
                 }, null)
             }
         }
+
+    @Test
+    fun `when handleReturnToApp is called and browser switch succeeds, POPUP_BRIDGE_SUCCEEDED event is sent`() = runTest {
+        val returnUrl = Uri.Builder()
+            .scheme("my-custom-url-scheme")
+            .authority("popupbridgev1")
+            .build()
+
+        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
+        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+        every { browserSwitchFinalResult.returnUrl } returns returnUrl
+
+        initializeClient()
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED) }
+    }
+
+    @Test
+    fun `when handleReturnToApp is called and browser switch fails, POPUP_BRIDGE_FAILED event is sent`() = runTest {
+        val exception = JSONException("exception message")
+        val returnUrl: Uri = mockk(relaxed = true)
+        every { returnUrl.getQueryParameter(any()) } throws exception
+        every { returnUrl.host } returns "popupbridgev1"
+        every { returnUrl.queryParameterNames } returns setOf("param1", "param2")
+
+        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
+        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+        every { browserSwitchFinalResult.returnUrl } returns returnUrl
+
+        initializeClient()
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_FAILED) }
+    }
+
+    @Test
+    fun `when handleReturnToApp is called and browser switch returns no result, POPUP_BRIDGE_CANCELED event is sent`() = runTest {
+        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.NoResult>()
+        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+
+        initializeClient()
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_CANCELED) }
+    }
 
     @Test
     fun `on init, venmoInstalled is set on the popupBridgeJavascriptInterface`() {
