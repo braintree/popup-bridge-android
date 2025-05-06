@@ -3,11 +3,11 @@ package com.braintreepayments.api
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
-import androidx.fragment.app.FragmentActivity
-import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_STARTED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_CANCELED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_FAILED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_STARTED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_SUCCEEDED
 import com.braintreepayments.api.internal.AnalyticsClient
 import com.braintreepayments.api.internal.AnalyticsParamRepository
@@ -42,7 +42,7 @@ class PopupBridgeClientUnitTest {
 
     private val testDispatcher = coroutineTestRule.testDispatcher
 
-    private val fragmentActivityMock: FragmentActivity = mockk(relaxed = true)
+    private val activityMock: ComponentActivity = mockk(relaxed = true)
     private val webViewMock: WebView = mockk(relaxed = true)
     private val browserSwitchClient: BrowserSwitchClient = mockk(relaxed = true)
     private val pendingRequestRepository: PendingRequestRepository = mockk(relaxed = true)
@@ -61,7 +61,7 @@ class PopupBridgeClientUnitTest {
     private val onSendMessageSlot = slot<(String?, String?) -> Unit>()
 
     private fun initializeClient(
-        activity: FragmentActivity = fragmentActivityMock,
+        activity: ComponentActivity = activityMock,
         webView: WebView = webViewMock,
         additionalMocks: () -> Unit = {}
     ) {
@@ -84,7 +84,7 @@ class PopupBridgeClientUnitTest {
             popupBridgeJavascriptInterface = popupBridgeJavascriptInterface,
         )
     }
-    
+
     @Test
     fun `on init, webView is set up`() {
         initializeClient()
@@ -262,23 +262,24 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch succeeds, POPUP_BRIDGE_SUCCEEDED event is sent`() = runTest {
-        val returnUrl = Uri.Builder()
-            .scheme("my-custom-url-scheme")
-            .authority("popupbridgev1")
-            .build()
+    fun `when handleReturnToApp is called and browser switch succeeds, POPUP_BRIDGE_SUCCEEDED event is sent`() =
+        runTest {
+            val returnUrl = Uri.Builder()
+                .scheme("my-custom-url-scheme")
+                .authority("popupbridgev1")
+                .build()
 
-        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
-        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
-        every { browserSwitchFinalResult.returnUrl } returns returnUrl
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+            every { browserSwitchFinalResult.returnUrl } returns returnUrl
 
-        initializeClient()
+            initializeClient()
 
-        subject.handleReturnToApp(intent)
-        testScheduler.advanceUntilIdle()
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
 
-        verify { analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED) }
-    }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED) }
+        }
 
     @Test
     fun `when handleReturnToApp is called and browser switch fails, POPUP_BRIDGE_FAILED event is sent`() = runTest {
@@ -301,23 +302,24 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch returns no result, POPUP_BRIDGE_CANCELED event is sent`() = runTest {
-        val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.NoResult>()
-        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+    fun `when handleReturnToApp is called and browser switch returns no result, POPUP_BRIDGE_CANCELED event is sent`() =
+        runTest {
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.NoResult>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
 
-        initializeClient()
+            initializeClient()
 
-        subject.handleReturnToApp(intent)
-        testScheduler.advanceUntilIdle()
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
 
-        verify { analyticsClient.sendEvent(POPUP_BRIDGE_CANCELED) }
-    }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_CANCELED) }
+        }
 
     @Test
     fun `on init, venmoInstalled is set on the popupBridgeJavascriptInterface`() {
         initializeClient {
             mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-            every { fragmentActivityMock.isVenmoInstalled() } returns true
+            every { activityMock.isVenmoInstalled() } returns true
         }
 
         verify { popupBridgeJavascriptInterface.venmoInstalled = true }
@@ -341,7 +343,7 @@ class PopupBridgeClientUnitTest {
         onOpenSlot.captured.invoke("https://example.com")
 
         verify(exactly = 1) {
-            browserSwitchClient.start(fragmentActivityMock, withArg { browserSwitchOptions ->
+            browserSwitchClient.start(activityMock, withArg { browserSwitchOptions ->
                 assertEquals("https://example.com".toUri(), browserSwitchOptions.url)
                 assertEquals(1, browserSwitchOptions.requestCode)
                 assertEquals(returnUrlScheme, browserSwitchOptions.returnUrlScheme)
@@ -352,7 +354,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when open is called with BrowserSwitchStartResult Started, the pendingRequest is stored in pendingRequestRepository`() =
         runTest {
-            every { browserSwitchClient.start(fragmentActivityMock, any()) } returns
+            every { browserSwitchClient.start(activityMock, any()) } returns
                     BrowserSwitchStartResult.Started(pendingRequest)
             initializeClient()
 
@@ -365,7 +367,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when open is called with BrowserSwitchStartResult Failure, the error listener is invoked`() {
         val exception = Exception()
-        every { browserSwitchClient.start(fragmentActivityMock, any()) } returns
+        every { browserSwitchClient.start(activityMock, any()) } returns
                 BrowserSwitchStartResult.Failure(exception)
         val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
         initializeClient()

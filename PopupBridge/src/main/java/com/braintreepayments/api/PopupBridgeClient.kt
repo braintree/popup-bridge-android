@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_CANCELED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_FAILED
@@ -23,7 +23,7 @@ import org.json.JSONObject
 import java.lang.ref.WeakReference
 
 class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal constructor(
-    activity: FragmentActivity,
+    activity: ComponentActivity,
     webView: WebView,
     private val returnUrlScheme: String,
     private val browserSwitchClient: BrowserSwitchClient,
@@ -60,13 +60,13 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
      *
      * This will enable JavaScript in your WebView.
      *
-     * @param activity The [FragmentActivity] to add the [Fragment] to.
+     * @param activity The [ComponentActivity] that contains the [WebView].
      * @param webView The [WebView] to enable for PopupBridge.
      * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     constructor(
-        activity: FragmentActivity,
+        activity: ComponentActivity,
         webView: WebView,
         returnUrlScheme: String
     ) : this(
