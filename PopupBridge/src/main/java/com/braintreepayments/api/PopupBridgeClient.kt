@@ -7,6 +7,10 @@ import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_CANCELED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_FAILED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_SUCCEEDED
+import com.braintreepayments.api.internal.AnalyticsClient
 import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
@@ -25,6 +29,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private val browserSwitchClient: BrowserSwitchClient,
     private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(activity.applicationContext),
     private val coroutineScope: CoroutineScope = activity.lifecycleScope,
+    private val analyticsClient: AnalyticsClient = AnalyticsClient(
+        context = activity.applicationContext,
+        coroutineScope = activity.lifecycleScope,
+    ),
     analyticsParamRepository: AnalyticsParamRepository = AnalyticsParamRepository.instance,
     popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(returnUrlScheme),
 ) {
@@ -115,7 +123,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             pendingRequestRepository.clearPendingRequest()
 
             when (val browserSwitchFinalResult = browserSwitchClient.completeRequest(intent, pendingRequest)) {
-                is BrowserSwitchFinalResult.Success -> runSuccessJavaScript(browserSwitchFinalResult.returnUrl)
+                is BrowserSwitchFinalResult.Success -> runNotifyCompleteJavaScript(browserSwitchFinalResult.returnUrl)
                 is BrowserSwitchFinalResult.Failure -> runCanceledJavaScript()
                 is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
             }
@@ -124,6 +132,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     private fun openUrl(url: String?) {
+        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_STARTED)
+
         val activity = activityRef.get() ?: return
         val browserSwitchOptions = BrowserSwitchOptions()
             .requestCode(REQUEST_CODE)
@@ -144,10 +154,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         navigationListener?.onUrlOpened(url)
     }
 
-    private fun runSuccessJavaScript(returnUri: Uri) {
+    private fun runNotifyCompleteJavaScript(returnUri: Uri) {
         if (returnUri.host != POPUP_BRIDGE_URL_HOST) return
-
-        var error: String? = null
 
         val payLoadJson = JSONObject()
         val queryItems = JSONObject()
@@ -156,8 +164,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             try {
                 queryItems.put(queryParam, returnUri.getQueryParameter(queryParam))
             } catch (e: JSONException) {
-                error = "new Error('Failed to parse query items from return URL. " +
+                val error = "new Error('Failed to parse query items from return URL. " +
                         e.localizedMessage + "')"
+                runErrorJavaScript(error)
+                return
             }
         }
 
@@ -168,25 +178,22 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         } catch (ignored: JSONException) {
         }
 
-        val successJavascript = String.format(
-            (""
-                    + "function notifyComplete() {"
-                    + "  window.popupBridge.onComplete(%s, %s);"
-                    + "}"
-                    + ""
-                    + "if (document.readyState === 'complete') {"
-                    + "  notifyComplete();"
-                    + "} else {"
-                    + "  window.addEventListener('load', function () {"
-                    + "    notifyComplete();"
-                    + "  });"
-                    + "}"), error, payLoadJson.toString()
-        )
+        analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED)
 
+        val successJavascript = String.format(ON_COMPLETE_JAVA_SCRIPT, null, payLoadJson.toString())
+        runJavaScriptInWebView(successJavascript)
+    }
+
+    private fun runErrorJavaScript(error: String) {
+        analyticsClient.sendEvent(POPUP_BRIDGE_FAILED)
+
+        val successJavascript = String.format(ON_COMPLETE_JAVA_SCRIPT, error, null)
         runJavaScriptInWebView(successJavascript)
     }
 
     private fun runCanceledJavaScript() {
+        analyticsClient.sendEvent(POPUP_BRIDGE_CANCELED)
+
         runJavaScriptInWebView(
             ""
                     + "function notifyCanceled() {"
@@ -216,5 +223,18 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     companion object {
         private const val REQUEST_CODE: Int = 1
         private const val POPUP_BRIDGE_NAME: String = "popupBridge"
+
+        private const val ON_COMPLETE_JAVA_SCRIPT = (""
+                + "function notifyComplete() {"
+                + "  window.popupBridge.onComplete(%s, %s);"
+                + "}"
+                + ""
+                + "if (document.readyState === 'complete') {"
+                + "  notifyComplete();"
+                + "} else {"
+                + "  window.addEventListener('load', function () {"
+                + "    notifyComplete();"
+                + "  });"
+                + "}")
     }
 }
