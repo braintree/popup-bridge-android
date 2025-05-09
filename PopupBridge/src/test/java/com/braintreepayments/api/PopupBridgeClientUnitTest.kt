@@ -226,7 +226,8 @@ class PopupBridgeClientUnitTest {
     fun `when handleReturnToApp is called and browser switch fails, canceled javascript is run`() = runTest {
         val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Failure>()
         every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
-
+        val exception = BrowserSwitchException("error message")
+        every { browserSwitchFinalResult.error } returns exception
         initializeClient()
 
         subject.handleReturnToApp(intent)
@@ -234,11 +235,13 @@ class PopupBridgeClientUnitTest {
         runnableSlot.captured.run()
 
         verify {
-            webViewMock.evaluateJavascript(
-                withArg { javascriptString ->
-                    assertEquals(CANCELED_JAVASCRIPT, javascriptString)
-                }, null
-            )
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                    assertTrue(
+                        javascriptString.contains(
+                            """new Error('${exception.message}')"""
+                        )
+                    )
+                }, null)
         }
     }
 

@@ -124,7 +124,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
             when (val browserSwitchFinalResult = browserSwitchClient.completeRequest(intent, pendingRequest)) {
                 is BrowserSwitchFinalResult.Success -> runNotifyCompleteJavaScript(browserSwitchFinalResult.returnUrl)
-                is BrowserSwitchFinalResult.Failure -> runCanceledJavaScript()
+                is BrowserSwitchFinalResult.Failure -> runFailureJavaScript(browserSwitchFinalResult.error)
                 is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
             }
             isHandlingReturnToApp = false
@@ -212,6 +212,25 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                     + "  });"
                     + "}"
         )
+    }
+
+    private fun runFailureJavaScript(error: BrowserSwitchException) {
+        val formattedError = """new Error('${error.message}')"""
+        val errorJavascript = String.format(
+            (""
+                + "function notifyFailed() {"
+                + "  window.popupBridge.onComplete(%s, %s);"
+                + "}"
+                + ""
+                + "if (document.readyState === 'complete') {"
+                + "  notifyFailed();"
+                + "} else {"
+                + "  window.addEventListener('load', function () {"
+                + "    notifyFailed();"
+                + "  });"
+                + "}"), formattedError, null
+        )
+        runJavaScriptInWebView(errorJavascript)
     }
 
     private fun runJavaScriptInWebView(script: String) {
