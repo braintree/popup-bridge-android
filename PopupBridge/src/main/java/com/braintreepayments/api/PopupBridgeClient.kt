@@ -124,7 +124,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
             when (val browserSwitchFinalResult = browserSwitchClient.completeRequest(intent, pendingRequest)) {
                 is BrowserSwitchFinalResult.Success -> runNotifyCompleteJavaScript(browserSwitchFinalResult.returnUrl)
-                is BrowserSwitchFinalResult.Failure -> runCanceledJavaScript()
+                is BrowserSwitchFinalResult.Failure -> runErrorJavaScript(
+                    browserSwitchFinalResult.error.message ?: "Browser switch failed"
+                )
                 is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
             }
             isHandlingReturnToApp = false

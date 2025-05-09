@@ -223,10 +223,11 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch fails, canceled javascript is run`() = runTest {
+    fun `when handleReturnToApp is called and browser switch fails, error javascript is run`() = runTest {
         val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Failure>()
         every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
-
+        val exception = BrowserSwitchException("error message")
+        every { browserSwitchFinalResult.error } returns exception
         initializeClient()
 
         subject.handleReturnToApp(intent)
@@ -234,11 +235,13 @@ class PopupBridgeClientUnitTest {
         runnableSlot.captured.run()
 
         verify {
-            webViewMock.evaluateJavascript(
-                withArg { javascriptString ->
-                    assertEquals(CANCELED_JAVASCRIPT, javascriptString)
-                }, null
-            )
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                    assertTrue(
+                        javascriptString.contains(
+                            getExpectedFailureJavascript(exception.message)
+                        )
+                    )
+                }, null)
         }
     }
 
@@ -429,6 +432,23 @@ class PopupBridgeClientUnitTest {
                     + "    notifyComplete();"
                     + "  });"
                     + "}"), error, payload.toString()
+        )
+    }
+
+    private fun getExpectedFailureJavascript(error: String?): String {
+        return String.format(
+            (""
+                + "function notifyComplete() {"
+                + "  window.popupBridge.onComplete(%s, %s);"
+                + "}"
+                + ""
+                + "if (document.readyState === 'complete') {"
+                + "  notifyComplete();"
+                + "} else {"
+                + "  window.addEventListener('load', function () {"
+                + "    notifyComplete();"
+                + "  });"
+                + "}"), error, null
         )
     }
 
