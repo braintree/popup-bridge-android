@@ -1,5 +1,5 @@
-name: 'Close and Release Repository'
-description: 'Close and Release Repository'
+name: 'Publish All Modules'
+description: 'Publishes all modules'
 inputs:
   sonatype_usr:
     description: 'Sonatype user'
@@ -24,7 +24,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: ./gradlew --stacktrace closeAndReleaseSonatypeStagingRepository
+    - run: ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
       shell: bash
       env:
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_usr }}

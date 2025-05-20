@@ -56,17 +56,8 @@ jobs:
         uses: ./.github/actions/update_versions
         with:
           version: ${{ github.event.inputs.version }}
-      - name: Publish Popup Bridge
-        uses: ./.github/actions/publish_module
-        with:
-          module: PopupBridge
-          sonatype_usr: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          sonatype_pwd: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-          signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
-          signing_key_pwd: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
-      - name: Close and Release Repository
-        uses: ./.github/actions/close_and_release_repository
+      - name: Publish All Modules
+        uses: ./.github/actions/publish_all_modules
         with:
           sonatype_usr: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           sonatype_pwd: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
