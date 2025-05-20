@@ -51,69 +51,12 @@ dependencies {
 
 // region signing and publishing
 
-task javadocs(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    failOnError false
-}
+project.ext.name = "popup-bridge"
+project.ext.pom_name = "popup-bridge"
+project.ext.group_id = "com.braintreepayments.api"
+project.ext.version = rootProject.version
+project.ext.pom_desc = "PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView."
 
-task javadocsJar(type: Jar, dependsOn: javadocs) {
-    archiveClassifier.set('javadoc')
-    from javadocs.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
-}
-
-signing {
-    required { !version.endsWith("SNAPSHOT") }
-    sign publishing.publications
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                groupId = 'com.braintreepayments.api'
-                artifactId = 'popup-bridge'
-                version = rootProject.versionName
-
-                artifact sourcesJar
-                artifact javadocsJar
-
-                pom {
-                    name = 'popup-bridge'
-                    packaging = 'aar'
-                    description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
-                    url = 'https://github.com/braintree/popup-bridge-android'
-
-                    scm {
-                        url = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                        connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                        developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                    }
-
-                    developers {
-                        developer {
-                            id = 'devs'
-                            name = 'Braintree Payments'
-                        }
-                    }
-
-                    licenses {
-                        license {
-                            name = 'MIT'
-                            url = 'http://opensource.org/licenses/MIT'
-                            distribution = 'repo'
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
+apply from: rootProject.file("gradle/gradle-publish.gradle")
 
 // endregion

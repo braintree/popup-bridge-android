@@ -13,6 +13,7 @@ lifecycleRuntimeVersion = "2.8.7"
 mockitoCoreVersion = "5.7.0"
 mockkVersion = "1.13.17"
 robolectricVersion = "4.11.1"
+nexusPublishPluginVersion = "1.1.0"
 
 [libraries]
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
@@ -31,3 +32,4 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 
 [plugins]
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroidVersion" }
+nexus-publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexusPublishPluginVersion" }
