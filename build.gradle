@@ -12,7 +12,7 @@ buildscript {
 }
 
 plugins {
-    alias(libs.plugins.nexus.publish.plugin) apply false
+    alias(libs.plugins.nexus.publish.plugin) apply true
     alias(libs.plugins.kotlin.android) apply false
 }
 
@@ -35,6 +35,19 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = System.getenv('SONATYPE_USERNAME')
+            password = System.getenv('SONATYPE_PASSWORD')
+        }
+    }
+    transitionCheckOptions {
+        // give nexus sonatype more time to close the staging repository
+        delayBetween.set(Duration.ofSeconds(20))
     }
 }
 
