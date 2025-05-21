@@ -15,6 +15,7 @@ import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.isVenmoInstalled
 import com.braintreepayments.api.util.CoroutineTestRule
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -147,6 +148,9 @@ class PopupBridgeClientUnitTest {
             every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
             every { browserSwitchFinalResult.returnUrl } returns returnUrl
             initializeClient()
+
+            // clears mock calls to webViewMock.post called from setVenmoInstalled on init
+            clearMocks(webViewMock)
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
@@ -319,13 +323,39 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `on init, venmoInstalled is set on the popupBridgeJavascriptInterface`() {
+    fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() = runTest {
         initializeClient {
             mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
             every { activityMock.isVenmoInstalled() } returns true
         }
 
-        verify { popupBridgeJavascriptInterface.venmoInstalled = true }
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify {
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                assertEquals(getExpectedVenmoInstalledJavascript(true), javascriptString)
+            }, null)
+        }
+
+        unmockkAll()
+    }
+
+    @Test
+    fun `on init, when venmo is not installed, isVenmoInstalled is set to false on the popupBridgeJavascriptInterface`() = runTest {
+        initializeClient {
+            mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
+            every { activityMock.isVenmoInstalled() } returns false
+        }
+
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify {
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                assertEquals(getExpectedVenmoInstalledJavascript(false), javascriptString)
+            }, null)
+        }
 
         unmockkAll()
     }
@@ -449,6 +479,23 @@ class PopupBridgeClientUnitTest {
                 + "    notifyComplete();"
                 + "  });"
                 + "}"), error, null
+        )
+    }
+
+    private fun getExpectedVenmoInstalledJavascript(isVenmoInstalled: Boolean): String {
+        return String.format(
+            (""
+                + "function setVenmoInstalled() {"
+                + "    window.popupBridge.isVenmoInstalled = %s;"
+                + "}"
+                + ""
+                + "if (document.readyState === 'complete') {"
+                + "  setVenmoInstalled();"
+                + "} else {"
+                + "  window.addEventListener('load', function () {"
+                + "    setVenmoInstalled();"
+                + "  });"
+                + "}"), isVenmoInstalled
         )
     }
 

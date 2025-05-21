@@ -24,17 +24,6 @@ class PopupBridgeJavascriptInterfaceUnitTest {
     }
 
     @Test
-    fun `getting isVenmoInstalled returns false by default`() {
-        assertFalse(subject.isVenmoInstalled)
-    }
-
-    @Test
-    fun `getting isVenmoInstalled when set to true then returns true`() {
-        subject.venmoInstalled = true
-        assertTrue(subject.isVenmoInstalled)
-    }
-
-    @Test
     fun `when open is invoked, onOpen callback is called with url`() {
         var capturedUrl: String? = null
         subject.onOpen = { url -> capturedUrl = url }

@@ -12,7 +12,6 @@ internal class PopupBridgeJavascriptInterface(
     private val returnUrlScheme: String,
 ) {
 
-    var venmoInstalled: Boolean = false
     var onOpen: ((url: String?) -> Unit)? = null
     var onSendMessage: ((messageName: String?, data: String?) -> Unit)? = null
 
@@ -23,10 +22,6 @@ internal class PopupBridgeJavascriptInterface(
             returnUrlScheme,
             POPUP_BRIDGE_URL_HOST
         )
-
-    @get:JavascriptInterface
-    val isVenmoInstalled: Boolean
-        get() = venmoInstalled
 
     @JavascriptInterface
     fun open(url: String?) {

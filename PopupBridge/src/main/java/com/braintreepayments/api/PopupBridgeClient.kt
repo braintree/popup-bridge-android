@@ -89,12 +89,12 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
 
         with(popupBridgeJavascriptInterface) {
-            venmoInstalled = activity.isVenmoInstalled()
             onOpen = { url -> openUrl(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
             }
         }
+        setVenmoInstalled(activity.isVenmoInstalled())
     }
 
     fun setNavigationListener(listener: PopupBridgeNavigationListener?) {
@@ -211,6 +211,23 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                     + "} else {"
                     + "  window.addEventListener('load', function () {"
                     + "    notifyCanceled();"
+                    + "  });"
+                    + "}"
+        )
+    }
+
+    private fun setVenmoInstalled(isVenmoInstalled: Boolean) {
+        runJavaScriptInWebView(
+            ""
+                    + "function setVenmoInstalled() {"
+                    + "    window.popupBridge.isVenmoInstalled = ${isVenmoInstalled};"
+                    + "}"
+                    + ""
+                    + "if (document.readyState === 'complete') {"
+                    + "  setVenmoInstalled();"
+                    + "} else {"
+                    + "  window.addEventListener('load', function () {"
+                    + "    setVenmoInstalled();"
                     + "  });"
                     + "}"
         )
