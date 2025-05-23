@@ -22,12 +22,16 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.job
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Rule
@@ -66,7 +70,7 @@ class PopupBridgeClientUnitTest {
         webView: WebView = webViewMock,
         additionalMocks: () -> Unit = {}
     ) {
-        every { webViewMock.post(capture(runnableSlot)) } returns true
+        every { webView.post(capture(runnableSlot)) } returns true
         coEvery { pendingRequestRepository.getPendingRequest() } returns pendingRequest
         every { popupBridgeJavascriptInterface.onOpen = capture(onOpenSlot) } returns Unit
         every { popupBridgeJavascriptInterface.onSendMessage = capture(onSendMessageSlot) } returns Unit
@@ -324,16 +328,18 @@ class PopupBridgeClientUnitTest {
 
     @Test
     fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() = runTest {
-        initializeClient {
+        val webView = spyk<WebView>(WebView(activityMock))
+
+        initializeClient(webView = webView) {
             mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
             every { activityMock.isVenmoInstalled() } returns true
         }
 
-        testScheduler.advanceUntilIdle()
+        webView.webViewClient.onPageFinished(webView, "https://example.com")
         runnableSlot.captured.run()
 
         verify {
-            webViewMock.evaluateJavascript(withArg { javascriptString ->
+            webView.evaluateJavascript(withArg { javascriptString ->
                 assertEquals(getExpectedVenmoInstalledJavascript(true), javascriptString)
             }, null)
         }
@@ -343,16 +349,18 @@ class PopupBridgeClientUnitTest {
 
     @Test
     fun `on init, when venmo is not installed, isVenmoInstalled is set to false on the popupBridgeJavascriptInterface`() = runTest {
-        initializeClient {
+        val webView = spyk<WebView>(WebView(activityMock))
+
+        initializeClient(webView = webView) {
             mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
             every { activityMock.isVenmoInstalled() } returns false
         }
 
-        testScheduler.advanceUntilIdle()
+        webView.webViewClient.onPageFinished(webView, "https://example.com")
         runnableSlot.captured.run()
 
         verify {
-            webViewMock.evaluateJavascript(withArg { javascriptString ->
+            webView.evaluateJavascript(withArg { javascriptString ->
                 assertEquals(getExpectedVenmoInstalledJavascript(false), javascriptString)
             }, null)
         }
