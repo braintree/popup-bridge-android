@@ -15,7 +15,6 @@ import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.isVenmoInstalled
 import com.braintreepayments.api.util.CoroutineTestRule
-import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -27,11 +26,8 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.job
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeout
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Rule
@@ -152,9 +148,6 @@ class PopupBridgeClientUnitTest {
             every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
             every { browserSwitchFinalResult.returnUrl } returns returnUrl
             initializeClient()
-
-            // clears mock calls to webViewMock.post called from setVenmoInstalled on init
-            clearMocks(webViewMock)
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
