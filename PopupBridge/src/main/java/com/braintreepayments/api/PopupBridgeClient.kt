@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
@@ -87,6 +88,12 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                super.onPageFinished(view, url)
+                setVenmoInstalled(activity.isVenmoInstalled())
+            }
+        }
 
         with(popupBridgeJavascriptInterface) {
             onOpen = { url -> openUrl(url) }
@@ -94,7 +101,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                 messageListener?.onMessageReceived(messageName, data)
             }
         }
-        setVenmoInstalled(activity.isVenmoInstalled())
     }
 
     fun setNavigationListener(listener: PopupBridgeNavigationListener?) {
