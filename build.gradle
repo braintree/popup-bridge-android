@@ -12,7 +12,7 @@ buildscript {
 }
 
 plugins {
-    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+    alias(libs.plugins.nexus.publish.plugin) apply true
     alias(libs.plugins.kotlin.android) apply false
 }
 
@@ -41,8 +41,8 @@ allprojects {
 nexusPublishing {
     repositories {
         sonatype {
-            username = System.getenv('SONATYPE_USERNAME')
-            password = System.getenv('SONATYPE_PASSWORD')
+            username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+            password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
         }
     }
     transitionCheckOptions {
