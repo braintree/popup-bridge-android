@@ -3,7 +3,8 @@ on:
   # update SNAPSHOT build whenever a push or merge occurs on master
   push:
     branches:
-      - master
+      - main
+      - v5-revisited
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 jobs:
