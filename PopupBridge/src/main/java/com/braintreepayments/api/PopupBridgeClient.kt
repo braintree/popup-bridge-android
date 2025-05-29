@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
@@ -87,9 +88,14 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                super.onPageFinished(view, url)
+                setVenmoInstalled(activity.isVenmoInstalled())
+            }
+        }
 
         with(popupBridgeJavascriptInterface) {
-            venmoInstalled = activity.isVenmoInstalled()
             onOpen = { url -> openUrl(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
@@ -211,6 +217,23 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                     + "} else {"
                     + "  window.addEventListener('load', function () {"
                     + "    notifyCanceled();"
+                    + "  });"
+                    + "}"
+        )
+    }
+
+    private fun setVenmoInstalled(isVenmoInstalled: Boolean) {
+        runJavaScriptInWebView(
+            ""
+                    + "function setVenmoInstalled() {"
+                    + "    window.popupBridge.isVenmoInstalled = ${isVenmoInstalled};"
+                    + "}"
+                    + ""
+                    + "if (document.readyState === 'complete') {"
+                    + "  setVenmoInstalled();"
+                    + "} else {"
+                    + "  window.addEventListener('load', function () {"
+                    + "    setVenmoInstalled();"
                     + "  });"
                     + "}"
         )
