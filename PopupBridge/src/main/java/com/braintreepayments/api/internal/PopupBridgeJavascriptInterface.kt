@@ -25,7 +25,7 @@ internal class PopupBridgeJavascriptInterface(
         )
 
     @JavascriptInterface
-    fun getVenmoInstalled() = venmoInstalled
+    fun fetchVenmoInstalled() = venmoInstalled
 
     @JavascriptInterface
     fun open(url: String?) {
