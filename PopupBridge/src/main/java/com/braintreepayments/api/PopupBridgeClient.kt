@@ -96,6 +96,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         }
 
         with(popupBridgeJavascriptInterface) {
+            venmoInstalled = activity.isVenmoInstalled()
             onOpen = { url -> openUrl(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
