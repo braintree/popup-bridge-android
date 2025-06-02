@@ -59,7 +59,9 @@ project.ext.pom_desc = "PopupBridge is an Android library that allows WebViews t
 
 apply from: rootProject.file("gradle/gradle-publish.gradle")
 
-// quickfix for build failure - https://github.com/braintree/popup-bridge-android/actions/runs/15397245556/job/43321301810?pr=87
+// quickfix for build failure
+// Reason: Task ':PopupBridge:generateMetadataFileForReleasePublication' uses this output of task ':PopupBridge:androidSourcesJar' without declaring an explicit or implicit dependency.
+// This can lead to incorrect results being produced, depending on what order the tasks are executed.
 afterEvaluate {
     generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
 }
