@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - v5-revisited
+      - test-publish
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 jobs:
