@@ -71,7 +71,3 @@ task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     from android.sourceSets.main.kotlin.srcDirs
 }
-
-artifacts {
-    archives androidSourcesJar
-}
