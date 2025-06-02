@@ -59,4 +59,8 @@ project.ext.pom_desc = "PopupBridge is an Android library that allows WebViews t
 
 apply from: rootProject.file("gradle/gradle-publish.gradle")
 
+// quickfix for build failure - https://github.com/braintree/popup-bridge-android/actions/runs/15397245556/job/43321301810?pr=87
+afterEvaluate {
+    generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
+}
 // endregion
