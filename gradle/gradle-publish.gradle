@@ -66,12 +66,8 @@ afterEvaluate {
     }
 }
 
-task androidSourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
+tasks.register('androidSourcesJar', Jar) {
+    archiveClassifier.set('sourcesJar')
     from android.sourceSets.main.java.srcDirs
     from android.sourceSets.main.kotlin.srcDirs
-}
-
-artifacts {
-    archives androidSourcesJar
 }
