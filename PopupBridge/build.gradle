@@ -2,104 +2,66 @@ plugins {
     id 'com.android.library'
     id 'maven-publish'
     id 'signing'
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
     namespace 'com.braintreepayments.api.popupbridge'
-    compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
+        compileSdk rootProject.compileSdkVersion
 
         consumerProguardFiles 'proguard.pro'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+        buildConfigField "String", "VERSION_NAME", "\"${rootProject.versionName}\""
     }
 
     testOptions.unitTests.includeAndroidResources = true
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
     }
 }
 
 dependencies {
-    implementation 'com.braintreepayments.api:browser-switch:2.3.1'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.5.1'
+    implementation libs.browser.switch
+    implementation libs.appcompat
+    implementation libs.lifecycle.runtime
+    implementation libs.datastore.preferences
 
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:3.6.0'
-    testImplementation 'org.robolectric:robolectric:4.7.3'
+    testImplementation libs.junit
+    testImplementation libs.mockito.core
+    testImplementation libs.robolectric
+    testImplementation libs.mockk
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.kotlin.test
 }
 
 // region signing and publishing
 
-task javadocs(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    failOnError false
+project.ext.name = "popup-bridge"
+project.ext.pom_name = "popup-bridge"
+project.ext.group_id = "com.braintreepayments.api"
+project.ext.version = rootProject.version
+project.ext.pom_desc = "PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView."
+
+apply from: rootProject.file("gradle/gradle-publish.gradle")
+
+// quickfix for a build failure with the following error:
+// Reason: Task ':PopupBridge:generateMetadataFileForReleasePublication' uses this output of task ':PopupBridge:androidSourcesJar' without declaring an explicit or implicit dependency. This can lead to incorrect results being produced, depending on what order the tasks are executed.
+afterEvaluate {
+    generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
 }
-
-task javadocsJar(type: Jar, dependsOn: javadocs) {
-    archiveClassifier.set('javadoc')
-    from javadocs.destinationDir
-}
-
-task sourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
-}
-
-signing {
-    required { !version.endsWith("SNAPSHOT") }
-    sign publishing.publications
-}
-
-publishing {
-    publications {
-        release(MavenPublication) {
-
-            afterEvaluate {
-                from components.release
-            }
-            groupId = 'com.braintreepayments.api'
-            artifactId = 'popup-bridge'
-            version = rootProject.versionName
-
-            artifact sourcesJar
-            artifact javadocsJar
-
-            pom {
-                name = 'popup-bridge'
-                packaging = 'aar'
-                description = 'PopupBridge is an Android library that allows WebViews to open popup windows in a browser and send data back to the WebView.'
-                url = 'https://github.com/braintree/popup-bridge-android'
-
-                scm {
-                    url = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                    connection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                    developerConnection = 'scm:git@github.com:braintree/popup-bridge-android.git'
-                }
-
-                developers {
-                    developer {
-                        id = 'devs'
-                        name = 'Braintree Payments'
-                    }
-                }
-
-                licenses {
-                    license {
-                        name = 'MIT'
-                        url = 'http://opensource.org/licenses/MIT'
-                        distribution = 'repo'
-                    }
-                }
-            }
-        }
-    }
-}
-
 // endregion

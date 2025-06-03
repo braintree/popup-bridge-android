@@ -5,10 +5,14 @@
 * Android 13 Support
   * Upgrade `targetSdkVersion` and `compileSdkVersion` to API 33
 * Disable Jetifier
+* Update browser-switch to 3.0.0
 * Breaking Changes
   * Remove `PopupBridgeClient#deliverPopupBridgeResult(FragmentActivity)`
   * Make `PopupBridgeClient#POPUP_BRIDGE_NAME` package-private
   * Make `PopupBridgeClient#POPUP_BRIDGE_URL_HOST` package-private
+  * Remove `PopupBridgeLifecycleObserver`
+  * Replace `FragmentActivity` with `ComponentActivity` in `PopupBridgeClient`'s constructor
+* Add validation to check if the Venmo app is installed on the device.
 
 ## 4.1.0
 
