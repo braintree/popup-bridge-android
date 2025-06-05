@@ -1,6 +1,6 @@
 # PopupBridge Android Release Notes
 
-## unreleased
+## 5.0.0
 
 * Android 13 Support
   * Upgrade `targetSdkVersion` and `compileSdkVersion` to API 33
