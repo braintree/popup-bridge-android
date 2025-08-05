@@ -1,57 +1,81 @@
 package com.braintreepayments.api
 
-import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.webkit.WebView
 import com.braintreepayments.api.internal.isVenmoInstalled
-import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.unmockkAll
 import io.mockk.verify
-import kotlin.test.AfterTest
+import junit.framework.TestCase.assertEquals
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class PopupBridgeWebViewClientTest {
 
-    private lateinit var sut: PopupBridgeWebViewClient
-    private val context = mockk<Context>(relaxed = true)
-    private val view = mockk<WebView>(relaxed = true)
-    private val url = "some-url"
+    private val sut = PopupBridgeWebViewClient()
+    private val webView = mockk<WebView>(relaxed = true)
 
     @BeforeTest
     fun setup() {
-        sut = PopupBridgeWebViewClient()
         mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-        every { view.context } returns context
-        every { context.applicationInfo } returns mockk<ApplicationInfo>(relaxed = true)
-    }
 
-    @AfterTest
-    fun cleanup() {
-        // Unmock static methods to avoid side effects in other tests
-        clearAllMocks()
-    }
-
-    @Test
-    fun `test invocation of onPageFinished calls setVenmoInstalled - venmo installed`() {
-        every { view.context.isVenmoInstalled() } returns true
-
-        sut.onPageFinished(view, url)
-
-        verify { sut.setVenmoInstalled(view, true) }
+        every { webView.post(any()) } answers {
+            val runnable = firstArg<Runnable>()
+            runnable.run()
+            true
+        }
     }
 
     @Test
-    fun `test invocation of onPageFinished calls setVenmoInstalled - venmo not installed`() {
-        every { view.context.isVenmoInstalled() } returns false
+    fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() = runTest {
 
-        sut.onPageFinished(view, url)
+        every { webView.context.isVenmoInstalled() } returns true
 
-        verify { sut.setVenmoInstalled(view, false) }
+        sut.onPageFinished(webView, "https://example.com")
+
+        verify {
+            webView.evaluateJavascript(withArg { javascriptString ->
+                assertEquals(getExpectedVenmoInstalledJavascript(true), javascriptString)
+            }, null)
+        }
+
+        unmockkAll()
+    }
+
+    @Test
+    fun `on init, when venmo is not installed, isVenmoInstalled is set to false on the popupBridgeJavascriptInterface`() = runTest {
+        every { webView.context.isVenmoInstalled() } returns false
+
+        sut.onPageFinished(webView, "https://example.com")
+
+        verify {
+            webView.evaluateJavascript(withArg { javascriptString ->
+                assertEquals(getExpectedVenmoInstalledJavascript(false), javascriptString)
+            }, null)
+        }
+
+        unmockkAll()
+    }
+
+    private fun getExpectedVenmoInstalledJavascript(isVenmoInstalled: Boolean): String {
+        return String.format(
+            (""
+                + "function setVenmoInstalled() {"
+                + "    window.popupBridge.isVenmoInstalled = %s;"
+                + "}"
+                + ""
+                + "if (document.readyState === 'complete') {"
+                + "  setVenmoInstalled();"
+                + "} else {"
+                + "  window.addEventListener('load', function () {"
+                + "    setVenmoInstalled();"
+                + "  });"
+                + "}"), isVenmoInstalled
+        )
     }
 }

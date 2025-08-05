@@ -3,7 +3,6 @@ package com.braintreepayments.api
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.braintreepayments.api.internal.isVenmoInstalled
-import org.jetbrains.annotations.VisibleForTesting
 
 open class PopupBridgeWebViewClient : WebViewClient() {
 
@@ -12,8 +11,7 @@ open class PopupBridgeWebViewClient : WebViewClient() {
         setVenmoInstalled(view, view?.context?.isVenmoInstalled() == true)
     }
 
-    @VisibleForTesting
-    internal fun setVenmoInstalled(view: WebView?, isVenmoInstalled: Boolean) {
+    private fun setVenmoInstalled(view: WebView?, isVenmoInstalled: Boolean) {
         runJavaScriptInWebView(view,
             ""
                 + "function setVenmoInstalled() {"
@@ -31,9 +29,8 @@ open class PopupBridgeWebViewClient : WebViewClient() {
     }
 
     private fun runJavaScriptInWebView(webView: WebView?, script: String) {
-        webView?.evaluateJavascript(script, null)
-//        webView?.post(
-//            Runnable { webView.evaluateJavascript(script, null) }
-//        )
+        webView?.post(
+            Runnable { webView.evaluateJavascript(script, null) }
+        )
     }
 }

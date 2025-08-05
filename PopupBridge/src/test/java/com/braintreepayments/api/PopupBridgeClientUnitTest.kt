@@ -13,16 +13,12 @@ import com.braintreepayments.api.internal.AnalyticsClient
 import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
-import com.braintreepayments.api.internal.isVenmoInstalled
 import com.braintreepayments.api.util.CoroutineTestRule
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.unmockkAll
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
@@ -322,48 +318,6 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() = runTest {
-        val webView = spyk<WebView>(WebView(activityMock))
-
-        initializeClient(webView = webView) {
-            mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-            every { activityMock.isVenmoInstalled() } returns true
-        }
-
-        webView.webViewClient.onPageFinished(webView, "https://example.com")
-        runnableSlot.captured.run()
-
-        verify {
-            webView.evaluateJavascript(withArg { javascriptString ->
-                assertEquals(getExpectedVenmoInstalledJavascript(true), javascriptString)
-            }, null)
-        }
-
-        unmockkAll()
-    }
-
-    @Test
-    fun `on init, when venmo is not installed, isVenmoInstalled is set to false on the popupBridgeJavascriptInterface`() = runTest {
-        val webView = spyk<WebView>(WebView(activityMock))
-
-        initializeClient(webView = webView) {
-            mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-            every { activityMock.isVenmoInstalled() } returns false
-        }
-
-        webView.webViewClient.onPageFinished(webView, "https://example.com")
-        runnableSlot.captured.run()
-
-        verify {
-            webView.evaluateJavascript(withArg { javascriptString ->
-                assertEquals(getExpectedVenmoInstalledJavascript(false), javascriptString)
-            }, null)
-        }
-
-        unmockkAll()
-    }
-
-    @Test
     fun `when popupBridgeJavascriptInterface onOpen is called, analyticsClient sends POPUP_BRIDGE_STARTED event`() {
         initializeClient()
 
@@ -482,23 +436,6 @@ class PopupBridgeClientUnitTest {
                 + "    notifyComplete();"
                 + "  });"
                 + "}"), error, null
-        )
-    }
-
-    private fun getExpectedVenmoInstalledJavascript(isVenmoInstalled: Boolean): String {
-        return String.format(
-            (""
-                + "function setVenmoInstalled() {"
-                + "    window.popupBridge.isVenmoInstalled = %s;"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  setVenmoInstalled();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    setVenmoInstalled();"
-                + "  });"
-                + "}"), isVenmoInstalled
         )
     }
 
