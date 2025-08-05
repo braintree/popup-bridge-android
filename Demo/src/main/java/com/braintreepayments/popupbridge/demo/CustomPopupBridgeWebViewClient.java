@@ -9,11 +9,11 @@ import com.braintreepayments.api.PopupBridgeWebViewClient;
 
 import java.lang.ref.WeakReference;
 
-class CustomWebViewClient extends PopupBridgeWebViewClient {
+public class CustomPopupBridgeWebViewClient extends PopupBridgeWebViewClient {
 
     private final WeakReference<Context> contextWeakReference;
 
-    public CustomWebViewClient(Context context) {
+    CustomPopupBridgeWebViewClient(Context context) {
         super();
         contextWeakReference = new WeakReference<>(context);
     }
