@@ -5,7 +5,7 @@ import android.webkit.WebViewClient
 import com.braintreepayments.api.internal.isVenmoInstalled
 import org.jetbrains.annotations.VisibleForTesting
 
-class PopupBridgeWebViewClient : WebViewClient() {
+open class PopupBridgeWebViewClient : WebViewClient() {
 
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)

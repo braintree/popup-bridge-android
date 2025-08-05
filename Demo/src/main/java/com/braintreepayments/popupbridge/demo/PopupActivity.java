@@ -1,13 +1,20 @@
 package com.braintreepayments.popupbridge.demo;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.braintreepayments.api.PopupBridgeClient;
+import com.braintreepayments.api.PopupBridgeWebViewClient;
+
+import java.lang.ref.WeakReference;
 
 public class PopupActivity extends AppCompatActivity {
 
@@ -15,6 +22,7 @@ public class PopupActivity extends AppCompatActivity {
 
     private WebView webView;
     private PopupBridgeClient popupBridgeClient;
+    private PopupBridgeWebViewClient popupBridgeWebViewClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +30,9 @@ public class PopupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popup);
         webView = findViewById(R.id.web_view);
 
-        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME);
+        popupBridgeWebViewClient = new CustomWebViewClient(this);
+
+        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME, popupBridgeWebViewClient);
         popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
         webView.loadUrl(getIntent().getStringExtra("url"));
