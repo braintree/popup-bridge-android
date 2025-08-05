@@ -25,8 +25,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     activity: ComponentActivity,
     webView: WebView,
     private val returnUrlScheme: String,
-    private val browserSwitchClient: BrowserSwitchClient,
     private val popupBridgeWebViewClient: PopupBridgeWebViewClient,
+    private val browserSwitchClient: BrowserSwitchClient,
     private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(activity.applicationContext),
     private val coroutineScope: CoroutineScope = activity.lifecycleScope,
     private val analyticsClient: AnalyticsClient = AnalyticsClient(
@@ -75,8 +75,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         activity = activity,
         webView = webView,
         returnUrlScheme = returnUrlScheme,
-        browserSwitchClient = BrowserSwitchClient(),
-        popupBridgeWebViewClient = popupBridgeWebViewClient
+        popupBridgeWebViewClient = popupBridgeWebViewClient,
+        browserSwitchClient = BrowserSwitchClient()
     )
 
     init {
@@ -214,23 +214,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                     + "} else {"
                     + "  window.addEventListener('load', function () {"
                     + "    notifyCanceled();"
-                    + "  });"
-                    + "}"
-        )
-    }
-
-    private fun setVenmoInstalled(isVenmoInstalled: Boolean) {
-        runJavaScriptInWebView(
-            ""
-                    + "function setVenmoInstalled() {"
-                    + "    window.popupBridge.isVenmoInstalled = ${isVenmoInstalled};"
-                    + "}"
-                    + ""
-                    + "if (document.readyState === 'complete') {"
-                    + "  setVenmoInstalled();"
-                    + "} else {"
-                    + "  window.addEventListener('load', function () {"
-                    + "    setVenmoInstalled();"
                     + "  });"
                     + "}"
         )

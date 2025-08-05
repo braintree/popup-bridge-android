@@ -46,6 +46,7 @@ class PopupBridgeClientUnitTest {
     private val activityMock: ComponentActivity = mockk(relaxed = true)
     private val webViewMock: WebView = mockk(relaxed = true)
     private val browserSwitchClient: BrowserSwitchClient = mockk(relaxed = true)
+    private val popupBridgeWebViewClient: PopupBridgeWebViewClient = mockk(relaxed = true)
     private val pendingRequestRepository: PendingRequestRepository = mockk(relaxed = true)
     private val analyticsClient: AnalyticsClient = mockk(relaxed = true)
     private val popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = mockk(relaxed = true)
@@ -77,6 +78,7 @@ class PopupBridgeClientUnitTest {
             activity = activity,
             webView = webView,
             returnUrlScheme = returnUrlScheme,
+            popupBridgeWebViewClient = popupBridgeWebViewClient,
             browserSwitchClient = browserSwitchClient,
             pendingRequestRepository = pendingRequestRepository,
             coroutineScope = TestScope(testDispatcher),
