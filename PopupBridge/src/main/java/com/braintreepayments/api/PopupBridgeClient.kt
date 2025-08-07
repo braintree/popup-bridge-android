@@ -63,8 +63,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
      * @param activity The [ComponentActivity] that contains the [WebView].
      * @param webView The [WebView] to enable for PopupBridge.
      * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
-     * @param popupBridgeWebViewClient The [PopupBridgeWebViewClient] to use for handling web view events. Clients
-     * may subclass this to customize behavior, such as for logging.
+     * @param popupBridgeWebViewClient The [PopupBridgeWebViewClient] to use for handling web view events.
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @JvmOverloads
