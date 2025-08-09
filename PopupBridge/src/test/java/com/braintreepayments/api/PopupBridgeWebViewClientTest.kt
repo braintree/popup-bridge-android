@@ -33,7 +33,6 @@ class PopupBridgeWebViewClientTest {
 
     @Test
     fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() = runTest {
-
         every { webView.context.isVenmoInstalled() } returns true
 
         sut.onPageFinished(webView, "https://example.com")
