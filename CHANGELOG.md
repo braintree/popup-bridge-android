@@ -2,7 +2,7 @@
 
 ## unreleased
 
-* Fix an issue where the WebViewClient is being silently overridden. [#95]
+* Fix an issue where the WebViewClient is being silently overridden. [#95](https://github.com/braintree/popup-bridge-android/issues/95)
 
 ## 5.0.0
 
