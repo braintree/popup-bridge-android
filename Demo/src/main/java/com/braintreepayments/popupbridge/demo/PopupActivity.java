@@ -45,6 +45,7 @@ public class PopupActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent newIntent) {
         super.onNewIntent(newIntent);
+        setIntent(newIntent);
         popupBridgeClient.handleReturnToApp(newIntent);
     }
 

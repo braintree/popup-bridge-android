@@ -1,8 +1,11 @@
 package com.braintreepayments.api
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
@@ -15,6 +18,7 @@ import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
+import com.braintreepayments.api.internal.isPayPalInstalled
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -34,10 +38,14 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         coroutineScope = activity.lifecycleScope,
     ),
     analyticsParamRepository: AnalyticsParamRepository = AnalyticsParamRepository.instance,
-    popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(returnUrlScheme),
+    popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(
+        returnUrlScheme = returnUrlScheme,
+        context = activity.applicationContext,
+    ),
 ) {
     private val activityRef = WeakReference(activity)
     private val webViewRef = WeakReference(webView)
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
@@ -93,8 +101,13 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
         webView.webViewClient = popupBridgeWebViewClient
 
+        if (activity.applicationContext.isPayPalInstalled()) {
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
+        }
+
         with(popupBridgeJavascriptInterface) {
             onOpen = { url -> openUrl(url) }
+            onLaunchApp = { url -> launchApp(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
             }
@@ -114,6 +127,13 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     fun handleReturnToApp(intent: Intent) {
+        // Try app switch return first (deep link from PayPal/Venmo app)
+        val returnUri = intent.data
+        if (returnUri != null && returnUri.host == POPUP_BRIDGE_URL_HOST) {
+            handleAppSwitchReturn(returnUri)
+            return
+        }
+
         if (isHandlingReturnToApp) return
         isHandlingReturnToApp = true
 
@@ -134,6 +154,53 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                 is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
             }
             isHandlingReturnToApp = false
+        }
+    }
+
+    /**
+     * Entry point when the web page calls window.popupBridge.launchApp(url).
+     * Posts to the main thread so [startActivity] is never called from a background thread
+     * (JavascriptInterface callbacks can be invoked off the main thread).
+     */
+    private fun launchApp(url: String?) {
+        val activity = activityRef.get() as? ComponentActivity ?: return
+        mainHandler.post { launchAppOnMainThread(url, activity) }
+    }
+
+    private fun launchAppOnMainThread(url: String?, activity: ComponentActivity) {
+        activeInstance = WeakReference(this)
+        isHandlingReturnToApp = true
+
+        val uri = url?.toUri() ?: run {
+            errorListener?.onError(IllegalArgumentException("Invalid URL for app launch"))
+            return
+        }
+
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+        try {
+            activity.startActivity(intent)
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCHED)
+        } catch (_: ActivityNotFoundException) {
+            isHandlingReturnToApp = false
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCH_FAILED)
+            openUrl(url)
+        }
+    }
+
+    private fun handleAppSwitchReturn(returnUri: Uri) {
+        if (!isHandlingReturnToApp) return
+        isHandlingReturnToApp = false
+
+        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED)
+
+        val path = returnUri.path.orEmpty()
+        if (path.contains("onCancel")) {
+            runCanceledJavaScript()
+        } else {
+            runNotifyCompleteJavaScript(returnUri)
         }
     }
 
@@ -229,6 +296,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     companion object {
         private const val REQUEST_CODE: Int = 1
         private const val POPUP_BRIDGE_NAME: String = "popupBridge"
+
+        @Volatile
+        private var activeInstance: WeakReference<PopupBridgeClient>? = null
 
         private const val ON_COMPLETE_JAVA_SCRIPT = (""
                 + "function notifyComplete() {"
