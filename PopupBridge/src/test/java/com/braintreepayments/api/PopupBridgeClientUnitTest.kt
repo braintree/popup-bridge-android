@@ -2,9 +2,14 @@ package com.braintreepayments.api
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCHED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCH_FAILED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_CANCELED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_FAILED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_STARTED
@@ -13,12 +18,16 @@ import com.braintreepayments.api.internal.AnalyticsClient
 import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
+import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
+import com.braintreepayments.api.internal.isPayPalInstalled
 import com.braintreepayments.api.util.CoroutineTestRule
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkAll
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
@@ -30,6 +39,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
 
 @RunWith(RobolectricTestRunner::class)
 class PopupBridgeClientUnitTest {
@@ -56,6 +66,7 @@ class PopupBridgeClientUnitTest {
     private val intent: Intent = mockk(relaxed = true)
     private val runnableSlot = slot<Runnable>()
     private val onOpenSlot = slot<(String?) -> Unit>()
+    private val onLaunchAppSlot = slot<(String?) -> Unit>()
     private val onSendMessageSlot = slot<(String?, String?) -> Unit>()
 
     private fun initializeClient(
@@ -66,6 +77,7 @@ class PopupBridgeClientUnitTest {
         every { webView.post(capture(runnableSlot)) } returns true
         coEvery { pendingRequestRepository.getPendingRequest() } returns pendingRequest
         every { popupBridgeJavascriptInterface.onOpen = capture(onOpenSlot) } returns Unit
+        every { popupBridgeJavascriptInterface.onLaunchApp = capture(onLaunchAppSlot) } returns Unit
         every { popupBridgeJavascriptInterface.onSendMessage = capture(onSendMessageSlot) } returns Unit
 
         additionalMocks()
@@ -404,6 +416,212 @@ class PopupBridgeClientUnitTest {
 
         verify { messageListener.onMessageReceived(messageName, null) }
     }
+
+    // region App switch / launchApp tests
+
+    @Test
+    fun `on init when PayPal is installed POPUP_BRIDGE_APP_DETECTED is sent`() {
+        mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
+        every { any<android.content.Context>().isPayPalInstalled() } returns true
+
+        initializeClient()
+
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_DETECTED) }
+
+        unmockkAll()
+    }
+
+    @Test
+    fun `on init onLaunchApp callback is wired`() {
+        initializeClient()
+
+        // Invoking the callback runs launchApp (posts to main handler); no throw
+        onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
+    }
+
+    @Test
+    fun `when handleReturnToApp is called with app switch intent data host popupbridgev1 browser switch path is not used`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/some/path")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient()
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+
+            coVerify(exactly = 0) { pendingRequestRepository.getPendingRequest() }
+            verify(exactly = 0) { browserSwitchClient.completeRequest(any(), any()) }
+        }
+
+    @Test
+    fun `when handleReturnToApp is called with app switch intent and isHandlingReturnToApp path contains onCancel runs canceled JS and sends APP_SWITCH_RETURNED`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/onCancel")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient()
+
+            setPrivateIsHandlingReturnToApp(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains("notifyCanceled()") && script.contains("onCancel"))
+                }, null)
+            }
+        }
+
+    @Test
+    fun `when handleReturnToApp is called with app switch intent and isHandlingReturnToApp path not onCancel runs notifyComplete JS and sends APP_SWITCH_RETURNED`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/approve")
+                .appendQueryParameter("token", "abc")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient()
+
+            setPrivateIsHandlingReturnToApp(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains("notifyComplete()") && script.contains("onComplete"))
+                }, null)
+            }
+        }
+
+    @Test
+    fun `when onLaunchApp is invoked with valid url and main handler runs startActivity is called and APP_LAUNCHED is sent`() {
+        initializeClient()
+
+        onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
+
+        // Run the runnable posted to the main handler (launchAppOnMainThread)
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        verify { activityMock.startActivity(any()) }
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCHED) }
+    }
+
+    @Test
+    fun `when onLaunchApp is invoked and startActivity throws ActivityNotFoundException APP_LAUNCH_FAILED is sent and openUrl is called`() =
+        runTest {
+            initializeClient()
+            every { activityMock.startActivity(any()) } throws android.content.ActivityNotFoundException()
+
+            onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
+            Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+            testScheduler.advanceUntilIdle()
+
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCH_FAILED) }
+            verify { browserSwitchClient.start(activityMock, any()) }
+        }
+
+    @Test
+    fun `when onLaunchApp is invoked with blank url errorListener is called and no startActivity`() {
+        val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
+        initializeClient()
+        subject.setErrorListener(errorListener)
+
+        onLaunchAppSlot.captured.invoke("   ")
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        verify { errorListener.onError(any()) }
+        verify(exactly = 0) { activityMock.startActivity(any()) }
+    }
+
+    @Test
+    fun `when onLaunchApp is invoked with null url errorListener is called and no startActivity`() {
+        val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
+        initializeClient()
+        subject.setErrorListener(errorListener)
+
+        onLaunchAppSlot.captured.invoke(null)
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        verify { errorListener.onError(any()) }
+        verify(exactly = 0) { activityMock.startActivity(any()) }
+    }
+
+    @Test
+    fun `when handleReturnToApp is called with intent data null browser switch path is used`() =
+        runTest {
+            every { intent.data } returns null
+
+            initializeClient()
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+
+            coVerify(atLeast = 1) { pendingRequestRepository.getPendingRequest() }
+        }
+
+    @Test
+    fun `when handleReturnToApp is called with intent data host not popupbridgev1 browser switch path is used`() =
+        runTest {
+            val otherHostUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority("other-host")
+                .path("/path")
+                .build()
+            every { intent.data } returns otherHostUri
+
+            initializeClient()
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+
+            coVerify(atLeast = 1) { pendingRequestRepository.getPendingRequest() }
+        }
+
+    @Test
+    fun `when handleReturnToApp is called with app switch intent but isHandlingReturnToApp false no JS is run`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/approve")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient()
+            // Do not set isHandlingReturnToApp; handleAppSwitchReturn returns early
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+
+            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify(exactly = 0) { webViewMock.evaluateJavascript(any(), any()) }
+        }
+
+    private fun setPrivateIsHandlingReturnToApp(client: PopupBridgeClient, value: Boolean) {
+        val field = PopupBridgeClient::class.java.getDeclaredField("isHandlingReturnToApp")
+        field.isAccessible = true
+        field.setBoolean(client, value)
+    }
+
+    // endregion
 
     private fun getExpectedSuccessJavascript(error: String?, payload: JSONObject): String {
         return String.format(
