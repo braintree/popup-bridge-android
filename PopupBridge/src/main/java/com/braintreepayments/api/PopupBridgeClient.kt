@@ -107,7 +107,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
         with(popupBridgeJavascriptInterface) {
             onOpen = { url -> openUrl(url) }
-            onLaunchApp = { url -> launchApp(url) }
+            onLaunchApp = { url -> this@PopupBridgeClient.launchApp(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
             }
@@ -168,6 +168,11 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     private fun launchAppOnMainThread(url: String?, activity: ComponentActivity) {
+        if (url.isNullOrBlank()) {
+            errorListener?.onError(IllegalArgumentException("Invalid URL for app launch"))
+            return
+        }
+
         activeInstance = WeakReference(this)
         isHandlingReturnToApp = true
 
