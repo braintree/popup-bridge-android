@@ -15,6 +15,7 @@ import android.webkit.JavascriptInterface
 internal class PopupBridgeJavascriptInterface(
     private val returnUrlScheme: String,
     private val context: Context,
+    private val enablePopupBridgeAppSwitch: Boolean = false,
 ) {
 
     var onOpen: ((url: String?) -> Unit)? = null
@@ -24,7 +25,7 @@ internal class PopupBridgeJavascriptInterface(
     /** Exposed to JS as window.popupBridge.isPayPalInstalled. Called by the web page, not by Kotlin. */
     @get:JavascriptInterface
     val isPayPalInstalled: Boolean
-        get() = context.isPayPalInstalled()
+        get() = enablePopupBridgeAppSwitch && context.isPayPalInstalled()
 
     /** Exposed to JS as window.popupBridge.isVenmoInstalled. Called by the web page, not by Kotlin. */
     @get:JavascriptInterface

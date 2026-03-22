@@ -33,6 +33,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private val returnUrlScheme: String,
     private val popupBridgeWebViewClient: PopupBridgeWebViewClient,
     private val browserSwitchClient: BrowserSwitchClient,
+    private val enablePopupBridgeAppSwitch: Boolean = false,
     private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(activity.applicationContext),
     private val coroutineScope: CoroutineScope = activity.lifecycleScope,
     private val analyticsClient: AnalyticsClient = AnalyticsClient(
@@ -43,6 +44,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(
         returnUrlScheme = returnUrlScheme,
         context = activity.applicationContext,
+        enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
     ),
 ) {
     private val activityRef = WeakReference(activity)
@@ -74,6 +76,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
      * @param webView The [WebView] to enable for PopupBridge.
      * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
      * @param popupBridgeWebViewClient The [PopupBridgeWebViewClient] to use for handling web view events.
+     * @param enablePopupBridgeAppSwitch When true, allows the SDK to launch the native PayPal app
+     *   for checkout instead of opening a browser. Defaults to false for backward compatibility.
+     *   This is specific to the popup bridge flow and is separate from the JS SDK's
+     *   appSwitchWhenAvailable which controls non-webview mobile browser app switch.
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @JvmOverloads
@@ -81,13 +87,15 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         activity: ComponentActivity,
         webView: WebView,
         returnUrlScheme: String,
-        popupBridgeWebViewClient: PopupBridgeWebViewClient = PopupBridgeWebViewClient()
+        popupBridgeWebViewClient: PopupBridgeWebViewClient = PopupBridgeWebViewClient(),
+        enablePopupBridgeAppSwitch: Boolean = false,
     ) : this(
         activity = activity,
         webView = webView,
         returnUrlScheme = returnUrlScheme,
         popupBridgeWebViewClient = popupBridgeWebViewClient,
-        browserSwitchClient = BrowserSwitchClient()
+        browserSwitchClient = BrowserSwitchClient(),
+        enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
     )
 
     init {
@@ -103,7 +111,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
         webView.webViewClient = popupBridgeWebViewClient
 
-        if (activity.applicationContext.isPayPalInstalled()) {
+        if (enablePopupBridgeAppSwitch && activity.applicationContext.isPayPalInstalled()) {
             analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
         }
 
