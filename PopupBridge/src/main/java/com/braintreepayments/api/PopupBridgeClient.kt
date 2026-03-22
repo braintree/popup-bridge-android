@@ -25,6 +25,8 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 
+private const val PAYPAL_APP_PACKAGE = "com.paypal.android.p2pmobile"
+
 class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal constructor(
     activity: ComponentActivity,
     webView: WebView,
@@ -127,14 +129,17 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     fun handleReturnToApp(intent: Intent) {
-        // Try app switch return first (deep link from PayPal/Venmo app)
+        // Only treat PopupBridge deep links with app-switch-style path/fragment data as
+        // native app returns. Secure-browser fallback can also return to popupbridgev1.
         val returnUri = intent.data
-        if (returnUri != null && returnUri.host == POPUP_BRIDGE_URL_HOST) {
+        if (returnUri != null && returnUri.isAppSwitchReturnUri()) {
             handleAppSwitchReturn(returnUri)
             return
         }
 
-        if (isHandlingReturnToApp) return
+        if (isHandlingReturnToApp) {
+            return
+        }
         isHandlingReturnToApp = true
 
         coroutineScope.launch {
@@ -153,6 +158,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                 )
                 is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
             }
+            clearPopupBridgeReturnIntentIfPresent("browser_switch_result_consumed")
             isHandlingReturnToApp = false
         }
     }
@@ -163,7 +169,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
      * (JavascriptInterface callbacks can be invoked off the main thread).
      */
     private fun launchApp(url: String?) {
-        val activity = activityRef.get() as? ComponentActivity ?: return
+        val activity = activityRef.get() as? ComponentActivity ?: run {
+            return
+        }
         mainHandler.post { launchAppOnMainThread(url, activity) }
     }
 
@@ -173,6 +181,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             return
         }
 
+        clearPopupBridgeReturnIntentIfPresent("launching_new_app_switch")
         activeInstance = WeakReference(this)
         isHandlingReturnToApp = true
 
@@ -183,6 +192,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
         val intent = Intent(Intent.ACTION_VIEW, uri).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (uri.isPayPalAppSwitchUri()) {
+                setPackage(PAYPAL_APP_PACKAGE)
+            }
         }
 
         try {
@@ -195,11 +207,39 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         }
     }
 
+    private fun Uri.isPayPalAppSwitchUri(): Boolean {
+        val normalizedHost = host?.removePrefix("www.")
+        return scheme.equals("https", ignoreCase = true) &&
+            normalizedHost == "paypal.com" &&
+            path.orEmpty().startsWith("/app-switch-checkout")
+    }
+
+    private fun Uri.isAppSwitchReturnUri(): Boolean {
+        if (host != POPUP_BRIDGE_URL_HOST) {
+            return false
+        }
+
+        if (!fragment.isNullOrBlank()) {
+            return true
+        }
+
+        val normalizedPath = path.orEmpty().lowercase()
+        return normalizedPath.contains("onapprove") ||
+            normalizedPath.contains("oncancel") ||
+            normalizedPath.contains("onerror") ||
+            normalizedPath.contains("/approve") ||
+            normalizedPath.contains("/cancel") ||
+            normalizedPath.contains("/error")
+    }
+
     private fun handleAppSwitchReturn(returnUri: Uri) {
-        if (!isHandlingReturnToApp) return
+        if (!isHandlingReturnToApp) {
+            return
+        }
         isHandlingReturnToApp = false
 
         analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED)
+        clearPopupBridgeReturnIntentIfPresent("app_switch_return_consumed")
 
         val path = returnUri.path.orEmpty()
         if (path.contains("onCancel")) {
@@ -212,7 +252,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private fun openUrl(url: String?) {
         analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_STARTED)
 
-        val activity = activityRef.get() ?: return
+        val activity = activityRef.get() ?: run {
+            return
+        }
         val browserSwitchOptions = BrowserSwitchOptions()
             .requestCode(REQUEST_CODE)
             .url(url?.toUri())
@@ -233,7 +275,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     private fun runNotifyCompleteJavaScript(returnUri: Uri) {
-        if (returnUri.host != POPUP_BRIDGE_URL_HOST) return
+        if (returnUri.host != POPUP_BRIDGE_URL_HOST) {
+            return
+        }
 
         val payLoadJson = JSONObject()
         val queryItems = JSONObject()
@@ -290,6 +334,20 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                     + "  });"
                     + "}"
         )
+    }
+
+    private fun clearPopupBridgeReturnIntentIfPresent(reason: String) {
+        val activity = activityRef.get() ?: return
+        val currentIntent = activity.intent ?: return
+        val currentData = currentIntent.data ?: return
+
+        if (currentData.host != POPUP_BRIDGE_URL_HOST) {
+            return
+        }
+
+        activity.intent = Intent(currentIntent).apply {
+            data = null
+        }
     }
 
     private fun runJavaScriptInWebView(script: String) {

@@ -440,12 +440,12 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when handleReturnToApp is called with app switch intent data host popupbridgev1 browser switch path is not used`() =
+    fun `when handleReturnToApp is called with app switch intent path browser switch path is not used`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
                 .authority(POPUP_BRIDGE_URL_HOST)
-                .path("/some/path")
+                .path("/onApprove")
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
@@ -456,6 +456,39 @@ class PopupBridgeClientUnitTest {
 
             coVerify(exactly = 0) { pendingRequestRepository.getPendingRequest() }
             verify(exactly = 0) { browserSwitchClient.completeRequest(any(), any()) }
+        }
+
+    @Test
+    fun `when handleReturnToApp is called with popup bridge host and query params browser switch path is used`() =
+        runTest {
+            val browserSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .appendQueryParameter("token", "7GJ8435627393170V")
+                .appendQueryParameter("PayerID", "7WSWGN7G2SP2Y")
+                .appendQueryParameter("opType", "payment")
+                .appendQueryParameter("paymentId", "7GJ8435627393170V")
+                .build()
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
+            every { intent.data } returns browserSwitchReturnUri
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+            every { browserSwitchFinalResult.returnUrl } returns browserSwitchReturnUri
+
+            initializeClient()
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            coVerify(atLeast = 1) { pendingRequestRepository.getPendingRequest() }
+            verify { browserSwitchClient.completeRequest(intent, pendingRequest) }
+            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains("\"opType\":\"payment\""))
+                    assertTrue(script.contains("\"PayerID\":\"7WSWGN7G2SP2Y\""))
+                }, null)
+            }
         }
 
     @Test
@@ -490,7 +523,7 @@ class PopupBridgeClientUnitTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
                 .authority(POPUP_BRIDGE_URL_HOST)
-                .path("/approve")
+                .path("/onApprove")
                 .appendQueryParameter("token", "abc")
                 .build()
             every { intent.data } returns appSwitchReturnUri
@@ -512,6 +545,29 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
+    fun `when handleReturnToApp consumes app switch return, the activity intent data is cleared`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/onApprove")
+                .build()
+            val clearedIntentSlot = slot<Intent>()
+
+            every { intent.data } returns appSwitchReturnUri
+            every { activityMock.intent } returns Intent(Intent.ACTION_VIEW, appSwitchReturnUri)
+            every { activityMock.intent = capture(clearedIntentSlot) } returns Unit
+
+            initializeClient()
+            setPrivateIsHandlingReturnToApp(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+
+            assertEquals(null, clearedIntentSlot.captured.data)
+        }
+
+    @Test
     fun `when onLaunchApp is invoked with valid url and main handler runs startActivity is called and APP_LAUNCHED is sent`() {
         initializeClient()
 
@@ -522,6 +578,40 @@ class PopupBridgeClientUnitTest {
 
         verify { activityMock.startActivity(any()) }
         verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCHED) }
+    }
+
+    @Test
+    fun `when onLaunchApp is invoked with PayPal app switch url the intent is pinned to the PayPal app package`() {
+        val launchedIntent = slot<Intent>()
+        every { activityMock.startActivity(capture(launchedIntent)) } returns Unit
+
+        initializeClient()
+
+        onLaunchAppSlot.captured.invoke("https://www.paypal.com/app-switch-checkout?token=EC-123")
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        assertEquals("com.paypal.android.p2pmobile", launchedIntent.captured.`package`)
+    }
+
+    @Test
+    fun `when onLaunchApp is invoked with stale popup bridge intent, activity intent data is cleared before launch`() {
+        val staleReturnUri = Uri.Builder()
+            .scheme(returnUrlScheme)
+            .authority(POPUP_BRIDGE_URL_HOST)
+            .path("/onApprove")
+            .build()
+        val clearedIntentSlot = slot<Intent>()
+
+        every { activityMock.intent } returns Intent(Intent.ACTION_VIEW, staleReturnUri)
+        every { activityMock.intent = capture(clearedIntentSlot) } returns Unit
+
+        initializeClient()
+
+        onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        assertEquals(null, clearedIntentSlot.captured.data)
+        verify { activityMock.startActivity(any()) }
     }
 
     @Test

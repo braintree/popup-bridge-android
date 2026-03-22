@@ -19,11 +19,9 @@ class PopupBridgeWebViewClientTest {
     }
 
     @Test
-    fun `onPageFinished calls super and does not inject Venmo state`() {
+    fun `onPageFinished calls super and does not inject installed state`() {
         sut.onPageFinished(webView, "https://example.com")
 
-        // Venmo/PayPal installed state is now exposed via @JavascriptInterface on PopupBridgeJavascriptInterface;
-        // no JavaScript is injected in onPageFinished.
         verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
     }
 }
