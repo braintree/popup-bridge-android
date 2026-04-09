@@ -18,14 +18,13 @@ import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
+import com.braintreepayments.api.internal.PAYPAL_APP_PACKAGE
 import com.braintreepayments.api.internal.isPayPalInstalled
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-
-private const val PAYPAL_APP_PACKAGE = "com.paypal.android.p2pmobile"
 
 class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal constructor(
     activity: ComponentActivity,
@@ -56,16 +55,21 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private var errorListener: PopupBridgeErrorListener? = null
 
     /**
-     * Ensures that [handleReturnToApp] is only called once, even if both `onResume` and `onNewIntent` invoke it.
+     * Browser-switch path only: ensures [handleReturnToApp] completes the pending browser request at most once
+     * when both `onResume` and `onNewIntent` invoke it (singleTop / singleTask / singleInstance).
      *
-     * If the host app's Activity has a launch type of singleTop, singleTask, or singleInstance, [handleReturnToApp]
-     * should be called in both onResume and onNewIntent. This is to cover all cases where the user cancels the flow.
-     *
-     * Since the [PendingRequestRepository] functions are suspend functions, we need to ensure that the
-     * [handleReturnToApp] logic is only invoked once.
+     * Not used for native app-switch returns; see [expectingAppSwitchReturn].
      */
     @Volatile
     private var isHandlingReturnToApp = false
+
+    /**
+     * Set to `true` when [launchApp] starts an app-switch checkout so we only accept the following
+     * popupbridgev1 deep link as that flow's return (ignores stale links). Cleared when
+     * [handleAppSwitchReturn] runs or when launch falls back to the browser.
+     */
+    @Volatile
+    private var expectingAppSwitchReturn = false
 
     /**
      * Create a new instance of [PopupBridgeClient].
@@ -180,18 +184,17 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         val activity = activityRef.get() as? ComponentActivity ?: run {
             return
         }
-        mainHandler.post { launchAppOnMainThread(url, activity) }
+        mainHandler.post { launchAppAssumingMainThread(url, activity) }
     }
 
-    private fun launchAppOnMainThread(url: String?, activity: ComponentActivity) {
+    private fun launchAppAssumingMainThread(url: String?, activity: ComponentActivity) {
         if (url.isNullOrBlank()) {
             errorListener?.onError(IllegalArgumentException("Invalid URL for app launch"))
             return
         }
 
         clearPopupBridgeReturnIntentIfPresent("launching_new_app_switch")
-        activeInstance = WeakReference(this)
-        isHandlingReturnToApp = true
+        expectingAppSwitchReturn = true
 
         val uri = url?.toUri() ?: run {
             errorListener?.onError(IllegalArgumentException("Invalid URL for app launch"))
@@ -209,7 +212,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             activity.startActivity(intent)
             analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCHED)
         } catch (_: ActivityNotFoundException) {
-            isHandlingReturnToApp = false
+            expectingAppSwitchReturn = false
             analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCH_FAILED)
             openUrl(url)
         }
@@ -231,26 +234,40 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             return true
         }
 
-        val normalizedPath = path.orEmpty().lowercase()
-        return normalizedPath.contains("onapprove") ||
-            normalizedPath.contains("oncancel") ||
-            normalizedPath.contains("onerror") ||
-            normalizedPath.contains("/approve") ||
-            normalizedPath.contains("/cancel") ||
-            normalizedPath.contains("/error")
+        return hasAppSwitchPath()
     }
 
+    private fun Uri.isCancelUri(): Boolean {
+        val normalizedPath = path.orEmpty().lowercase()
+        return normalizedPath.contains("oncancel") ||
+            normalizedPath.contains("/cancel")
+    }
+
+    private fun Uri.hasAppSwitchPath(): Boolean {
+        val normalizedPath = path.orEmpty().lowercase()
+        return normalizedPath.contains("onapprove") ||
+            normalizedPath.contains("onerror") ||
+            normalizedPath.contains("/approve") ||
+            normalizedPath.contains("/error") ||
+            isCancelUri()
+    }
+
+    /**
+     * Handles the return deep link from a native PayPal/Venmo app switch.
+     *
+     * Runs only when [expectingAppSwitchReturn] is true (set by [launchApp] before starting the
+     * native app) so stale popupbridgev1 links do not complete or cancel the wrong session.
+     */
     private fun handleAppSwitchReturn(returnUri: Uri) {
-        if (!isHandlingReturnToApp) {
+        if (!expectingAppSwitchReturn) {
             return
         }
-        isHandlingReturnToApp = false
+        expectingAppSwitchReturn = false
 
         analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED)
         clearPopupBridgeReturnIntentIfPresent("app_switch_return_consumed")
 
-        val path = returnUri.path.orEmpty()
-        if (path.contains("onCancel")) {
+        if (returnUri.isCancelUri()) {
             runCanceledJavaScript()
         } else {
             runNotifyCompleteJavaScript(returnUri)
@@ -367,9 +384,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     companion object {
         private const val REQUEST_CODE: Int = 1
         private const val POPUP_BRIDGE_NAME: String = "popupBridge"
-
-        @Volatile
-        private var activeInstance: WeakReference<PopupBridgeClient>? = null
 
         private const val ON_COMPLETE_JAVA_SCRIPT = (""
                 + "function notifyComplete() {"

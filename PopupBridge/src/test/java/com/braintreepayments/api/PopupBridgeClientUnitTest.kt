@@ -72,6 +72,7 @@ class PopupBridgeClientUnitTest {
     private fun initializeClient(
         activity: ComponentActivity = activityMock,
         webView: WebView = webViewMock,
+        enablePopupBridgeAppSwitch: Boolean = false,
         additionalMocks: () -> Unit = {}
     ) {
         every { webView.post(capture(runnableSlot)) } returns true
@@ -88,6 +89,7 @@ class PopupBridgeClientUnitTest {
             returnUrlScheme = returnUrlScheme,
             popupBridgeWebViewClient = popupBridgeWebViewClient,
             browserSwitchClient = browserSwitchClient,
+            enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
             pendingRequestRepository = pendingRequestRepository,
             coroutineScope = TestScope(testDispatcher),
             analyticsClient = analyticsClient,
@@ -424,7 +426,7 @@ class PopupBridgeClientUnitTest {
         mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
         every { any<android.content.Context>().isPayPalInstalled() } returns true
 
-        initializeClient()
+        initializeClient(enablePopupBridgeAppSwitch = true)
 
         verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_DETECTED) }
 
@@ -492,7 +494,7 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when handleReturnToApp is called with app switch intent and isHandlingReturnToApp path contains onCancel runs canceled JS and sends APP_SWITCH_RETURNED`() =
+    fun `when handleReturnToApp is called with app switch intent and expectingAppSwitchReturn path contains onCancel runs canceled JS and sends APP_SWITCH_RETURNED`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
@@ -503,7 +505,7 @@ class PopupBridgeClientUnitTest {
 
             initializeClient()
 
-            setPrivateIsHandlingReturnToApp(subject, true)
+            setPrivateExpectingAppSwitchReturn(subject, true)
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
@@ -518,7 +520,33 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when handleReturnToApp is called with app switch intent and isHandlingReturnToApp path not onCancel runs notifyComplete JS and sends APP_SWITCH_RETURNED`() =
+    fun `when handleReturnToApp is called with app switch intent and path is cancel segment runs canceled JS`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/some/cancel/flow")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient()
+
+            setPrivateExpectingAppSwitchReturn(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains("notifyCanceled()"))
+                }, null)
+            }
+        }
+
+    @Test
+    fun `when handleReturnToApp is called with app switch intent and expectingAppSwitchReturn path not onCancel runs notifyComplete JS and sends APP_SWITCH_RETURNED`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
@@ -530,7 +558,7 @@ class PopupBridgeClientUnitTest {
 
             initializeClient()
 
-            setPrivateIsHandlingReturnToApp(subject, true)
+            setPrivateExpectingAppSwitchReturn(subject, true)
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
@@ -559,7 +587,7 @@ class PopupBridgeClientUnitTest {
             every { activityMock.intent = capture(clearedIntentSlot) } returns Unit
 
             initializeClient()
-            setPrivateIsHandlingReturnToApp(subject, true)
+            setPrivateExpectingAppSwitchReturn(subject, true)
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
@@ -686,7 +714,7 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when handleReturnToApp is called with app switch intent but isHandlingReturnToApp false no JS is run`() =
+    fun `when handleReturnToApp is called with app switch intent but expectingAppSwitchReturn false no JS is run`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
@@ -696,7 +724,7 @@ class PopupBridgeClientUnitTest {
             every { intent.data } returns appSwitchReturnUri
 
             initializeClient()
-            // Do not set isHandlingReturnToApp; handleAppSwitchReturn returns early
+            // Do not set expectingAppSwitchReturn; handleAppSwitchReturn returns early
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
@@ -705,8 +733,8 @@ class PopupBridgeClientUnitTest {
             verify(exactly = 0) { webViewMock.evaluateJavascript(any(), any()) }
         }
 
-    private fun setPrivateIsHandlingReturnToApp(client: PopupBridgeClient, value: Boolean) {
-        val field = PopupBridgeClient::class.java.getDeclaredField("isHandlingReturnToApp")
+    private fun setPrivateExpectingAppSwitchReturn(client: PopupBridgeClient, value: Boolean) {
+        val field = PopupBridgeClient::class.java.getDeclaredField("expectingAppSwitchReturn")
         field.isAccessible = true
         field.setBoolean(client, value)
     }
