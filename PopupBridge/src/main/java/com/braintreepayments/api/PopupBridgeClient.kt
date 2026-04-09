@@ -164,7 +164,14 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             pendingRequestRepository.clearPendingRequest()
 
             when (val browserSwitchFinalResult = browserSwitchClient.completeRequest(intent, pendingRequest)) {
-                is BrowserSwitchFinalResult.Success -> runNotifyCompleteJavaScript(browserSwitchFinalResult.returnUrl)
+                is BrowserSwitchFinalResult.Success -> {
+                    val returnUrl = browserSwitchFinalResult.returnUrl
+                    if (returnUrl.isCancelUri()) {
+                        runCanceledJavaScript()
+                    } else {
+                        runNotifyCompleteJavaScript(returnUrl)
+                    }
+                }
                 is BrowserSwitchFinalResult.Failure -> runErrorJavaScript(
                     browserSwitchFinalResult.error.message ?: "Browser switch failed"
                 )
@@ -239,8 +246,11 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
     private fun Uri.isCancelUri(): Boolean {
         val normalizedPath = path.orEmpty().lowercase()
+        val normalizedFragment = fragment.orEmpty().lowercase()
         return normalizedPath.contains("oncancel") ||
-            normalizedPath.contains("/cancel")
+            normalizedPath.contains("/cancel") ||
+            normalizedFragment.contains("oncancel") ||
+            normalizedFragment.contains("/cancel")
     }
 
     private fun Uri.hasAppSwitchPath(): Boolean {

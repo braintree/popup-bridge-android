@@ -278,6 +278,34 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
+    fun `when handleReturnToApp is called and browser switch succeeds with onCancel in fragment, canceled javascript is run`() =
+        runTest {
+            val returnUrl = Uri.Builder()
+                .scheme("my-custom-url-scheme")
+                .authority("popupbridgev1")
+                .fragment("onCancel")
+                .build()
+
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.Success>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+            every { browserSwitchFinalResult.returnUrl } returns returnUrl
+
+            initializeClient()
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify {
+                webViewMock.evaluateJavascript(withArg { javascriptString ->
+                    assertEquals(CANCELED_JAVASCRIPT, javascriptString)
+                }, null)
+            }
+            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_CANCELED) }
+        }
+
+    @Test
     fun `when handleReturnToApp is called and browser switch succeeds, POPUP_BRIDGE_SUCCEEDED event is sent`() =
         runTest {
             val returnUrl = Uri.Builder()
@@ -515,6 +543,31 @@ class PopupBridgeClientUnitTest {
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyCanceled()") && script.contains("onCancel"))
+                }, null)
+            }
+        }
+
+    @Test
+    fun `when handleReturnToApp is called with app switch intent and onCancel only in fragment runs canceled JS`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .fragment("onCancel")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient()
+            setPrivateExpectingAppSwitchReturn(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains("notifyCanceled()"))
                 }, null)
             }
         }
