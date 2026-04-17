@@ -18,6 +18,7 @@ internal class PostRequestExecutor(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
+    @Suppress("MagicNumber")
     suspend fun execute(
         url: URL,
         jsonBody: String,

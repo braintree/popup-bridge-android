@@ -4,6 +4,7 @@ appcompatVersion = "1.7.0"
 browserSwitchVersion = "3.0.0"
 coreVersion = "1.6.1"
 datastorePreferencesVersion = "1.1.4"
+detekt = "1.23.6"
 deviceAutomatorVersion = "1.0.0"
 gradleVersion = "8.9.0"
 junitVersion = "4.13.2"
@@ -20,6 +21,8 @@ appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompatV
 browser-switch = { module = "com.braintreepayments.api:browser-switch", version.ref = "browserSwitchVersion" }
 core = { module = "androidx.test:core", version.ref = "coreVersion" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferencesVersion" }
+detekt-rules-libraries = { module = "io.gitlab.arturbosch.detekt:detekt-rules-libraries", version.ref = "detekt" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 device-automator = { module = "com.braintreepayments:device-automator", version.ref = "deviceAutomatorVersion" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradleVersion" }
 junit = { module = "junit:junit", version.ref = "junitVersion" }
@@ -31,5 +34,6 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectricVersion" }
 
 [plugins]
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroidVersion" }
 nexus-publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexusPublishPluginVersion" }

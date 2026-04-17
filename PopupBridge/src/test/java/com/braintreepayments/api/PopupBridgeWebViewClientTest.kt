@@ -32,7 +32,8 @@ class PopupBridgeWebViewClientTest {
     }
 
     @Test
-    fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() = runTest {
+    fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() =
+        runTest {
         every { webView.context.isVenmoInstalled() } returns true
 
         sut.onPageFinished(webView, "https://example.com")
@@ -47,7 +48,8 @@ class PopupBridgeWebViewClientTest {
     }
 
     @Test
-    fun `on init, when venmo is not installed, isVenmoInstalled is set to false on the popupBridgeJavascriptInterface`() = runTest {
+    fun `on init, when venmo is not installed, isVenmoInstalled is false on javascriptInterface`() =
+        runTest {
         every { webView.context.isVenmoInstalled() } returns false
 
         sut.onPageFinished(webView, "https://example.com")
@@ -63,18 +65,18 @@ class PopupBridgeWebViewClientTest {
 
     private fun getExpectedVenmoInstalledJavascript(isVenmoInstalled: Boolean): String {
         return String.format(
-            (""
-                + "function setVenmoInstalled() {"
-                + "    window.popupBridge.isVenmoInstalled = %s;"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  setVenmoInstalled();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    setVenmoInstalled();"
-                + "  });"
-                + "}"), isVenmoInstalled
+            ("" +
+                "function setVenmoInstalled() {" +
+                "    window.popupBridge.isVenmoInstalled = %s;" +
+                "}" +
+                "" +
+                "if (document.readyState === 'complete') {" +
+                "  setVenmoInstalled();" +
+                "} else {" +
+                "  window.addEventListener('load', function () {" +
+                "    setVenmoInstalled();" +
+                "  });" +
+                "}"), isVenmoInstalled
         )
     }
 }
