@@ -1,8 +1,11 @@
 package com.braintreepayments.api
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
@@ -15,6 +18,8 @@ import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
+import com.braintreepayments.api.internal.PAYPAL_APP_PACKAGE
+import com.braintreepayments.api.internal.isPayPalInstalled
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -27,6 +32,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private val returnUrlScheme: String,
     private val popupBridgeWebViewClient: PopupBridgeWebViewClient,
     private val browserSwitchClient: BrowserSwitchClient,
+    private val enablePopupBridgeAppSwitch: Boolean = false,
     private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(activity.applicationContext),
     private val coroutineScope: CoroutineScope = activity.lifecycleScope,
     private val analyticsClient: AnalyticsClient = AnalyticsClient(
@@ -34,26 +40,36 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         coroutineScope = activity.lifecycleScope,
     ),
     analyticsParamRepository: AnalyticsParamRepository = AnalyticsParamRepository.instance,
-    popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(returnUrlScheme),
+    popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(
+        returnUrlScheme = returnUrlScheme,
+        context = activity.applicationContext,
+        enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
+    ),
 ) {
     private val activityRef = WeakReference(activity)
     private val webViewRef = WeakReference(webView)
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private var navigationListener: PopupBridgeNavigationListener? = null
     private var messageListener: PopupBridgeMessageListener? = null
     private var errorListener: PopupBridgeErrorListener? = null
 
     /**
-     * Ensures that [handleReturnToApp] is only called once, even if both `onResume` and `onNewIntent` invoke it.
+     * Browser-switch path only: ensures [handleReturnToApp] completes the pending browser request at most once
+     * when both `onResume` and `onNewIntent` invoke it (singleTop / singleTask / singleInstance).
      *
-     * If the host app's Activity has a launch type of singleTop, singleTask, or singleInstance, [handleReturnToApp]
-     * should be called in both onResume and onNewIntent. This is to cover all cases where the user cancels the flow.
-     *
-     * Since the [PendingRequestRepository] functions are suspend functions, we need to ensure that the
-     * [handleReturnToApp] logic is only invoked once.
+     * Not used for native app-switch returns; see [expectingAppSwitchReturn].
      */
     @Volatile
     private var isHandlingReturnToApp = false
+
+    /**
+     * Set to `true` when [launchApp] starts an app-switch checkout so we only accept the following
+     * popupbridgev1 deep link as that flow's return (ignores stale links). Cleared when
+     * [handleAppSwitchReturn] runs or when launch falls back to the browser.
+     */
+    @Volatile
+    private var expectingAppSwitchReturn = false
 
     /**
      * Create a new instance of [PopupBridgeClient].
@@ -64,6 +80,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
      * @param webView The [WebView] to enable for PopupBridge.
      * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
      * @param popupBridgeWebViewClient The [PopupBridgeWebViewClient] to use for handling web view events.
+     * @param enablePopupBridgeAppSwitch When true, allows the SDK to launch the native PayPal app
+     *   for checkout instead of opening a browser. Defaults to false for backward compatibility.
+     *   This is specific to the popup bridge flow and is separate from the JS SDK's
+     *   appSwitchWhenAvailable which controls non-webview mobile browser app switch.
      * @throws IllegalArgumentException If the activity is not valid or the fragment cannot be added.
      */
     @JvmOverloads
@@ -71,13 +91,15 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         activity: ComponentActivity,
         webView: WebView,
         returnUrlScheme: String,
-        popupBridgeWebViewClient: PopupBridgeWebViewClient = PopupBridgeWebViewClient()
+        popupBridgeWebViewClient: PopupBridgeWebViewClient = PopupBridgeWebViewClient(),
+        enablePopupBridgeAppSwitch: Boolean = false,
     ) : this(
         activity = activity,
         webView = webView,
         returnUrlScheme = returnUrlScheme,
         popupBridgeWebViewClient = popupBridgeWebViewClient,
-        browserSwitchClient = BrowserSwitchClient()
+        browserSwitchClient = BrowserSwitchClient(),
+        enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
     )
 
     init {
@@ -93,8 +115,13 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
         webView.webViewClient = popupBridgeWebViewClient
 
+        if (enablePopupBridgeAppSwitch && activity.applicationContext.isPayPalInstalled()) {
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
+        }
+
         with(popupBridgeJavascriptInterface) {
             onOpen = { url -> openUrl(url) }
+            onLaunchApp = { url -> this@PopupBridgeClient.launchApp(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
             }
@@ -114,7 +141,17 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     fun handleReturnToApp(intent: Intent) {
-        if (isHandlingReturnToApp) return
+        // Only treat PopupBridge deep links with app-switch-style path/fragment data as
+        // native app returns. Secure-browser fallback can also return to popupbridgev1.
+        val returnUri = intent.data
+        if (returnUri != null && returnUri.isAppSwitchReturnUri()) {
+            handleAppSwitchReturn(returnUri)
+            return
+        }
+
+        if (isHandlingReturnToApp) {
+            return
+        }
         isHandlingReturnToApp = true
 
         coroutineScope.launch {
@@ -133,14 +170,116 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                 )
                 is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
             }
+            clearPopupBridgeReturnIntentIfPresent("browser_switch_result_consumed")
             isHandlingReturnToApp = false
+        }
+    }
+
+    /**
+     * Entry point when the web page calls window.popupBridge.launchApp(url).
+     * Posts to the main thread so [startActivity] is never called from a background thread
+     * (JavascriptInterface callbacks can be invoked off the main thread).
+     */
+    private fun launchApp(url: String?) {
+        val activity = activityRef.get() as? ComponentActivity ?: run {
+            return
+        }
+        mainHandler.post { launchAppAssumingMainThread(url, activity) }
+    }
+
+    private fun launchAppAssumingMainThread(url: String?, activity: ComponentActivity) {
+        if (url.isNullOrBlank()) {
+            errorListener?.onError(IllegalArgumentException("Invalid URL for app launch"))
+            return
+        }
+
+        clearPopupBridgeReturnIntentIfPresent("launching_new_app_switch")
+        expectingAppSwitchReturn = true
+
+        val uri = url?.toUri() ?: run {
+            errorListener?.onError(IllegalArgumentException("Invalid URL for app launch"))
+            return
+        }
+
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (uri.isPayPalAppSwitchUri()) {
+                setPackage(PAYPAL_APP_PACKAGE)
+            }
+        }
+
+        try {
+            activity.startActivity(intent)
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCHED)
+        } catch (_: ActivityNotFoundException) {
+            expectingAppSwitchReturn = false
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCH_FAILED)
+            openUrl(url)
+        }
+    }
+
+    private fun Uri.isPayPalAppSwitchUri(): Boolean {
+        val normalizedHost = host?.removePrefix("www.")
+        return scheme.equals("https", ignoreCase = true) &&
+            normalizedHost == "paypal.com" &&
+            path.orEmpty().startsWith("/app-switch-checkout")
+    }
+
+    private fun Uri.isAppSwitchReturnUri(): Boolean {
+        if (host != POPUP_BRIDGE_URL_HOST) {
+            return false
+        }
+
+        if (!fragment.isNullOrBlank()) {
+            return true
+        }
+
+        return hasAppSwitchPath()
+    }
+
+    private fun Uri.isCancelUri(): Boolean {
+        val normalizedPath = path.orEmpty().lowercase()
+        return normalizedPath.contains("oncancel") ||
+            normalizedPath.contains("/cancel")
+    }
+
+    private fun Uri.hasAppSwitchPath(): Boolean {
+        val normalizedPath = path.orEmpty().lowercase()
+        return normalizedPath.contains("onapprove") ||
+            normalizedPath.contains("onerror") ||
+            normalizedPath.contains("/approve") ||
+            normalizedPath.contains("/error") ||
+            isCancelUri()
+    }
+
+    /**
+     * Handles the return deep link from a native PayPal/Venmo app switch.
+     *
+     * Runs only when [expectingAppSwitchReturn] is true (set by [launchApp] before starting the
+     * native app) so stale popupbridgev1 links do not complete or cancel the wrong session.
+     */
+    private fun handleAppSwitchReturn(returnUri: Uri) {
+        if (!expectingAppSwitchReturn) {
+            return
+        }
+        expectingAppSwitchReturn = false
+
+        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED)
+        clearPopupBridgeReturnIntentIfPresent("app_switch_return_consumed")
+
+        if (returnUri.isCancelUri()) {
+            runCanceledJavaScript()
+        } else {
+            runNotifyCompleteJavaScript(returnUri)
         }
     }
 
     private fun openUrl(url: String?) {
         analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_STARTED)
 
-        val activity = activityRef.get() ?: return
+        val activity = activityRef.get() ?: run {
+            return
+        }
         val browserSwitchOptions = BrowserSwitchOptions()
             .requestCode(REQUEST_CODE)
             .url(url?.toUri())
@@ -161,7 +300,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     private fun runNotifyCompleteJavaScript(returnUri: Uri) {
-        if (returnUri.host != POPUP_BRIDGE_URL_HOST) return
+        if (returnUri.host != POPUP_BRIDGE_URL_HOST) {
+            return
+        }
 
         val payLoadJson = JSONObject()
         val queryItems = JSONObject()
@@ -218,6 +359,20 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                     + "  });"
                     + "}"
         )
+    }
+
+    private fun clearPopupBridgeReturnIntentIfPresent(reason: String) {
+        val activity = activityRef.get() ?: return
+        val currentIntent = activity.intent ?: return
+        val currentData = currentIntent.data ?: return
+
+        if (currentData.host != POPUP_BRIDGE_URL_HOST) {
+            return
+        }
+
+        activity.intent = Intent(currentIntent).apply {
+            data = null
+        }
     }
 
     private fun runJavaScriptInWebView(script: String) {
