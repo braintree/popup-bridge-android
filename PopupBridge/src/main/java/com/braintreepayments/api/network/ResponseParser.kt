@@ -11,6 +11,7 @@ import java.util.zip.GZIPInputStream
  */
 internal class ResponseParser {
 
+    @Suppress("MagicNumber")
     fun parse(
         inputStream: InputStream,
         isGzipEncoded: Boolean,

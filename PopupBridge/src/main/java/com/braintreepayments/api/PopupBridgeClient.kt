@@ -27,7 +27,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private val returnUrlScheme: String,
     private val popupBridgeWebViewClient: PopupBridgeWebViewClient,
     private val browserSwitchClient: BrowserSwitchClient,
-    private val pendingRequestRepository: PendingRequestRepository = PendingRequestRepository(activity.applicationContext),
+    private val pendingRequestRepository: PendingRequestRepository =
+        PendingRequestRepository(activity.applicationContext),
     private val coroutineScope: CoroutineScope = activity.lifecycleScope,
     private val analyticsClient: AnalyticsClient = AnalyticsClient(
         context = activity.applicationContext,
@@ -201,22 +202,22 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         analyticsClient.sendEvent(POPUP_BRIDGE_CANCELED)
 
         runJavaScriptInWebView(
-            ""
-                    + "function notifyCanceled() {"
-                    + "  if (typeof window.popupBridge.onCancel === 'function') {"
-                    + "    window.popupBridge.onCancel();"
-                    + "  } else {"
-                    + "    window.popupBridge.onComplete(null, null);"
-                    + "  }"
-                    + "}"
-                    + ""
-                    + "if (document.readyState === 'complete') {"
-                    + "  notifyCanceled();"
-                    + "} else {"
-                    + "  window.addEventListener('load', function () {"
-                    + "    notifyCanceled();"
-                    + "  });"
-                    + "}"
+            "" +
+                    "function notifyCanceled() {" +
+                    "  if (typeof window.popupBridge.onCancel === 'function') {" +
+                    "    window.popupBridge.onCancel();" +
+                    "  } else {" +
+                    "    window.popupBridge.onComplete(null, null);" +
+                    "  }" +
+                    "}" +
+                    "" +
+                    "if (document.readyState === 'complete') {" +
+                    "  notifyCanceled();" +
+                    "} else {" +
+                    "  window.addEventListener('load', function () {" +
+                    "    notifyCanceled();" +
+                    "  });" +
+                    "}"
         )
     }
 
@@ -230,17 +231,17 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         private const val REQUEST_CODE: Int = 1
         private const val POPUP_BRIDGE_NAME: String = "popupBridge"
 
-        private const val ON_COMPLETE_JAVA_SCRIPT = (""
-                + "function notifyComplete() {"
-                + "  window.popupBridge.onComplete(%s, %s);"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  notifyComplete();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    notifyComplete();"
-                + "  });"
-                + "}")
+        private const val ON_COMPLETE_JAVA_SCRIPT = ("" +
+                "function notifyComplete() {" +
+                "  window.popupBridge.onComplete(%s, %s);" +
+                "}" +
+                "" +
+                "if (document.readyState === 'complete') {" +
+                "  notifyComplete();" +
+                "} else {" +
+                "  window.addEventListener('load', function () {" +
+                "    notifyComplete();" +
+                "  });" +
+                "}")
     }
 }

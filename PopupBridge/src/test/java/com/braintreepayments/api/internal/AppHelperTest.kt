@@ -29,7 +29,9 @@ class AppHelperTest {
         val mockContext = mockk<Context>()
         val mockPackageManager = mockk<PackageManager>()
         every { mockContext.packageManager } returns mockPackageManager
-        every { mockPackageManager.getApplicationInfo(any<String>(), any<Int>()) } throws PackageManager.NameNotFoundException()
+        every {
+            mockPackageManager.getApplicationInfo(any<String>(), any<Int>())
+        } throws PackageManager.NameNotFoundException()
 
         val appHelper = AppHelper()
         val result = appHelper.isAppInstalled(mockContext, "com.example.app")

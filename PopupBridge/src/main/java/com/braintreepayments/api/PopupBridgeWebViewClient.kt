@@ -15,6 +15,7 @@ import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
 import com.braintreepayments.api.internal.isVenmoInstalled
 
+@Suppress("TooManyFunctions")
 class PopupBridgeWebViewClient(
     private val delegate: WebViewClient? = null
 ) : WebViewClient() {
@@ -109,18 +110,18 @@ class PopupBridgeWebViewClient(
 
     private fun setVenmoInstalled(view: WebView?, isVenmoInstalled: Boolean) {
         runJavaScriptInWebView(view,
-            ""
-                + "function setVenmoInstalled() {"
-                + "    window.popupBridge.isVenmoInstalled = ${isVenmoInstalled};"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  setVenmoInstalled();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    setVenmoInstalled();"
-                + "  });"
-                + "}"
+            "" +
+                "function setVenmoInstalled() {" +
+                "    window.popupBridge.isVenmoInstalled = $isVenmoInstalled;" +
+                "}" +
+                "" +
+                "if (document.readyState === 'complete') {" +
+                "  setVenmoInstalled();" +
+                "} else {" +
+                "  window.addEventListener('load', function () {" +
+                "    setVenmoInstalled();" +
+                "  });" +
+                "}"
         )
     }
 

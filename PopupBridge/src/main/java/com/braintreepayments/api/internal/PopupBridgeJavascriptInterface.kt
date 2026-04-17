@@ -15,6 +15,7 @@ internal class PopupBridgeJavascriptInterface(
     var onOpen: ((url: String?) -> Unit)? = null
     var onSendMessage: ((messageName: String?, data: String?) -> Unit)? = null
 
+    @Suppress("ImplicitDefaultLocale")
     @get:JavascriptInterface
     val returnUrlPrefix: String
         get() = String.format(

@@ -192,7 +192,7 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when handleReturnToApp is called and browser switch succeeds but throws a JSONException, error is populated`() =
+    fun `handleReturnToApp succeeds but throws JSONException, error is populated`() =
         runTest {
             val exception = JSONException("exception message")
             val returnUrl: Uri = mockk(relaxed = true)
@@ -342,7 +342,7 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when open is called with BrowserSwitchStartResult Started, the pendingRequest is stored in pendingRequestRepository`() =
+    fun `open called with BrowserSwitchStartResult Started, pendingRequest is stored in repository`() =
         runTest {
             every { browserSwitchClient.start(activityMock, any()) } returns
                     BrowserSwitchStartResult.Started(pendingRequest)
@@ -407,54 +407,54 @@ class PopupBridgeClientUnitTest {
 
     private fun getExpectedSuccessJavascript(error: String?, payload: JSONObject): String {
         return String.format(
-            (""
-                    + "function notifyComplete() {"
-                    + "  window.popupBridge.onComplete(%s, %s);"
-                    + "}"
-                    + ""
-                    + "if (document.readyState === 'complete') {"
-                    + "  notifyComplete();"
-                    + "} else {"
-                    + "  window.addEventListener('load', function () {"
-                    + "    notifyComplete();"
-                    + "  });"
-                    + "}"), error, payload.toString()
+            ("" +
+                    "function notifyComplete() {" +
+                    "  window.popupBridge.onComplete(%s, %s);" +
+                    "}" +
+                    "" +
+                    "if (document.readyState === 'complete') {" +
+                    "  notifyComplete();" +
+                    "} else {" +
+                    "  window.addEventListener('load', function () {" +
+                    "    notifyComplete();" +
+                    "  });" +
+                    "}"), error, payload.toString()
         )
     }
 
     private fun getExpectedFailureJavascript(error: String?): String {
         return String.format(
-            (""
-                + "function notifyComplete() {"
-                + "  window.popupBridge.onComplete(%s, %s);"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  notifyComplete();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    notifyComplete();"
-                + "  });"
-                + "}"), error, null
+            ("" +
+                "function notifyComplete() {" +
+                "  window.popupBridge.onComplete(%s, %s);" +
+                "}" +
+                "" +
+                "if (document.readyState === 'complete') {" +
+                "  notifyComplete();" +
+                "} else {" +
+                "  window.addEventListener('load', function () {" +
+                "    notifyComplete();" +
+                "  });" +
+                "}"), error, null
         )
     }
 
     companion object {
-        private const val CANCELED_JAVASCRIPT = (""
-                + "function notifyCanceled() {"
-                + "  if (typeof window.popupBridge.onCancel === 'function') {"
-                + "    window.popupBridge.onCancel();"
-                + "  } else {"
-                + "    window.popupBridge.onComplete(null, null);"
-                + "  }"
-                + "}"
-                + ""
-                + "if (document.readyState === 'complete') {"
-                + "  notifyCanceled();"
-                + "} else {"
-                + "  window.addEventListener('load', function () {"
-                + "    notifyCanceled();"
-                + "  });"
-                + "}")
+        private const val CANCELED_JAVASCRIPT = ("" +
+                "function notifyCanceled() {" +
+                "  if (typeof window.popupBridge.onCancel === 'function') {" +
+                "    window.popupBridge.onCancel();" +
+                "  } else {" +
+                "    window.popupBridge.onComplete(null, null);" +
+                "  }" +
+                "}" +
+                "" +
+                "if (document.readyState === 'complete') {" +
+                "  notifyCanceled();" +
+                "} else {" +
+                "  window.addEventListener('load', function () {" +
+                "    notifyCanceled();" +
+                "  });" +
+                "}")
     }
 }
