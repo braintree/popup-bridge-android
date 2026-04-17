@@ -7,4 +7,8 @@ case $command_name in
     ./gradlew clean lint
     ./gradlew detekt --auto-correct
     ;;
+  lint-check)
+    ./gradlew clean lint
+    ./gradlew detekt
+    ;;
 esac
