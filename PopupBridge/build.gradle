@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'maven-publish'
     id 'signing'
+    id 'jacoco'
     alias(libs.plugins.kotlin.android)
 }
 
@@ -19,7 +20,16 @@ android {
         buildConfigField "String", "VERSION_NAME", "\"${rootProject.versionName}\""
     }
 
-    testOptions.unitTests.includeAndroidResources = true
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            jvmArgs '-noverify'
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = ['jdk.internal.*']
+            }
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
