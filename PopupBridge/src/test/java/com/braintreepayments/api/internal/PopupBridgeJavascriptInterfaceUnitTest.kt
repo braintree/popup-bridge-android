@@ -3,6 +3,7 @@ package com.braintreepayments.api.internal
 import android.content.Context
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import io.mockk.mockk

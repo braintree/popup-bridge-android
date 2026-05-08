@@ -13,6 +13,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
+import com.braintreepayments.api.internal.isVenmoInstalled
 
 @Suppress("TooManyFunctions")
 class PopupBridgeWebViewClient(
@@ -22,6 +23,7 @@ class PopupBridgeWebViewClient(
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
         delegate?.onPageFinished(view, url)
+        setVenmoInstalled(view, view?.context?.isVenmoInstalled() == true)
     }
 
     @Deprecated("Deprecated in [android.webkit.WebViewClient]")

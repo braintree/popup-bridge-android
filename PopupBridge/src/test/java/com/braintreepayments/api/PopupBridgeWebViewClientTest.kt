@@ -12,11 +12,13 @@ import android.webkit.WebViewClient
 import com.braintreepayments.api.internal.isVenmoInstalled
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.slot
 import io.mockk.verify
 import io.mockk.unmockkAll
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import junit.framework.TestCase.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -32,27 +34,27 @@ class PopupBridgeWebViewClientTest {
 
     @BeforeTest
     fun setup() {
+        mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
+
+        every { webView.post(any()) } answers {
+            val runnable = firstArg<Runnable>()
+            runnable.run()
+            true
+        }
     }
 
 @Test
-    fun `onPageFinished calls super and does not inject installed state`() {
-        sut.onPageFinished(webView, "https://example.com")
-
-        verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
-    }
-
-    @Test
     fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() =
         runTest {
         every { webView.context.isVenmoInstalled() } returns true
+        val scriptSlot = slot<String>()
 
         sut.onPageFinished(webView, "https://example.com")
 
         verify {
-            webView.evaluateJavascript(withArg { javascriptString ->
-                assertEquals(getExpectedVenmoInstalledJavascript(true), javascriptString)
-            }, null)
+            webView.evaluateJavascript(capture(scriptSlot), null)
         }
+        assertEquals(getExpectedVenmoInstalledJavascript(true), scriptSlot.captured)
 
         unmockkAll()
     }
@@ -61,14 +63,14 @@ class PopupBridgeWebViewClientTest {
     fun `on init, when venmo is not installed, isVenmoInstalled is false on javascriptInterface`() =
         runTest {
         every { webView.context.isVenmoInstalled() } returns false
+        val scriptSlot = slot<String>()
 
         sut.onPageFinished(webView, "https://example.com")
 
         verify {
-            webView.evaluateJavascript(withArg { javascriptString ->
-                assertEquals(getExpectedVenmoInstalledJavascript(false), javascriptString)
-            }, null)
+            webView.evaluateJavascript(capture(scriptSlot), null)
         }
+        assertEquals(getExpectedVenmoInstalledJavascript(false), scriptSlot.captured)
 
         unmockkAll()
     }
