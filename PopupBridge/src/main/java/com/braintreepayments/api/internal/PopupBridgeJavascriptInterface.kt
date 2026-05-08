@@ -22,7 +22,7 @@ internal class PopupBridgeJavascriptInterface(
     var onLaunchApp: ((url: String?) -> Unit)? = null
     var onSendMessage: ((messageName: String?, data: String?) -> Unit)? = null
 
-    /** Exposed to JS as window.popupBridge.isPayPalInstalled. Called by the web page, not by Kotlin. */
+/** Exposed to JS as window.popupBridge.isPayPalInstalled. Called by the web page, not by Kotlin. */
     @get:JavascriptInterface
     val isPayPalInstalled: Boolean
         get() = enablePopupBridgeAppSwitch && context.isPayPalInstalled()
@@ -32,6 +32,7 @@ internal class PopupBridgeJavascriptInterface(
     val isVenmoInstalled: Boolean
         get() = context.isVenmoInstalled()
 
+    @Suppress("ImplicitDefaultLocale")
     @get:JavascriptInterface
     val returnUrlPrefix: String
         get() = String.format(

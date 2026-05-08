@@ -1,7 +1,6 @@
 package com.braintreepayments.api.util
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import kotlinx.coroutines.flow.Flow
@@ -28,5 +27,4 @@ class DataStoreMock : DataStore<Preferences> {
             updatedPreferences
         }
     }
-
 }

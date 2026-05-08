@@ -42,7 +42,6 @@ internal class AnalyticsApi(
             put(JSONObject().apply {
                 put(KEY_EVENT_NAME, eventName)
                 put(KEY_TIMESTAMP, time.currentTime)
-
             })
         }
 
@@ -81,4 +80,3 @@ internal class AnalyticsApi(
         private const val KEY_EVENTS = "events"
     }
 }
-

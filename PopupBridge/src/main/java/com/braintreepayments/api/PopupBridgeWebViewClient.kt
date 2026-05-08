@@ -14,6 +14,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
 
+@Suppress("TooManyFunctions")
 class PopupBridgeWebViewClient(
     private val delegate: WebViewClient? = null
 ) : WebViewClient() {
@@ -103,6 +104,23 @@ class PopupBridgeWebViewClient(
     override fun onReceivedLoginRequest(view: WebView?, realm: String?, account: String?, args: String?) {
         delegate?.onReceivedLoginRequest(view, realm, account, args)
             ?: super.onReceivedLoginRequest(view, realm, account, args)
+    }
+
+private fun setVenmoInstalled(view: WebView?, isVenmoInstalled: Boolean) {
+        runJavaScriptInWebView(view,
+            "" +
+                "function setVenmoInstalled() {" +
+                "    window.popupBridge.isVenmoInstalled = $isVenmoInstalled;" +
+                "}" +
+                "" +
+                "if (document.readyState === 'complete') {" +
+                "  setVenmoInstalled();" +
+                "} else {" +
+                "  window.addEventListener('load', function () {" +
+                "    setVenmoInstalled();" +
+                "  });" +
+                "}"
+        )
     }
 
     private fun runJavaScriptInWebView(webView: WebView?, script: String) {
