@@ -30,7 +30,7 @@ public class PopupActivity extends AppCompatActivity {
 
         popupBridgeWebViewClient = new PopupBridgeWebViewClient(webViewClient);
 
-        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME, popupBridgeWebViewClient);
+        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME, popupBridgeWebViewClient, true);
         popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
         webView.loadUrl(getIntent().getStringExtra("url"));
