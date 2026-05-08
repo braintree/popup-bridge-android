@@ -1,5 +1,9 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Add Popup Bridge++ app switch: PayPal/Venmo detection, launchApp(), and deep-link return handling
+
 ## 5.1.0
 
 * Fix an issue where the WebViewClient is being silently overridden. [#95](https://github.com/braintree/popup-bridge-android/issues/95)
