@@ -451,7 +451,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient()
+            initializeClient(enablePopupBridgeAppSwitch = true)
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
@@ -494,7 +494,7 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when handleReturnToApp is called with app switch intent and expectingAppSwitchReturn path contains onCancel runs canceled JS and sends APP_SWITCH_RETURNED`() =
+    fun `handleReturnToApp with app switch intent and onCancel path runs canceled JS and sends APP_SWITCH_RETURNED`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
@@ -503,7 +503,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient()
+            initializeClient(enablePopupBridgeAppSwitch = true)
 
             setPrivateExpectingAppSwitchReturn(subject, true)
 
@@ -529,7 +529,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient()
+            initializeClient(enablePopupBridgeAppSwitch = true)
 
             setPrivateExpectingAppSwitchReturn(subject, true)
 
@@ -546,7 +546,7 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when handleReturnToApp is called with app switch intent and expectingAppSwitchReturn path not onCancel runs notifyComplete JS and sends APP_SWITCH_RETURNED`() =
+    fun `handleReturnToApp with nonOnCancel runs JS and sends APP_SWITCH_RETURNED`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
@@ -556,7 +556,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient()
+            initializeClient(enablePopupBridgeAppSwitch = true)
 
             setPrivateExpectingAppSwitchReturn(subject, true)
 
@@ -586,7 +586,7 @@ class PopupBridgeClientUnitTest {
             every { activityMock.intent } returns Intent(Intent.ACTION_VIEW, appSwitchReturnUri)
             every { activityMock.intent = capture(clearedIntentSlot) } returns Unit
 
-            initializeClient()
+            initializeClient(enablePopupBridgeAppSwitch = true)
             setPrivateExpectingAppSwitchReturn(subject, true)
 
             subject.handleReturnToApp(intent)
@@ -596,7 +596,7 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `when onLaunchApp is invoked with valid url and main handler runs startActivity is called and APP_LAUNCHED is sent`() {
+    fun `onLaunchApp with valid url starts activity and sends APP_LAUNCHED`() {
         initializeClient()
 
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
@@ -643,7 +643,7 @@ class PopupBridgeClientUnitTest {
     }
 
     @Test
-    fun `when onLaunchApp is invoked and startActivity throws ActivityNotFoundException APP_LAUNCH_FAILED is sent and openUrl is called`() =
+    fun `onLaunchApp throws ActivityNotFoundException sends APP_LAUNCH_FAILED and calls openUrl`() =
         runTest {
             initializeClient()
             every { activityMock.startActivity(any()) } throws android.content.ActivityNotFoundException()

@@ -46,7 +46,11 @@ internal class PopupBridgeJavascriptInterface(
         onOpen?.invoke(url)
     }
 
-    /** Exposed to JS as window.popupBridge.launchApp(url). Called by the web page; triggers [onLaunchApp] (wired in PopupBridgeClient to open the URL in the native app or fallback to browser). */
+    /**
+     * Exposed to JS as window.popupBridge.launchApp(url).
+     * Called by the web page; triggers [onLaunchApp] (wired in PopupBridgeClient
+     * to open the URL in the native app or fallback to browser).
+     */
     @JavascriptInterface
     fun launchApp(url: String?) {
         onLaunchApp?.invoke(url)
