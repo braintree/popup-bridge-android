@@ -142,10 +142,8 @@ private val enablePopupBridgeAppSwitch: Boolean = false,
     }
 
     fun handleReturnToApp(intent: Intent) {
-        // Only treat PopupBridge deep links with app-switch-style path/fragment data as
-        // native app returns. Secure-browser fallback can also return to popupbridgev1.
         val returnUri = intent.data
-        if (returnUri != null && returnUri.isAppSwitchReturnUri()) {
+        if (enablePopupBridgeAppSwitch && returnUri != null && returnUri.isAppSwitchReturnUri()) {
             handleAppSwitchReturn(returnUri)
             return
         }
