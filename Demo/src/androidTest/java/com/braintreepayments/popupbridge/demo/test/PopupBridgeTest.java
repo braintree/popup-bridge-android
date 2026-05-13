@@ -47,7 +47,9 @@ public class PopupBridgeTest {
         onViewWithText("Launch Popup").perform(click());
         onViewWithText("I don't like any of these colors")
                 .waitForExists(BROWSER_TIMEOUT).perform(click());
-        assertTrue(onDevice(withText("You did not like any of our colors")).exists());
+        assertTrue(onDevice(withText("You did not like any of our colors"))
+                .waitForExists()
+                .exists());
     }
 
     @Test(timeout = 50000)
