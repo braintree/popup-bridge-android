@@ -734,9 +734,12 @@ class PopupBridgeClientUnitTest {
         }
 
     private fun setPrivateExpectingAppSwitchReturn(client: PopupBridgeClient, value: Boolean) {
-        val field = PopupBridgeClient::class.java.getDeclaredField("expectingAppSwitchReturn")
+        val handlerField = PopupBridgeClient::class.java.getDeclaredField("appSwitchHandler")
+        handlerField.isAccessible = true
+        val handler = handlerField.get(client)
+        val field = handler.javaClass.getDeclaredField("expectingAppSwitchReturn")
         field.isAccessible = true
-        field.setBoolean(client, value)
+        field.setBoolean(handler, value)
     }
 
     // endregion
