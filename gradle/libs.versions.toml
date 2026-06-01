@@ -1,12 +1,12 @@
 [versions]
 # Demo App
 appcompatVersion = "1.7.0"
-browserSwitchVersion = "3.0.0"
+browserSwitchVersion = "3.5.1"
 coreVersion = "1.6.1"
 datastorePreferencesVersion = "1.1.4"
 detekt = "1.23.6"
 deviceAutomatorVersion = "1.0.0"
-gradleVersion = "8.9.0"
+gradleVersion = "8.9.1"
 junitVersion = "4.13.2"
 kotlinAndroidVersion = "2.1.10"
 kotlinxCoroutinesTestVersion = "1.10.2"
