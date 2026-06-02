@@ -13,12 +13,15 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
+import com.braintreepayments.api.internal.isVenmoAppSwitchUri
 import com.braintreepayments.api.internal.isVenmoInstalled
 
 @Suppress("TooManyFunctions")
 class PopupBridgeWebViewClient(
     private val delegate: WebViewClient? = null
 ) : WebViewClient() {
+
+    internal var onVenmoUrl: ((String) -> Unit)? = null
 
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
@@ -33,6 +36,11 @@ class PopupBridgeWebViewClient(
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+        val url = request?.takeIf { it.isForMainFrame }?.url
+        if (url != null && url.isVenmoAppSwitchUri()) {
+            onVenmoUrl?.invoke(url.toString())
+            return true
+        }
         return delegate?.shouldOverrideUrlLoading(view, request) ?: super.shouldOverrideUrlLoading(view, request)
     }
 
