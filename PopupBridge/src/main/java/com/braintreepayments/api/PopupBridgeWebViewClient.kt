@@ -116,7 +116,7 @@ class PopupBridgeWebViewClient(
             ?: super.onReceivedLoginRequest(view, realm, account, args)
     }
 
-private fun setVenmoInstalled(view: WebView?, isVenmoInstalled: Boolean) {
+    private fun setVenmoInstalled(view: WebView?, isVenmoInstalled: Boolean) {
         runJavaScriptInWebView(view,
             "" +
                 "function setVenmoInstalled() {" +

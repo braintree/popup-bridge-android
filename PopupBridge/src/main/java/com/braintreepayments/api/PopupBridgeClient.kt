@@ -111,7 +111,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
         webView.webViewClient = popupBridgeWebViewClient
-        popupBridgeWebViewClient.onVenmoUrl = { url -> appSwitchHandler.launchApp(url) }
+        if (enablePopupBridgeAppSwitch) {
+            popupBridgeWebViewClient.onVenmoUrl = { url -> appSwitchHandler.launchApp(url) }
+        }
 
         if (enablePopupBridgeAppSwitch && activity.applicationContext.isPayPalInstalled()) {
             analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
@@ -120,7 +122,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         with(popupBridgeJavascriptInterface) {
             onOpen = { url ->
                 val uri = url?.toUri()
-                if (uri != null && uri.isVenmoAppSwitchUri()) {
+                if (enablePopupBridgeAppSwitch && uri != null && uri.isVenmoAppSwitchUri()) {
                     appSwitchHandler.launchApp(url)
                 } else {
                     openUrl(url)
