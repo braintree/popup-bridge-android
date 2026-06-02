@@ -13,6 +13,7 @@ import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_SUCCEEDED
 import com.braintreepayments.api.internal.AnalyticsClient
 import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.AppSwitchHandler
+import com.braintreepayments.api.internal.isVenmoAppSwitchUri
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
@@ -110,13 +111,21 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
         webView.webViewClient = popupBridgeWebViewClient
+        popupBridgeWebViewClient.onVenmoUrl = { url -> appSwitchHandler.launchApp(url) }
 
         if (enablePopupBridgeAppSwitch && activity.applicationContext.isPayPalInstalled()) {
             analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
         }
 
         with(popupBridgeJavascriptInterface) {
-            onOpen = { url -> openUrl(url) }
+            onOpen = { url ->
+                val uri = url?.toUri()
+                if (uri != null && uri.isVenmoAppSwitchUri()) {
+                    appSwitchHandler.launchApp(url)
+                } else {
+                    openUrl(url)
+                }
+            }
             onLaunchApp = { url -> appSwitchHandler.launchApp(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
