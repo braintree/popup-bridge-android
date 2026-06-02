@@ -66,10 +66,13 @@ internal class AppSwitchHandler(
         expectingAppSwitchReturn = true
 
         val uri = url.toUri()
-        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+        val targetUri = if (uri.isVenmoAppSwitchUri()) uri.rewriteToVenmoHost() else uri
+        val intent = Intent(Intent.ACTION_VIEW, targetUri).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (uri.isPayPalAppSwitchUri()) {
+            if (targetUri.isPayPalAppSwitchUri()) {
                 setPackage(PAYPAL_APP_PACKAGE)
+            } else if (uri.isVenmoAppSwitchUri()) {
+                setPackage(VENMO_APP_PACKAGE)
             }
         }
 
@@ -85,8 +88,10 @@ internal class AppSwitchHandler(
 
     private fun Uri.isPayPalAppSwitchUri(): Boolean {
         val normalizedHost = host?.removePrefix("www.")
+        val isPayPal = normalizedHost == "paypal.com"
+        val isSandbox = normalizedHost == "sandbox.paypal.com"
         return scheme.equals("https", ignoreCase = true) &&
-            normalizedHost == "paypal.com" &&
+            (isPayPal || isSandbox) &&
             path.orEmpty().startsWith("/app-switch-checkout")
     }
 
@@ -110,3 +115,13 @@ internal class AppSwitchHandler(
             isCancelUri()
     }
 }
+
+internal fun Uri.isVenmoAppSwitchUri(): Boolean {
+    return scheme.equals("https", ignoreCase = true) &&
+        host.equals("account.venmo.com", ignoreCase = true) &&
+        path.orEmpty().startsWith("/braintree/checkout")
+}
+
+// account.venmo.com/braintree/checkout has no intent filter in the Venmo app.
+// venmo.com has a broad catch-all filter that handles any path including /braintree/checkout.
+internal fun Uri.rewriteToVenmoHost(): Uri = buildUpon().authority("venmo.com").build()
