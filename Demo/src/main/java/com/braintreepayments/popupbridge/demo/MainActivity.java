@@ -1,7 +1,6 @@
 package com.braintreepayments.popupbridge.demo;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 
@@ -14,6 +13,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String PAYPAL_CHECKOUTJS_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal-checkout.html";
     private static final String VENMO_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/venmo";
     private static final String LPM_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/local-payment-methods";
+    public static final String CUSTOM_URL = "https://paypal.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,5 +45,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void onLPMPopupBridgeClick(View view) {
         switchToWebView(LPM_POPUP_BRIDGE_URL);
+    }
+
+    public void onCustomURLClick(View view) {
+        switchToWebView(CUSTOM_URL);
     }
 }

@@ -1,8 +1,11 @@
 package com.braintreepayments.popupbridge.demo;
 
+import static com.braintreepayments.popupbridge.demo.MainActivity.CUSTOM_URL;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -25,15 +28,23 @@ public class PopupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popup);
         webView = findViewById(R.id.web_view);
+        String url = getIntent().getStringExtra("url");
+        boolean isGSE = CUSTOM_URL.equals(url);
+
+        if(isGSE) {
+            webView.getSettings().setDomStorageEnabled(true);
+            webView.getSettings().setJavaScriptEnabled(true);
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+        }
 
         WebViewClient webViewClient = demoWebViewClient();
 
         popupBridgeWebViewClient = new PopupBridgeWebViewClient(webViewClient);
 
-        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME, popupBridgeWebViewClient);
+        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME, popupBridgeWebViewClient, isGSE);
         popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
-        webView.loadUrl(getIntent().getStringExtra("url"));
+        webView.loadUrl(url);
     }
 
     @Override
