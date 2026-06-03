@@ -78,7 +78,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView = webView,
         returnUrlScheme = returnUrlScheme,
         popupBridgeWebViewClient = popupBridgeWebViewClient,
-        browserSwitchClient = BrowserSwitchClient(activity)
+        browserSwitchClient = BrowserSwitchClient()
     )
 
     init {
