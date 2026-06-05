@@ -35,11 +35,7 @@ internal class PopupBridgeJavascriptInterface(
     @Suppress("ImplicitDefaultLocale")
     @get:JavascriptInterface
     val returnUrlPrefix: String
-        get() = String.format(
-            "%s://%s/",
-            returnUrlScheme,
-            POPUP_BRIDGE_URL_HOST
-        )
+        get() = String.format("%s://%s/", returnUrlScheme, POPUP_BRIDGE_URL_HOST)
 
     @JavascriptInterface
     fun open(url: String?) {

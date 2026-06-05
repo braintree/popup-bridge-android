@@ -113,10 +113,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.webViewClient = popupBridgeWebViewClient
         if (enablePopupBridgeAppSwitch) {
             popupBridgeWebViewClient.onVenmoUrl = { url -> appSwitchHandler.launchApp(url) }
-        }
-
-        if (enablePopupBridgeAppSwitch && activity.applicationContext.isPayPalInstalled()) {
-            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
+            popupBridgeJavascriptInterface.onLaunchApp = { url -> appSwitchHandler.launchApp(url) }
+            if (activity.applicationContext.isPayPalInstalled()) {
+                analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
+            }
         }
 
         with(popupBridgeJavascriptInterface) {
@@ -128,7 +128,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                     openUrl(url)
                 }
             }
-            onLaunchApp = { url -> appSwitchHandler.launchApp(url) }
             onSendMessage = { messageName, data ->
                 messageListener?.onMessageReceived(messageName, data)
             }
