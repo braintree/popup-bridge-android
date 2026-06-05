@@ -100,6 +100,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.RELEASE_PAT }}
       - name: Set GitHub User
         uses: ./.github/actions/set_github_user
       - name: Set release version
