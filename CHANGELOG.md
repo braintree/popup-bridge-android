@@ -1,5 +1,10 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Bump `browser-switch` to 3.5.1
+* Upgrade `compileSdkVersion` to API 36
+
 ## 5.1.0
 
 * Fix an issue where the WebViewClient is being silently overridden. [#95](https://github.com/braintree/popup-bridge-android/issues/95)
