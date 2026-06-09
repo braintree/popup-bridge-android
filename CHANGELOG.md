@@ -1,5 +1,10 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Bump `browser-switch` to 3.5.1
+* Upgrade `compileSdkVersion` to API 36
+
 ## 5.1.1
 
 * Add Popup Bridge++ app switch: PayPal/Venmo detection, launchApp(), and deep-link return handling
