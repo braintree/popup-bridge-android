@@ -435,7 +435,7 @@ class PopupBridgeClientUnitTest {
 
     @Test
     fun `on init onLaunchApp callback is wired`() {
-        initializeClient()
+        initializeClient(enablePopupBridgeAppSwitch = true)
 
         // Invoking the callback runs launchApp (posts to main handler); no throw
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
@@ -597,7 +597,7 @@ class PopupBridgeClientUnitTest {
 
     @Test
     fun `onLaunchApp with valid url starts activity and sends APP_LAUNCHED`() {
-        initializeClient()
+        initializeClient(enablePopupBridgeAppSwitch = true)
 
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
 
@@ -613,7 +613,7 @@ class PopupBridgeClientUnitTest {
         val launchedIntent = slot<Intent>()
         every { activityMock.startActivity(capture(launchedIntent)) } returns Unit
 
-        initializeClient()
+        initializeClient(enablePopupBridgeAppSwitch = true)
 
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/app-switch-checkout?token=EC-123")
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
@@ -633,7 +633,7 @@ class PopupBridgeClientUnitTest {
         every { activityMock.intent } returns Intent(Intent.ACTION_VIEW, staleReturnUri)
         every { activityMock.intent = capture(clearedIntentSlot) } returns Unit
 
-        initializeClient()
+        initializeClient(enablePopupBridgeAppSwitch = true)
 
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
@@ -645,7 +645,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `onLaunchApp throws ActivityNotFoundException sends APP_LAUNCH_FAILED and calls openUrl`() =
         runTest {
-            initializeClient()
+            initializeClient(enablePopupBridgeAppSwitch = true)
             every { activityMock.startActivity(any()) } throws android.content.ActivityNotFoundException()
 
             onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
@@ -659,7 +659,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when onLaunchApp is invoked with blank url errorListener is called and no startActivity`() {
         val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
-        initializeClient()
+        initializeClient(enablePopupBridgeAppSwitch = true)
         subject.setErrorListener(errorListener)
 
         onLaunchAppSlot.captured.invoke("   ")
@@ -672,7 +672,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when onLaunchApp is invoked with null url errorListener is called and no startActivity`() {
         val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
-        initializeClient()
+        initializeClient(enablePopupBridgeAppSwitch = true)
         subject.setErrorListener(errorListener)
 
         onLaunchAppSlot.captured.invoke(null)
