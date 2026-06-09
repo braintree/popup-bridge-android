@@ -37,7 +37,7 @@ class PopupBridgeWebViewClient(
     @RequiresApi(Build.VERSION_CODES.N)
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         val url = request?.takeIf { it.isForMainFrame }?.url
-        if (url != null && url.isVenmoAppSwitchUri()) {
+        if (url != null && url.isVenmoAppSwitchUri() && onVenmoUrl != null) {
             onVenmoUrl?.invoke(url.toString())
             return true
         }

@@ -43,37 +43,37 @@ class PopupBridgeWebViewClientTest {
         }
     }
 
-@Test
+    @Test
     fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() =
         runTest {
-        every { webView.context.isVenmoInstalled() } returns true
-        val scriptSlot = slot<String>()
+            every { webView.context.isVenmoInstalled() } returns true
+            val scriptSlot = slot<String>()
 
-        sut.onPageFinished(webView, "https://example.com")
+            sut.onPageFinished(webView, "https://example.com")
 
-        verify {
-            webView.evaluateJavascript(capture(scriptSlot), null)
+            verify {
+                webView.evaluateJavascript(capture(scriptSlot), null)
+            }
+            assertEquals(getExpectedVenmoInstalledJavascript(true), scriptSlot.captured)
+
+            unmockkAll()
         }
-        assertEquals(getExpectedVenmoInstalledJavascript(true), scriptSlot.captured)
-
-        unmockkAll()
-    }
 
     @Test
     fun `on init, when venmo is not installed, isVenmoInstalled is false on javascriptInterface`() =
         runTest {
-        every { webView.context.isVenmoInstalled() } returns false
-        val scriptSlot = slot<String>()
+            every { webView.context.isVenmoInstalled() } returns false
+            val scriptSlot = slot<String>()
 
-        sut.onPageFinished(webView, "https://example.com")
+            sut.onPageFinished(webView, "https://example.com")
 
-        verify {
-            webView.evaluateJavascript(capture(scriptSlot), null)
+            verify {
+                webView.evaluateJavascript(capture(scriptSlot), null)
+            }
+            assertEquals(getExpectedVenmoInstalledJavascript(false), scriptSlot.captured)
+
+            unmockkAll()
         }
-        assertEquals(getExpectedVenmoInstalledJavascript(false), scriptSlot.captured)
-
-        unmockkAll()
-    }
 
     @Test
     fun `onPageFinished calls delegate when provided`() = runTest {

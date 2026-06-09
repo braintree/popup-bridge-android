@@ -452,6 +452,7 @@ class PopupBridgeClientUnitTest {
             every { intent.data } returns appSwitchReturnUri
 
             initializeClient(enablePopupBridgeAppSwitch = true)
+            setPrivateExpectingAppSwitchReturn(subject, true)
 
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()

@@ -25,7 +25,7 @@ internal class AppSwitchHandler(
     private var expectingAppSwitchReturn = false
 
     fun shouldHandleReturn(returnUri: Uri?): Boolean =
-        returnUri != null && returnUri.isAppSwitchReturnUri()
+        expectingAppSwitchReturn && returnUri != null && returnUri.isAppSwitchReturnUri()
 
     fun handleReturn(returnUri: Uri) {
         if (!expectingAppSwitchReturn) return

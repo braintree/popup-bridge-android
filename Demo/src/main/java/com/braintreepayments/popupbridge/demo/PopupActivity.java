@@ -29,9 +29,9 @@ public class PopupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popup);
         webView = findViewById(R.id.web_view);
         String url = getIntent().getStringExtra("url");
-        boolean isGSE = CUSTOM_URL.equals(url);
+        boolean enableAppSwitch = CUSTOM_URL.equals(url);
 
-        if(isGSE) {
+        if (enableAppSwitch) {
             webView.getSettings().setDomStorageEnabled(true);
             webView.getSettings().setJavaScriptEnabled(true);
             CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
@@ -41,7 +41,7 @@ public class PopupActivity extends AppCompatActivity {
 
         popupBridgeWebViewClient = new PopupBridgeWebViewClient(webViewClient);
 
-        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME, popupBridgeWebViewClient, isGSE);
+        popupBridgeClient = new PopupBridgeClient(this, webView, RETURN_URL_SCHEME, popupBridgeWebViewClient, enableAppSwitch);
         popupBridgeClient.setErrorListener(error -> showDialog(error.getMessage()));
 
         webView.loadUrl(url);
