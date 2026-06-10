@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private void switchToWebView(String url) {
         Intent intent = new Intent(this, PopupActivity.class);
         intent.putExtra("url", url);
+        intent.putExtra("enableAppSwitch", true);
         startActivity(intent);
     }
 

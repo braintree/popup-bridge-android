@@ -1,7 +1,5 @@
 package com.braintreepayments.popupbridge.demo;
 
-import static com.braintreepayments.popupbridge.demo.MainActivity.CUSTOM_URL;
-
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,9 +7,7 @@ import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.braintreepayments.api.PopupBridgeClient;
 import com.braintreepayments.api.PopupBridgeWebViewClient;
 
@@ -29,7 +25,7 @@ public class PopupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_popup);
         webView = findViewById(R.id.web_view);
         String url = getIntent().getStringExtra("url");
-        boolean enableAppSwitch = CUSTOM_URL.equals(url);
+        boolean enableAppSwitch = getIntent().getBooleanExtra("enableAppSwitch", false);
 
         if (enableAppSwitch) {
             webView.getSettings().setDomStorageEnabled(true);
@@ -62,9 +58,9 @@ public class PopupActivity extends AppCompatActivity {
 
     public void showDialog(String message) {
         new AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
-            .show();
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     private WebViewClient demoWebViewClient() {
