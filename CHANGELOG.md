@@ -4,7 +4,7 @@
 
 * Bump `browser-switch` to 3.5.1
 * Upgrade `compileSdkVersion` to API 36
-* Add opt-in PayPal native app switch support. Pass `enablePayPalAppSwitch = true` to `PopupBridgeClient` to launch the PayPal or Venmo app directly instead of opening a browser tab when available. The result is returned via the existing `handleReturnToApp(intent)` call with no additional integration changes required. Defaults to `false` for full backward compatibility.
+* Add opt-in PayPal native app switch support.
 
 ## 5.1.0
 
