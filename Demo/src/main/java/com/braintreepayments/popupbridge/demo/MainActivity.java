@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -14,9 +13,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String PAYPAL_CHECKOUTJS_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/paypal-checkout.html";
     private static final String VENMO_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/venmo";
     private static final String LPM_POPUP_BRIDGE_URL = "https://braintree.github.io/popup-bridge-example/local-payment-methods";
-    // For GSE / PayPal app-switch testing (e.g. gse-appstestbed.com flows), update this URL
-    // to the appropriate PPCP JS SDK test page before running manual tests.
-    public static final String CUSTOM_URL = "https://paypal.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +45,5 @@ public class MainActivity extends AppCompatActivity {
 
     public void onLPMPopupBridgeClick(View view) {
         switchToWebView(LPM_POPUP_BRIDGE_URL);
-    }
-
-    public void onCustomURLClick(View view) {
-        switchToWebView(CUSTOM_URL);
     }
 }
