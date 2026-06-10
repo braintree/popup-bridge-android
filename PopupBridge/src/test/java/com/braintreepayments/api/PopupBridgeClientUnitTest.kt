@@ -72,7 +72,7 @@ class PopupBridgeClientUnitTest {
     private fun initializeClient(
         activity: ComponentActivity = activityMock,
         webView: WebView = webViewMock,
-        enablePopupBridgeAppSwitch: Boolean = false,
+        enablePayPalAppSwitch: Boolean = false,
         additionalMocks: () -> Unit = {}
     ) {
         every { webView.post(capture(runnableSlot)) } returns true
@@ -89,7 +89,7 @@ class PopupBridgeClientUnitTest {
             returnUrlScheme = returnUrlScheme,
             popupBridgeWebViewClient = popupBridgeWebViewClient,
             browserSwitchClient = browserSwitchClient,
-            enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
+            enablePayPalAppSwitch = enablePayPalAppSwitch,
             pendingRequestRepository = pendingRequestRepository,
             coroutineScope = TestScope(testDispatcher),
             analyticsClient = analyticsClient,
@@ -426,7 +426,7 @@ class PopupBridgeClientUnitTest {
         mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
         every { any<android.content.Context>().isPayPalInstalled() } returns true
 
-        initializeClient(enablePopupBridgeAppSwitch = true)
+        initializeClient(enablePayPalAppSwitch = true)
 
         verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_DETECTED) }
 
@@ -435,7 +435,7 @@ class PopupBridgeClientUnitTest {
 
     @Test
     fun `on init onLaunchApp callback is wired`() {
-        initializeClient(enablePopupBridgeAppSwitch = true)
+        initializeClient(enablePayPalAppSwitch = true)
 
         // Invoking the callback runs launchApp (posts to main handler); no throw
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
@@ -451,7 +451,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient(enablePopupBridgeAppSwitch = true)
+            initializeClient(enablePayPalAppSwitch = true)
             setPrivateExpectingAppSwitchReturn(subject, true)
 
             subject.handleReturnToApp(intent)
@@ -504,7 +504,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient(enablePopupBridgeAppSwitch = true)
+            initializeClient(enablePayPalAppSwitch = true)
 
             setPrivateExpectingAppSwitchReturn(subject, true)
 
@@ -530,7 +530,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient(enablePopupBridgeAppSwitch = true)
+            initializeClient(enablePayPalAppSwitch = true)
 
             setPrivateExpectingAppSwitchReturn(subject, true)
 
@@ -557,7 +557,7 @@ class PopupBridgeClientUnitTest {
                 .build()
             every { intent.data } returns appSwitchReturnUri
 
-            initializeClient(enablePopupBridgeAppSwitch = true)
+            initializeClient(enablePayPalAppSwitch = true)
 
             setPrivateExpectingAppSwitchReturn(subject, true)
 
@@ -587,7 +587,7 @@ class PopupBridgeClientUnitTest {
             every { activityMock.intent } returns Intent(Intent.ACTION_VIEW, appSwitchReturnUri)
             every { activityMock.intent = capture(clearedIntentSlot) } returns Unit
 
-            initializeClient(enablePopupBridgeAppSwitch = true)
+            initializeClient(enablePayPalAppSwitch = true)
             setPrivateExpectingAppSwitchReturn(subject, true)
 
             subject.handleReturnToApp(intent)
@@ -598,7 +598,7 @@ class PopupBridgeClientUnitTest {
 
     @Test
     fun `onLaunchApp with valid url starts activity and sends APP_LAUNCHED`() {
-        initializeClient(enablePopupBridgeAppSwitch = true)
+        initializeClient(enablePayPalAppSwitch = true)
 
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
 
@@ -614,7 +614,7 @@ class PopupBridgeClientUnitTest {
         val launchedIntent = slot<Intent>()
         every { activityMock.startActivity(capture(launchedIntent)) } returns Unit
 
-        initializeClient(enablePopupBridgeAppSwitch = true)
+        initializeClient(enablePayPalAppSwitch = true)
 
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/app-switch-checkout?token=EC-123")
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
@@ -634,7 +634,7 @@ class PopupBridgeClientUnitTest {
         every { activityMock.intent } returns Intent(Intent.ACTION_VIEW, staleReturnUri)
         every { activityMock.intent = capture(clearedIntentSlot) } returns Unit
 
-        initializeClient(enablePopupBridgeAppSwitch = true)
+        initializeClient(enablePayPalAppSwitch = true)
 
         onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
@@ -646,7 +646,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `onLaunchApp throws ActivityNotFoundException sends APP_LAUNCH_FAILED and calls openUrl`() =
         runTest {
-            initializeClient(enablePopupBridgeAppSwitch = true)
+            initializeClient(enablePayPalAppSwitch = true)
             every { activityMock.startActivity(any()) } throws android.content.ActivityNotFoundException()
 
             onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
@@ -660,7 +660,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when onLaunchApp is invoked with blank url errorListener is called and no startActivity`() {
         val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
-        initializeClient(enablePopupBridgeAppSwitch = true)
+        initializeClient(enablePayPalAppSwitch = true)
         subject.setErrorListener(errorListener)
 
         onLaunchAppSlot.captured.invoke("   ")
@@ -673,7 +673,7 @@ class PopupBridgeClientUnitTest {
     @Test
     fun `when onLaunchApp is invoked with null url errorListener is called and no startActivity`() {
         val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
-        initializeClient(enablePopupBridgeAppSwitch = true)
+        initializeClient(enablePayPalAppSwitch = true)
         subject.setErrorListener(errorListener)
 
         onLaunchAppSlot.captured.invoke(null)

@@ -30,7 +30,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private val returnUrlScheme: String,
     private val popupBridgeWebViewClient: PopupBridgeWebViewClient,
     private val browserSwitchClient: BrowserSwitchClient,
-    private val enablePopupBridgeAppSwitch: Boolean = false,
+    private val enablePayPalAppSwitch: Boolean = false,
     private val pendingRequestRepository: PendingRequestRepository =
         PendingRequestRepository(activity.applicationContext),
     private val coroutineScope: CoroutineScope = activity.lifecycleScope,
@@ -42,7 +42,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     popupBridgeJavascriptInterface: PopupBridgeJavascriptInterface = PopupBridgeJavascriptInterface(
         returnUrlScheme = returnUrlScheme,
         context = activity.applicationContext,
-        enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
+        enablePayPalAppSwitch = enablePayPalAppSwitch,
     ),
 ) {
     private val activityRef = WeakReference(activity)
@@ -77,7 +77,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
      * @param webView The [WebView] to enable for PopupBridge.
      * @param returnUrlScheme The return url scheme to use for deep linking back into the application.
      * @param popupBridgeWebViewClient The [PopupBridgeWebViewClient] to use for handling web view events.
-     * @param enablePopupBridgeAppSwitch When true, allows the SDK to launch the native PayPal app
+     * @param enablePayPalAppSwitch When true, allows the SDK to launch the native PayPal app
      *   for checkout instead of opening a browser. Defaults to false for backward compatibility.
      *   This is specific to the popup bridge flow and is separate from the JS SDK's
      *   appSwitchWhenAvailable which controls non-webview mobile browser app switch.
@@ -89,14 +89,14 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView: WebView,
         returnUrlScheme: String,
         popupBridgeWebViewClient: PopupBridgeWebViewClient = PopupBridgeWebViewClient(),
-        enablePopupBridgeAppSwitch: Boolean = false,
+        enablePayPalAppSwitch: Boolean = false,
     ) : this(
         activity = activity,
         webView = webView,
         returnUrlScheme = returnUrlScheme,
         popupBridgeWebViewClient = popupBridgeWebViewClient,
         browserSwitchClient = BrowserSwitchClient(),
-        enablePopupBridgeAppSwitch = enablePopupBridgeAppSwitch,
+        enablePayPalAppSwitch = enablePayPalAppSwitch,
     )
 
     init {
@@ -111,7 +111,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(popupBridgeJavascriptInterface, POPUP_BRIDGE_NAME)
         webView.webViewClient = popupBridgeWebViewClient
-        if (enablePopupBridgeAppSwitch) {
+        if (enablePayPalAppSwitch) {
             popupBridgeWebViewClient.onVenmoUrl = { url -> appSwitchHandler.launchApp(url) }
             popupBridgeJavascriptInterface.onLaunchApp = { url -> appSwitchHandler.launchApp(url) }
             if (activity.applicationContext.isPayPalInstalled()) {
@@ -122,7 +122,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         with(popupBridgeJavascriptInterface) {
             onOpen = { url ->
                 val uri = url?.toUri()
-                if (enablePopupBridgeAppSwitch && uri != null && uri.isVenmoAppSwitchUri()) {
+                if (enablePayPalAppSwitch && uri != null && uri.isVenmoAppSwitchUri()) {
                     appSwitchHandler.launchApp(url)
                 } else {
                     openUrl(url)
@@ -148,7 +148,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
     fun handleReturnToApp(intent: Intent) {
         val returnUri = intent.data
-        if (enablePopupBridgeAppSwitch && appSwitchHandler.shouldHandleReturn(returnUri)) {
+        if (enablePayPalAppSwitch && appSwitchHandler.shouldHandleReturn(returnUri)) {
             appSwitchHandler.handleReturn(returnUri!!)
             return
         }
