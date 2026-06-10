@@ -203,9 +203,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     }
 
     private fun runNotifyCompleteJavaScript(returnUri: Uri) {
-        if (returnUri.host != POPUP_BRIDGE_URL_HOST) {
-            return
-        }
+        if (returnUri.host != POPUP_BRIDGE_URL_HOST) return
 
         val payLoadJson = JSONObject()
         val queryItems = JSONObject()
