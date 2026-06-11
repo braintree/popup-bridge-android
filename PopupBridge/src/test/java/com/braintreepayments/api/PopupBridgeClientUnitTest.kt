@@ -574,6 +574,60 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
+    fun `handleReturnToApp with app switch intent and onerror path runs onComplete JS and sends APP_SWITCH_RETURNED`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/onError")
+                .appendQueryParameter("errorCode", "INSTRUMENT_DECLINED")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient(enablePayPalAppSwitch = true)
+
+            setPrivateExpectingAppSwitchReturn(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains("notifyComplete()") && script.contains("onComplete"))
+                }, null)
+            }
+        }
+
+    @Test
+    fun `handleReturnToApp with app switch intent and error path runs onComplete JS and sends APP_SWITCH_RETURNED`() =
+        runTest {
+            val appSwitchReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/error")
+                .appendQueryParameter("errorCode", "INSTRUMENT_DECLINED")
+                .build()
+            every { intent.data } returns appSwitchReturnUri
+
+            initializeClient(enablePayPalAppSwitch = true)
+
+            setPrivateExpectingAppSwitchReturn(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains("notifyComplete()") && script.contains("onComplete"))
+                }, null)
+            }
+        }
+
+    @Test
     fun `when handleReturnToApp consumes app switch return, the activity intent data is cleared`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
@@ -658,6 +712,28 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
+    @Suppress("MaxLineLength")
+    fun `when enablePayPalAppSwitch is true and onOpen is called with a Venmo URL, appSwitchHandler launchApp is called instead of openUrl`() {
+        initializeClient(enablePayPalAppSwitch = true)
+
+        onOpenSlot.captured.invoke("https://account.venmo.com/braintree/checkout")
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        verify { activityMock.startActivity(any()) }
+        verify(exactly = 0) { browserSwitchClient.start(any(), any()) }
+    }
+
+    @Test
+    fun `when enablePayPalAppSwitch is false and onOpen is called with a Venmo URL, normal openUrl path is used`() {
+        initializeClient(enablePayPalAppSwitch = false)
+
+        onOpenSlot.captured.invoke("https://account.venmo.com/braintree/checkout")
+
+        verify(exactly = 1) { browserSwitchClient.start(activityMock, any()) }
+        verify(exactly = 0) { activityMock.startActivity(any()) }
+    }
+
+    @Test
     fun `when onLaunchApp is invoked with blank url errorListener is called and no startActivity`() {
         val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
         initializeClient(enablePayPalAppSwitch = true)
@@ -733,6 +809,41 @@ class PopupBridgeClientUnitTest {
             verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
             verify(exactly = 0) { webViewMock.evaluateJavascript(any(), any()) }
         }
+
+    @Test
+    fun `handleReturnToApp with fragment-based app switch return URI invokes JS`() = runTest {
+        val appSwitchReturnUri = Uri.Builder()
+            .scheme(returnUrlScheme)
+            .authority(POPUP_BRIDGE_URL_HOST)
+            .fragment("someFragment")
+            .build()
+        every { intent.data } returns appSwitchReturnUri
+
+        initializeClient(enablePayPalAppSwitch = true)
+        setPrivateExpectingAppSwitchReturn(subject, true)
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+        verify { webViewMock.evaluateJavascript(any(), null) }
+    }
+
+    @Test
+    fun `onLaunchApp with sandbox PayPal app switch url starts activity and sends APP_LAUNCHED`() {
+        val launchedIntent = slot<Intent>()
+        every { activityMock.startActivity(capture(launchedIntent)) } returns Unit
+
+        initializeClient(enablePayPalAppSwitch = true)
+
+        onLaunchAppSlot.captured.invoke("https://sandbox.paypal.com/app-switch-checkout?token=EC-456")
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        verify { activityMock.startActivity(any()) }
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCHED) }
+        assertEquals("com.paypal.android.p2pmobile", launchedIntent.captured.`package`)
+    }
 
     private fun setPrivateExpectingAppSwitchReturn(client: PopupBridgeClient, value: Boolean) {
         val handlerField = PopupBridgeClient::class.java.getDeclaredField("appSwitchHandler")

@@ -1,5 +1,6 @@
 package com.braintreepayments.api
 
+import android.net.Uri
 import android.os.Message
 import android.view.KeyEvent
 import android.webkit.ClientCertRequest
@@ -124,6 +125,36 @@ class PopupBridgeWebViewClientTest {
     @Test
     fun `shouldOverrideUrlLoading with request returns false when no delegate`() {
         val request = mockk<WebResourceRequest>(relaxed = true)
+
+        val result = sut.shouldOverrideUrlLoading(webView, request)
+
+        assertFalse(result)
+    }
+
+    @Test
+    fun `shouldOverrideUrlLoading invokes onVenmoUrl and returns true for Venmo checkout URL`() {
+        val venmoUri = Uri.parse("https://account.venmo.com/braintree/checkout?resource_id=abc")
+        val request = mockk<WebResourceRequest>(relaxed = true)
+        every { request.isForMainFrame } returns true
+        every { request.url } returns venmoUri
+
+        var capturedUrl: String? = null
+        sut.onVenmoUrl = { url -> capturedUrl = url }
+
+        val result = sut.shouldOverrideUrlLoading(webView, request)
+
+        assertTrue(result)
+        assertEquals("https://account.venmo.com/braintree/checkout?resource_id=abc", capturedUrl)
+    }
+
+    @Test
+    fun `shouldOverrideUrlLoading returns false for Venmo checkout URL when onVenmoUrl is null`() {
+        val venmoUri = Uri.parse("https://account.venmo.com/braintree/checkout?resource_id=abc")
+        val request = mockk<WebResourceRequest>(relaxed = true)
+        every { request.isForMainFrame } returns true
+        every { request.url } returns venmoUri
+
+        sut.onVenmoUrl = null
 
         val result = sut.shouldOverrideUrlLoading(webView, request)
 

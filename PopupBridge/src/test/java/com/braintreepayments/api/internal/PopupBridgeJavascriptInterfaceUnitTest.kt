@@ -1,6 +1,7 @@
 package com.braintreepayments.api.internal
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -80,10 +81,29 @@ class PopupBridgeJavascriptInterfaceUnitTest {
     }
 
     @Test
+    fun `isPayPalInstalled returns true when enablePayPalAppSwitch is true and PayPal is installed`() {
+        val mockPackageManager = mockk<PackageManager>()
+        every { mockContext.packageManager } returns mockPackageManager
+        every {
+            mockPackageManager.getApplicationInfo(PAYPAL_APP_PACKAGE, any<Int>())
+        } returns mockk<ApplicationInfo>()
+
+        val subjectWithAppSwitch = PopupBridgeJavascriptInterface(
+            returnUrlScheme,
+            mockContext,
+            enablePayPalAppSwitch = true
+        )
+
+        assertTrue(subjectWithAppSwitch.isPayPalInstalled)
+    }
+
+    @Test
     fun `isVenmoInstalled returns false when venmo is not installed`() {
         val mockPackageManager = mockk<PackageManager>()
         every { mockContext.packageManager } returns mockPackageManager
-        every { mockPackageManager.getApplicationInfo(any<String>(), any<Int>()) } throws PackageManager.NameNotFoundException()
+        every {
+            mockPackageManager.getApplicationInfo(any<String>(), any<Int>())
+        } throws PackageManager.NameNotFoundException()
 
         val result = subject.isVenmoInstalled
         assertFalse(result)
