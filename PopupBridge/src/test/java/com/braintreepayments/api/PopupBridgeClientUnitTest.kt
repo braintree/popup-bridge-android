@@ -6,7 +6,6 @@ import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
-import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCHED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCH_FAILED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED
@@ -19,15 +18,12 @@ import com.braintreepayments.api.internal.AnalyticsParamRepository
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
-import com.braintreepayments.api.internal.isPayPalInstalled
 import com.braintreepayments.api.util.CoroutineTestRule
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.slot
-import io.mockk.unmockkAll
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
@@ -422,18 +418,6 @@ class PopupBridgeClientUnitTest {
     // region App switch / launchApp tests
 
     @Test
-    fun `on init when PayPal is installed POPUP_BRIDGE_APP_DETECTED is sent`() {
-        mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-        every { any<android.content.Context>().isPayPalInstalled() } returns true
-
-        initializeClient(enablePayPalAppSwitch = true)
-
-        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_DETECTED) }
-
-        unmockkAll()
-    }
-
-    @Test
     fun `on init onLaunchApp callback is wired`() {
         initializeClient(enablePayPalAppSwitch = true)
 
@@ -654,7 +638,7 @@ class PopupBridgeClientUnitTest {
     fun `onLaunchApp with valid url starts activity and sends APP_LAUNCHED`() {
         initializeClient(enablePayPalAppSwitch = true)
 
-        onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
+        onLaunchAppSlot.captured.invoke("https://www.paypal.com/app-switch-checkout?token=EC-123")
 
         // Run the runnable posted to the main handler (launchAppOnMainThread)
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
@@ -690,7 +674,7 @@ class PopupBridgeClientUnitTest {
 
         initializeClient(enablePayPalAppSwitch = true)
 
-        onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
+        onLaunchAppSlot.captured.invoke("https://www.paypal.com/app-switch-checkout?token=EC-123")
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
 
         assertEquals(null, clearedIntentSlot.captured.data)
@@ -703,7 +687,7 @@ class PopupBridgeClientUnitTest {
             initializeClient(enablePayPalAppSwitch = true)
             every { activityMock.startActivity(any()) } throws android.content.ActivityNotFoundException()
 
-            onLaunchAppSlot.captured.invoke("https://www.paypal.com/checkout")
+            onLaunchAppSlot.captured.invoke("https://www.paypal.com/app-switch-checkout?token=EC-123")
             Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
             testScheduler.advanceUntilIdle()
 
@@ -844,6 +828,64 @@ class PopupBridgeClientUnitTest {
         verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCHED) }
         assertEquals("com.paypal.android.p2pmobile", launchedIntent.captured.`package`)
     }
+
+    @Test
+    fun `onLaunchApp with non-PayPal non-Venmo url routes to errorListener and no startActivity`() {
+        val errorListener: PopupBridgeErrorListener = mockk(relaxed = true)
+        initializeClient(enablePayPalAppSwitch = true)
+        subject.setErrorListener(errorListener)
+
+        onLaunchAppSlot.captured.invoke("https://evil.example.com/steal")
+        Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+
+        verify { errorListener.onError(any()) }
+        verify(exactly = 0) { activityMock.startActivity(any()) }
+    }
+
+    @Test
+    fun `when enablePayPalAppSwitch is true and no app switch deep link on return, canceled JS is run`() = runTest {
+        every { intent.data } returns null
+        initializeClient(enablePayPalAppSwitch = true) {
+            // override getPendingRequest so the browser-switch coroutine exits early,
+            // leaving only handleNoResult as the source of the canceled JS
+            coEvery { pendingRequestRepository.getPendingRequest() } returns null
+        }
+        setPrivateExpectingAppSwitchReturn(subject, true)
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify {
+            webViewMock.evaluateJavascript(withArg { script ->
+                assertTrue(script.contains("notifyCanceled()"))
+            }, null)
+        }
+    }
+
+    @Test
+    fun `when enablePayPalAppSwitch is false, clearReturnIntentIfPresent is not called on browser switch return`() =
+        runTest {
+            val popupBridgeReturnUri = Uri.Builder()
+                .scheme(returnUrlScheme)
+                .authority(POPUP_BRIDGE_URL_HOST)
+                .path("/mypath")
+                .build()
+            val capturedIntent = slot<Intent>()
+
+            every { intent.data } returns popupBridgeReturnUri
+            every { activityMock.intent } returns Intent(Intent.ACTION_VIEW, popupBridgeReturnUri)
+            every { activityMock.intent = capture(capturedIntent) } returns Unit
+
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.NoResult>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+
+            initializeClient(enablePayPalAppSwitch = false)
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+
+            verify(exactly = 0) { activityMock.intent = any() }
+        }
 
     private fun setPrivateExpectingAppSwitchReturn(client: PopupBridgeClient, value: Boolean) {
         val handlerField = PopupBridgeClient::class.java.getDeclaredField("appSwitchHandler")

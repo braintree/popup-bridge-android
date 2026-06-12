@@ -17,7 +17,6 @@ import com.braintreepayments.api.internal.isVenmoAppSwitchUri
 import com.braintreepayments.api.internal.PendingRequestRepository
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface.Companion.POPUP_BRIDGE_URL_HOST
-import com.braintreepayments.api.internal.isPayPalInstalled
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -114,9 +113,6 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         if (enablePayPalAppSwitch) {
             popupBridgeWebViewClient.onVenmoUrl = { url -> appSwitchHandler.launchApp(url) }
             popupBridgeJavascriptInterface.onLaunchApp = { url -> appSwitchHandler.launchApp(url) }
-            if (activity.applicationContext.isPayPalInstalled()) {
-                analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_DETECTED)
-            }
         }
 
         with(popupBridgeJavascriptInterface) {
@@ -148,9 +144,12 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
     fun handleReturnToApp(intent: Intent) {
         val returnUri = intent.data
-        if (enablePayPalAppSwitch && appSwitchHandler.shouldHandleReturn(returnUri)) {
-            appSwitchHandler.handleReturn(returnUri!!)
-            return
+        if (enablePayPalAppSwitch) {
+            if (appSwitchHandler.shouldHandleReturn(returnUri)) {
+                appSwitchHandler.handleReturn(returnUri!!)
+                return
+            }
+            appSwitchHandler.handleNoResult()
         }
 
         if (isHandlingReturnToApp) {
@@ -174,7 +173,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                 )
                 is BrowserSwitchFinalResult.NoResult -> runCanceledJavaScript()
             }
-            appSwitchHandler.clearReturnIntentIfPresent()
+            if (enablePayPalAppSwitch) appSwitchHandler.clearReturnIntentIfPresent()
             isHandlingReturnToApp = false
         }
     }

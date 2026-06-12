@@ -27,6 +27,12 @@ internal class AppSwitchHandler(
     fun shouldHandleReturn(returnUri: Uri?): Boolean =
         expectingAppSwitchReturn && returnUri != null && returnUri.isAppSwitchReturnUri()
 
+    fun handleNoResult() {
+        if (!expectingAppSwitchReturn) return
+        expectingAppSwitchReturn = false
+        onCanceled()
+    }
+
     fun handleReturn(returnUri: Uri) {
         if (!expectingAppSwitchReturn) return
         expectingAppSwitchReturn = false
@@ -62,10 +68,14 @@ internal class AppSwitchHandler(
             return
         }
 
+        val uri = url.toUri()
+        if (!uri.isPayPalAppSwitchUri() && !uri.isVenmoAppSwitchUri()) {
+            onError(IllegalArgumentException("URL is not a valid PayPal or Venmo app-switch URI: $url"))
+            return
+        }
+
         clearReturnIntentIfPresent()
         expectingAppSwitchReturn = true
-
-        val uri = url.toUri()
         val targetUri = if (uri.isVenmoAppSwitchUri()) uri.rewriteToVenmoHost() else uri
         val intent = Intent(Intent.ACTION_VIEW, targetUri).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -102,16 +112,13 @@ internal class AppSwitchHandler(
     }
 
     private fun Uri.isCancelUri(): Boolean {
-        val normalizedPath = path.orEmpty().lowercase()
-        return normalizedPath.contains("oncancel") || normalizedPath.contains("/cancel")
+        val segments = path.orEmpty().lowercase().split("/").filter { it.isNotEmpty() }
+        return segments.any { it == "oncancel" || it == "cancel" }
     }
 
     private fun Uri.hasAppSwitchPath(): Boolean {
-        val normalizedPath = path.orEmpty().lowercase()
-        return normalizedPath.contains("onapprove") ||
-            normalizedPath.contains("onerror") ||
-            normalizedPath.contains("/approve") ||
-            normalizedPath.contains("/error") ||
+        val segments = path.orEmpty().lowercase().split("/").filter { it.isNotEmpty() }
+        return segments.any { it == "onapprove" || it == "approve" || it == "onerror" || it == "error" } ||
             isCancelUri()
     }
 }
