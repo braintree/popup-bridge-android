@@ -6,9 +6,9 @@ import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
-import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCHED
-import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCH_FAILED
-import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_STARTED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_FAILED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_SUCCEEDED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_CANCELED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_FAILED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_STARTED
@@ -469,7 +469,7 @@ class PopupBridgeClientUnitTest {
 
             coVerify(atLeast = 1) { pendingRequestRepository.getPendingRequest() }
             verify { browserSwitchClient.completeRequest(intent, pendingRequest) }
-            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("\"opType\":\"payment\""))
@@ -496,7 +496,7 @@ class PopupBridgeClientUnitTest {
             testScheduler.advanceUntilIdle()
             runnableSlot.captured.run()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyCanceled()") && script.contains("onCancel"))
@@ -522,7 +522,7 @@ class PopupBridgeClientUnitTest {
             testScheduler.advanceUntilIdle()
             runnableSlot.captured.run()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyCanceled()"))
@@ -549,7 +549,7 @@ class PopupBridgeClientUnitTest {
             testScheduler.advanceUntilIdle()
             runnableSlot.captured.run()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyComplete()") && script.contains("onComplete"))
@@ -576,7 +576,7 @@ class PopupBridgeClientUnitTest {
             testScheduler.advanceUntilIdle()
             runnableSlot.captured.run()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyComplete()") && script.contains("onComplete"))
@@ -603,7 +603,7 @@ class PopupBridgeClientUnitTest {
             testScheduler.advanceUntilIdle()
             runnableSlot.captured.run()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyComplete()") && script.contains("onComplete"))
@@ -644,7 +644,7 @@ class PopupBridgeClientUnitTest {
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
 
         verify { activityMock.startActivity(any()) }
-        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCHED) }
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_STARTED) }
     }
 
     @Test
@@ -691,7 +691,7 @@ class PopupBridgeClientUnitTest {
             Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
             testScheduler.advanceUntilIdle()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCH_FAILED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_FAILED) }
             verify { browserSwitchClient.start(activityMock, any()) }
         }
 
@@ -790,7 +790,7 @@ class PopupBridgeClientUnitTest {
             subject.handleReturnToApp(intent)
             testScheduler.advanceUntilIdle()
 
-            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify(exactly = 0) { webViewMock.evaluateJavascript(any(), any()) }
         }
 
@@ -810,7 +810,7 @@ class PopupBridgeClientUnitTest {
         testScheduler.advanceUntilIdle()
         runnableSlot.captured.run()
 
-        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_RETURNED) }
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
         verify { webViewMock.evaluateJavascript(any(), null) }
     }
 
@@ -825,7 +825,7 @@ class PopupBridgeClientUnitTest {
         Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
 
         verify { activityMock.startActivity(any()) }
-        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_LAUNCHED) }
+        verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_STARTED) }
         assertEquals("com.paypal.android.p2pmobile", launchedIntent.captured.`package`)
     }
 

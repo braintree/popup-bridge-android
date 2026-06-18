@@ -58,9 +58,9 @@ public class PopupActivity extends AppCompatActivity {
 
     public void showDialog(String message) {
         new AlertDialog.Builder(this)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
-                .show();
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
+            .show();
     }
 
     private WebViewClient demoWebViewClient() {

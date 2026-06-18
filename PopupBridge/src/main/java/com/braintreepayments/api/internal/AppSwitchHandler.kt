@@ -37,7 +37,7 @@ internal class AppSwitchHandler(
         if (!expectingAppSwitchReturn) return
         expectingAppSwitchReturn = false
 
-        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_RETURNED)
+        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_SUCCEEDED)
         clearReturnIntentIfPresent()
 
         if (returnUri.isCancelUri()) {
@@ -88,10 +88,10 @@ internal class AppSwitchHandler(
 
         try {
             activity.startActivity(intent)
-            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCHED)
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_STARTED)
         } catch (_: ActivityNotFoundException) {
             expectingAppSwitchReturn = false
-            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_LAUNCH_FAILED)
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_FAILED)
             onOpenUrl(url)
         }
     }
