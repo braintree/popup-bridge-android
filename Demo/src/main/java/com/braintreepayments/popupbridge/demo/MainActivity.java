@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private void switchToWebView(String url) {
         Intent intent = new Intent(this, PopupActivity.class);
         intent.putExtra("url", url);
-        intent.putExtra("enableAppSwitch", true);
+        intent.putExtra("enablePayPalAppSwitch", true);
         startActivity(intent);
     }
 
