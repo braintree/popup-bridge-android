@@ -37,12 +37,13 @@ internal class AppSwitchHandler(
         if (!expectingAppSwitchReturn) return
         expectingAppSwitchReturn = false
 
-        analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_SUCCEEDED)
         clearReturnIntentIfPresent()
 
         if (returnUri.isCancelUri()) {
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_CANCELED)
             onCanceled()
         } else {
+            analyticsClient.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_SUCCEEDED)
             onComplete(returnUri)
         }
     }

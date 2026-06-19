@@ -150,6 +150,7 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                 return
             }
             appSwitchHandler.handleNoResult()
+            return
         }
 
         if (isHandlingReturnToApp) {

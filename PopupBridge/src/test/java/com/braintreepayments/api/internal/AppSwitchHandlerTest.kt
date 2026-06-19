@@ -3,7 +3,9 @@ package com.braintreepayments.api.internal
 import android.net.Uri
 import android.os.Looper
 import androidx.activity.ComponentActivity
+import com.braintreepayments.api.PopupBridgeAnalytics
 import io.mockk.mockk
+import io.mockk.verify
 import java.lang.ref.WeakReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -89,6 +91,22 @@ class AppSwitchHandlerTest {
         onComplete = onComplete,
     )
 
+    private fun makeSubjectWithAnalytics(
+        onCanceled: () -> Unit = {},
+        onComplete: (Uri) -> Unit = {},
+    ): Pair<AppSwitchHandler, AnalyticsClient> {
+        val analytics = mockk<AnalyticsClient>(relaxed = true)
+        val handler = AppSwitchHandler(
+            activityRef = WeakReference(mockk<ComponentActivity>(relaxed = true)),
+            analyticsClient = analytics,
+            onOpenUrl = {},
+            onError = { throw it },
+            onCanceled = onCanceled,
+            onComplete = onComplete,
+        )
+        return handler to analytics
+    }
+
     private fun AppSwitchHandler.launchAndIdle(url: String = "https://www.paypal.com/app-switch-checkout") {
         launchApp(url)
         Shadows.shadowOf(Looper.getMainLooper()).idle()
@@ -153,6 +171,26 @@ class AppSwitchHandlerTest {
         s.launchAndIdle()
         s.handleReturn(returnUri("/error"))
         assertTrue(completed)
+    }
+
+    // region analytics event routing tests
+
+    @Test
+    fun `handleReturn with cancel URI fires CANCELED event and not SUCCEEDED`() {
+        val (s, analytics) = makeSubjectWithAnalytics()
+        s.launchAndIdle()
+        s.handleReturn(returnUri("/cancel"))
+        verify(exactly = 1) { analytics.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_CANCELED) }
+        verify(exactly = 0) { analytics.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
+    }
+
+    @Test
+    fun `handleReturn with approve URI fires SUCCEEDED event and not CANCELED`() {
+        val (s, analytics) = makeSubjectWithAnalytics()
+        s.launchAndIdle()
+        s.handleReturn(returnUri("/approve"))
+        verify(exactly = 1) { analytics.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
+        verify(exactly = 0) { analytics.sendEvent(PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_CANCELED) }
     }
 
     // endregion

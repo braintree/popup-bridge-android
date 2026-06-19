@@ -6,8 +6,9 @@ import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.core.net.toUri
-import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_STARTED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_CANCELED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_FAILED
+import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_STARTED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_APP_SWITCH_SUCCEEDED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_CANCELED
 import com.braintreepayments.api.PopupBridgeAnalytics.POPUP_BRIDGE_FAILED
@@ -479,7 +480,7 @@ class PopupBridgeClientUnitTest {
         }
 
     @Test
-    fun `handleReturnToApp with app switch intent and onCancel path runs canceled JS and sends APP_SWITCH_RETURNED`() =
+    fun `handleReturnToApp with app switch intent and onCancel path runs canceled JS and sends APP_SWITCH_CANCELED`() =
         runTest {
             val appSwitchReturnUri = Uri.Builder()
                 .scheme(returnUrlScheme)
@@ -496,7 +497,8 @@ class PopupBridgeClientUnitTest {
             testScheduler.advanceUntilIdle()
             runnableSlot.captured.run()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_CANCELED) }
+            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyCanceled()") && script.contains("onCancel"))
@@ -522,7 +524,8 @@ class PopupBridgeClientUnitTest {
             testScheduler.advanceUntilIdle()
             runnableSlot.captured.run()
 
-            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
+            verify { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_CANCELED) }
+            verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_APP_SWITCH_SUCCEEDED) }
             verify {
                 webViewMock.evaluateJavascript(withArg { script ->
                     assertTrue(script.contains("notifyCanceled()"))
@@ -862,6 +865,30 @@ class PopupBridgeClientUnitTest {
             }, null)
         }
     }
+
+    @Test
+    fun `app switch cancel with stale pending request fires canceledJS exactly once, not twice`() =
+        runTest {
+            // Stale pendingRequest exists from a previous browser-switch flow.
+            // Without the return-after-handleNoResult fix, the browser-switch coroutine would also
+            // resolve to BrowserSwitchFinalResult.NoResult and fire runCanceledJavaScript() a second time.
+            every { intent.data } returns null
+            val browserSwitchFinalResult = mockk<BrowserSwitchFinalResult.NoResult>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns browserSwitchFinalResult
+            initializeClient(enablePayPalAppSwitch = true)
+            setPrivateExpectingAppSwitchReturn(subject, true)
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            // handleNoResult fires canceled JS via its onCanceled callback. The browser-switch
+            // coroutine must NOT run, so canceled JS fires exactly once.
+            verify(exactly = 1) { webViewMock.evaluateJavascript(withArg { script ->
+                assertTrue(script.contains("notifyCanceled()"))
+            }, null) }
+            verify(exactly = 0) { browserSwitchClient.completeRequest(any(), any()) }
+        }
 
     @Test
     fun `when enablePayPalAppSwitch is false, clearReturnIntentIfPresent is not called on browser switch return`() =

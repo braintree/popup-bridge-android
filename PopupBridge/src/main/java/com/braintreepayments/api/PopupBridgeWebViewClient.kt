@@ -14,7 +14,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
 import com.braintreepayments.api.internal.isVenmoAppSwitchUri
-import com.braintreepayments.api.internal.isVenmoInstalled
 
 @Suppress("TooManyFunctions")
 class PopupBridgeWebViewClient(
@@ -26,7 +25,6 @@ class PopupBridgeWebViewClient(
     override fun onPageFinished(view: WebView?, url: String?) {
         super.onPageFinished(view, url)
         delegate?.onPageFinished(view, url)
-        setVenmoInstalled(view, view?.context?.isVenmoInstalled() == true)
     }
 
     @Deprecated("Deprecated in [android.webkit.WebViewClient]")
@@ -114,28 +112,5 @@ class PopupBridgeWebViewClient(
     override fun onReceivedLoginRequest(view: WebView?, realm: String?, account: String?, args: String?) {
         delegate?.onReceivedLoginRequest(view, realm, account, args)
             ?: super.onReceivedLoginRequest(view, realm, account, args)
-    }
-
-    private fun setVenmoInstalled(view: WebView?, isVenmoInstalled: Boolean) {
-        runJavaScriptInWebView(view,
-            "" +
-                "function setVenmoInstalled() {" +
-                "    window.popupBridge.isVenmoInstalled = $isVenmoInstalled;" +
-                "}" +
-                "" +
-                "if (document.readyState === 'complete') {" +
-                "  setVenmoInstalled();" +
-                "} else {" +
-                "  window.addEventListener('load', function () {" +
-                "    setVenmoInstalled();" +
-                "  });" +
-                "}"
-        )
-    }
-
-    private fun runJavaScriptInWebView(webView: WebView?, script: String) {
-        webView?.post(
-            Runnable { webView.evaluateJavascript(script, null) }
-        )
     }
 }

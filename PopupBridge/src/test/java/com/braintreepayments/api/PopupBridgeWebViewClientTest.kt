@@ -10,20 +10,14 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.braintreepayments.api.internal.isVenmoInstalled
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.slot
 import io.mockk.verify
-import io.mockk.unmockkAll
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import junit.framework.TestCase.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -33,59 +27,14 @@ class PopupBridgeWebViewClientTest {
     private val sut = PopupBridgeWebViewClient()
     private val webView = mockk<WebView>(relaxed = true)
 
-    @BeforeTest
-    fun setup() {
-        mockkStatic("com.braintreepayments.api.internal.AppInstalledChecksKt")
-
-        every { webView.post(any()) } answers {
-            val runnable = firstArg<Runnable>()
-            runnable.run()
-            true
-        }
-    }
-
     @Test
-    fun `on init, when venmo installed, isVenmoInstalled is set to true on the popupBridgeJavascriptInterface`() =
-        runTest {
-            every { webView.context.isVenmoInstalled() } returns true
-            val scriptSlot = slot<String>()
-
-            sut.onPageFinished(webView, "https://example.com")
-
-            verify {
-                webView.evaluateJavascript(capture(scriptSlot), null)
-            }
-            assertEquals(getExpectedVenmoInstalledJavascript(true), scriptSlot.captured)
-
-            unmockkAll()
-        }
-
-    @Test
-    fun `on init, when venmo is not installed, isVenmoInstalled is false on javascriptInterface`() =
-        runTest {
-            every { webView.context.isVenmoInstalled() } returns false
-            val scriptSlot = slot<String>()
-
-            sut.onPageFinished(webView, "https://example.com")
-
-            verify {
-                webView.evaluateJavascript(capture(scriptSlot), null)
-            }
-            assertEquals(getExpectedVenmoInstalledJavascript(false), scriptSlot.captured)
-
-            unmockkAll()
-        }
-
-    @Test
-    fun `onPageFinished calls delegate when provided`() = runTest {
+    fun `onPageFinished calls delegate when provided`() {
         val delegate = mockk<WebViewClient>(relaxed = true)
         val sutWithDelegate = PopupBridgeWebViewClient(delegate)
-        every { webView.context.isVenmoInstalled() } returns false
 
         sutWithDelegate.onPageFinished(webView, "https://example.com")
 
         verify { delegate.onPageFinished(webView, "https://example.com") }
-        unmockkAll()
     }
 
     @Suppress("DEPRECATION")
@@ -414,22 +363,5 @@ class PopupBridgeWebViewClientTest {
     @Test
     fun `onReceivedLoginRequest does not throw when no delegate`() {
         sut.onReceivedLoginRequest(webView, "realm", "account", "args")
-    }
-
-    private fun getExpectedVenmoInstalledJavascript(isVenmoInstalled: Boolean): String {
-        return String.format(
-            ("" +
-                "function setVenmoInstalled() {" +
-                "    window.popupBridge.isVenmoInstalled = %s;" +
-                "}" +
-                "" +
-                "if (document.readyState === 'complete') {" +
-                "  setVenmoInstalled();" +
-                "} else {" +
-                "  window.addEventListener('load', function () {" +
-                "    setVenmoInstalled();" +
-                "  });" +
-                "}"), isVenmoInstalled
-        )
     }
 }
