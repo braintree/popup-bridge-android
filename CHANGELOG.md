@@ -2,9 +2,12 @@
 
 ## unreleased
 
+* Add opt-in PayPal native app switch support.
+
+## 5.2.0
+
 * Bump `browser-switch` to 3.5.1
 * Upgrade `compileSdkVersion` to API 36
-* Add opt-in PayPal native app switch support.
 
 ## 5.1.0
 
