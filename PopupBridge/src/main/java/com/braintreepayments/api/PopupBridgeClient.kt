@@ -52,8 +52,15 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
     private var errorListener: PopupBridgeErrorListener? = null
 
     /**
-     * Browser-switch path only: ensures [handleReturnToApp] completes the pending browser request at most once
-     * when both `onResume` and `onNewIntent` invoke it (singleTop / singleTask / singleInstance).
+     * Browser-switch path only: ensures that [handleReturnToApp] is only called once, even if both `onResume`
+     * and `onNewIntent` invoke it.
+     *
+     * If the host app's Activity has a launch type of singleTop, singleTask, or singleInstance,
+     * [handleReturnToApp] should be called in both onResume and onNewIntent. This is to cover all cases
+     * where the user cancels the flow.
+     *
+     * Since the [PendingRequestRepository] functions are suspend functions, we need to ensure that the
+     * [handleReturnToApp] logic is only invoked once.
      */
     @Volatile
     private var isHandlingReturnToApp = false
