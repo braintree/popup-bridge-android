@@ -14,7 +14,7 @@ jobs:
           - api-level: 35
             target: google_apis
           - api-level: "37.0"
-            target: google_apis_ps16k
+            target: playstore_ps16k
     steps:
       - name: checkout
         uses: actions/checkout@v4
