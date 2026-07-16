@@ -1,5 +1,10 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Update Android Gradle Plugin version to 8.13.2
+* Update compileSdkVersion and targetSdkVersion to 37
+
 ## 5.2.0
 
 * Bump `browser-switch` to 3.5.1
