@@ -36,6 +36,7 @@ jobs:
           profile: pixel_7_pro
           emulator-options: ${{ env.EMULATOR_OPTIONS }}
           emulator-boot-timeout: 900
+          disk-size: 8G
           script: |
             adb wait-for-device
             printf '_ --disable-fre --no-default-browser-check --no-first-run\n' > chrome-command-line
@@ -53,6 +54,7 @@ jobs:
           profile: pixel_7_pro
           emulator-options: ${{ env.EMULATOR_OPTIONS }}
           emulator-boot-timeout: 900
+          disk-size: 8G
           script: |
             adb wait-for-device
             printf '_ --disable-fre --no-default-browser-check --no-first-run\n' > chrome-command-line
