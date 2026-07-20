@@ -37,7 +37,9 @@ jobs:
           emulator-options: ${{ env.EMULATOR_OPTIONS }}
           emulator-boot-timeout: 900
           script: |
-            adb shell 'echo "_ --disable-fre --no-default-browser-check --no-first-run" > /data/local/tmp/chrome-command-line'
+            adb wait-for-device
+            printf '_ --disable-fre --no-default-browser-check --no-first-run\n' > chrome-command-line
+            adb push chrome-command-line /data/local/tmp/chrome-command-line
             adb shell chmod 777 /data/local/tmp/chrome-command-line
             ./gradlew :Demo:connectedCheck --stacktrace
 
@@ -52,6 +54,8 @@ jobs:
           emulator-options: ${{ env.EMULATOR_OPTIONS }}
           emulator-boot-timeout: 900
           script: |
-            adb shell 'echo "_ --disable-fre --no-default-browser-check --no-first-run" > /data/local/tmp/chrome-command-line'
+            adb wait-for-device
+            printf '_ --disable-fre --no-default-browser-check --no-first-run\n' > chrome-command-line
+            adb push chrome-command-line /data/local/tmp/chrome-command-line
             adb shell chmod 777 /data/local/tmp/chrome-command-line
             ./gradlew :Demo:connectedCheck --stacktrace
