@@ -6,7 +6,7 @@ coreVersion = "1.6.1"
 datastorePreferencesVersion = "1.1.4"
 detekt = "1.23.6"
 deviceAutomatorVersion = "1.0.0"
-gradleVersion = "8.9.1"
+androidGradlePlugin = "8.13.2"
 junitVersion = "4.13.2"
 kotlinAndroidVersion = "2.1.10"
 kotlinxCoroutinesTestVersion = "1.10.2"
@@ -24,7 +24,7 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences", v
 detekt-rules-libraries = { module = "io.gitlab.arturbosch.detekt:detekt-rules-libraries", version.ref = "detekt" }
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 device-automator = { module = "com.braintreepayments:device-automator", version.ref = "deviceAutomatorVersion" }
-gradle = { module = "com.android.tools.build:gradle", version.ref = "gradleVersion" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
 junit = { module = "junit:junit", version.ref = "junitVersion" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlinAndroidVersion" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
