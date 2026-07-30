@@ -10,7 +10,7 @@ First, update the popup bridge dependency version in your `build.gradle` file:
 
 ```groovy
 dependencies {
-  implementation 'com.braintreepayments.api:popup-bridge:5.2.0'
+  implementation 'com.braintreepayments.api:popup-bridge:5.3.0'
 }
 ```
 

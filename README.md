@@ -23,7 +23,7 @@ Add the dependency in your `build.gradle`:
 
 ```groovy
 dependencies {
-  implementation 'com.braintreepayments.api:popup-bridge:5.2.0'
+  implementation 'com.braintreepayments.api:popup-bridge:5.3.0'
 }
 ```
 
