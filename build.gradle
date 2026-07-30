@@ -21,14 +21,14 @@ ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID') ?: ''
 ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
 ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
 
-version = '5.3.0'
+version = '5.3.1-SNAPSHOT'
 group = "com.braintreepayments"
 
 ext {
     compileSdkVersion = 37
     minSdkVersion = 23
     targetSdkVersion = 37
-    versionCode = 19
+    versionCode = 20
     versionName = version
 }
 
