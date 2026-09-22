@@ -16,11 +16,13 @@ import com.braintreepayments.api.internal.PopupBridgeJavascriptInterface
 import com.braintreepayments.api.util.CoroutineTestRule
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -52,8 +54,12 @@ class PopupBridgeClientUnitTest {
 
     private val returnUrlScheme = "com.braintreepayments.popupbridgeexample"
     private val pendingRequest = "stored-pending-request"
+    private val validPendingRequest =
+        "eyJyZXF1ZXN0Q29kZSI6MSwidXJsIjoiaHR0cHM6Ly9leGFtcGxlLmNvbSIsInJldHVy" +
+            "blVybFNjaGVtZSI6ImNvbS5icmFpbnRyZWVwYXltZW50cy5wb3B1cGJyaWRnZWV4YW1wbGUifQ=="
 
     private val intent: Intent = mockk(relaxed = true)
+    private val realBrowserSwitchClient = BrowserSwitchClient()
     private val runnableSlot = slot<Runnable>()
     private val onOpenSlot = slot<(String?) -> Unit>()
     private val onSendMessageSlot = slot<(String?, String?) -> Unit>()
@@ -61,6 +67,7 @@ class PopupBridgeClientUnitTest {
     private fun initializeClient(
         activity: ComponentActivity = activityMock,
         webView: WebView = webViewMock,
+        browserSwitchClient: BrowserSwitchClient = this.browserSwitchClient,
         additionalMocks: () -> Unit = {}
     ) {
         every { webView.post(capture(runnableSlot)) } returns true
@@ -176,7 +183,8 @@ class PopupBridgeClientUnitTest {
             put("queryItems", queryItems)
             put("hash", returnUrl.fragment)
         }
-        val expectedJavascriptString = getExpectedSuccessJavascript(null, payloadJson)
+        val expectedJavascriptString =
+            getExpectedOnCompleteJavascript(null, payloadJson.toString())
 
         initializeClient()
 
@@ -212,11 +220,10 @@ class PopupBridgeClientUnitTest {
 
             verify {
                 webViewMock.evaluateJavascript(withArg { javascriptString ->
-                    assertTrue(
-                        javascriptString.contains(
-                            "new Error('Failed to parse query items from return URL. ${exception.localizedMessage}')"
-                        )
-                    )
+                    val expected =
+                        "onComplete(\"Failed to parse query items from return URL. exception message\", null)"
+                    assertTrue(javascriptString.contains(expected))
+                    assertFalse(javascriptString.contains("new Error("))
                 }, null)
             }
         }
@@ -235,13 +242,227 @@ class PopupBridgeClientUnitTest {
 
         verify {
             webViewMock.evaluateJavascript(withArg { javascriptString ->
-                    assertTrue(
-                        javascriptString.contains(
-                            getExpectedFailureJavascript(exception.message)
-                        )
+                    assertEquals(
+                        getExpectedOnCompleteJavascript("\"error message\"", null),
+                        javascriptString
                     )
                 }, null)
         }
+    }
+
+    @Test
+    fun `handleReturnToApp with non matching return uri dispatches cancel js`() = runTest {
+        val dataUri = "other-scheme://popupbridgev1?color=blue".toUri()
+        val realIntent = Intent(Intent.ACTION_VIEW, dataUri)
+
+        initializeClient(
+            browserSwitchClient = realBrowserSwitchClient,
+            additionalMocks = {
+                coEvery { pendingRequestRepository.getPendingRequest() } returns validPendingRequest
+            }
+        )
+
+        subject.handleReturnToApp(realIntent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 0) { analyticsClient.sendEvent(POPUP_BRIDGE_FAILED) }
+        verify(exactly = 1) { analyticsClient.sendEvent(POPUP_BRIDGE_CANCELED) }
+        verify(exactly = 1) {
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                assertTrue(javascriptString.contains("window.popupBridge.onCancel()"))
+            }, null)
+        }
+    }
+
+    @Test
+    fun `handleReturnToApp with hostile query params dispatches escaped success js`() = runTest {
+        val payload = "1); alert(document.cookie);//"
+        val quoteBackslash = "a\"b\\c"
+        val dataUri = Uri.Builder()
+            .scheme(returnUrlScheme)
+            .authority("popupbridgev1")
+            .appendQueryParameter("payload", payload)
+            .appendQueryParameter("weird", quoteBackslash)
+            .build()
+        val realIntent = Intent(Intent.ACTION_VIEW, dataUri)
+
+        initializeClient(
+            browserSwitchClient = realBrowserSwitchClient,
+            additionalMocks = {
+                coEvery { pendingRequestRepository.getPendingRequest() } returns validPendingRequest
+            }
+        )
+
+        subject.handleReturnToApp(realIntent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED) }
+        verify(exactly = 1) {
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                assertTrue(javascriptString.contains("window.popupBridge.onComplete(null,"))
+                assertFalse(javascriptString.contains(payload))
+                assertFalse(javascriptString.contains(quoteBackslash))
+            }, null)
+        }
+    }
+
+    @Test
+    fun `success js escapes hostile payload in object literal`() = runTest {
+        val payload = "1); alert(document.cookie);//"
+        val dataUri = Uri.Builder()
+            .scheme(returnUrlScheme)
+            .authority("popupbridgev1")
+            .appendQueryParameter("payload", payload)
+            .build()
+        val realIntent = Intent(Intent.ACTION_VIEW, dataUri)
+
+        initializeClient(
+            browserSwitchClient = realBrowserSwitchClient,
+            additionalMocks = {
+                coEvery { pendingRequestRepository.getPendingRequest() } returns validPendingRequest
+            }
+        )
+
+        subject.handleReturnToApp(realIntent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED) }
+        verify(exactly = 1) {
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                assertTrue(javascriptString.contains("onComplete(null, {"))
+                assertTrue(javascriptString.contains("1); alert(document.cookie);\\/\\/"))
+                assertFalse(javascriptString.contains(payload))
+            }, null)
+        }
+    }
+
+    @Test
+    fun `success js escapes u2028 and u2029 in payload`() = runTest {
+        val dataUri = Uri.Builder()
+            .scheme(returnUrlScheme)
+            .authority("popupbridgev1")
+            .appendQueryParameter("lineSep", "a\u2028b")
+            .appendQueryParameter("paraSep", "a\u2029b")
+            .build()
+        val realIntent = Intent(Intent.ACTION_VIEW, dataUri)
+
+        initializeClient(
+            browserSwitchClient = realBrowserSwitchClient,
+            additionalMocks = {
+                coEvery { pendingRequestRepository.getPendingRequest() } returns validPendingRequest
+            }
+        )
+
+        subject.handleReturnToApp(realIntent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) {
+            webViewMock.evaluateJavascript(withArg { javascriptString ->
+                assertTrue(javascriptString.contains("\"a\\u2028b\""))
+                assertTrue(javascriptString.contains("\"a\\u2029b\""))
+                assertFalse(javascriptString.contains('\u2028'))
+                assertFalse(javascriptString.contains('\u2029'))
+            }, null)
+        }
+    }
+
+    @Test
+    fun `error js encodes adversarial input as js literal`() = runTest {
+        val cases = listOf(
+            "a\"b\\c" to "\"a\\\"b\\\\c\"",
+            "</script>" to "\"<\\/script>\"",
+            "a\u2028b" to "\"a\\u2028b\"",
+            "a\u2029b" to "\"a\\u2029b\"",
+            "a\u0000b" to "\"a\\u0000b\"",
+            "\"+alert(1)+\"" to "\"\\\"+alert(1)+\\\"\"",
+            "%s" to "\"%s\"",
+            "%%" to "\"%%\"",
+            "\\u0041" to "\"\\\\u0041\""
+        )
+
+        for ((input, expected) in cases) {
+            resetClientMocks()
+            val result = mockk<BrowserSwitchFinalResult.Failure>()
+            every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns result
+            every { result.error } returns BrowserSwitchException(input)
+            initializeClient()
+
+            subject.handleReturnToApp(intent)
+            testScheduler.advanceUntilIdle()
+            runnableSlot.captured.run()
+
+            verify(exactly = 1) {
+                webViewMock.evaluateJavascript(withArg { script ->
+                    assertTrue(script.contains(expected))
+                }, null)
+            }
+        }
+    }
+
+    @Test
+    fun `error js neutralizes script breakout attempt`() = runTest {
+        val input = "1); alert(document.cookie);//"
+        val result = mockk<BrowserSwitchFinalResult.Failure>()
+        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns result
+        every { result.error } returns BrowserSwitchException(input)
+        initializeClient()
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) {
+            webViewMock.evaluateJavascript(withArg { script ->
+                assertTrue(script.contains("\"1); alert(document.cookie);\\/\\/\""))
+                assertFalse(script.contains("//"))
+            }, null)
+        }
+    }
+
+    @Test
+    fun `handleReturnToApp dispatches exactly one terminal script per outcome`() = runTest {
+        val successUrl = Uri.Builder()
+            .scheme(returnUrlScheme)
+            .authority("popupbridgev1")
+            .appendQueryParameter("color", "blue")
+            .build()
+        val successResult = mockk<BrowserSwitchFinalResult.Success>()
+        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns successResult
+        every { successResult.returnUrl } returns successUrl
+        initializeClient()
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { webViewMock.evaluateJavascript(any(), null) }
+
+        resetClientMocks()
+        val failureResult = mockk<BrowserSwitchFinalResult.Failure>()
+        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns failureResult
+        every { failureResult.error } returns BrowserSwitchException("boom")
+        initializeClient()
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { webViewMock.evaluateJavascript(any(), null) }
+
+        resetClientMocks()
+        val noResult = mockk<BrowserSwitchFinalResult.NoResult>()
+        every { browserSwitchClient.completeRequest(intent, pendingRequest) } returns noResult
+        initializeClient()
+
+        subject.handleReturnToApp(intent)
+        testScheduler.advanceUntilIdle()
+        runnableSlot.captured.run()
+
+        verify(exactly = 1) { webViewMock.evaluateJavascript(any(), null) }
     }
 
     @Test
@@ -405,7 +626,18 @@ class PopupBridgeClientUnitTest {
         verify { messageListener.onMessageReceived(messageName, null) }
     }
 
-    private fun getExpectedSuccessJavascript(error: String?, payload: JSONObject): String {
+    private fun resetClientMocks() {
+        clearMocks(
+            webViewMock,
+            browserSwitchClient,
+            pendingRequestRepository,
+            popupBridgeJavascriptInterface,
+            analyticsClient,
+            answers = false
+        )
+    }
+
+    private fun getExpectedOnCompleteJavascript(error: String?, payload: String?): String {
         return String.format(
             ("" +
                     "function notifyComplete() {" +
@@ -418,24 +650,7 @@ class PopupBridgeClientUnitTest {
                     "  window.addEventListener('load', function () {" +
                     "    notifyComplete();" +
                     "  });" +
-                    "}"), error, payload.toString()
-        )
-    }
-
-    private fun getExpectedFailureJavascript(error: String?): String {
-        return String.format(
-            ("" +
-                "function notifyComplete() {" +
-                "  window.popupBridge.onComplete(%s, %s);" +
-                "}" +
-                "" +
-                "if (document.readyState === 'complete') {" +
-                "  notifyComplete();" +
-                "} else {" +
-                "  window.addEventListener('load', function () {" +
-                "    notifyComplete();" +
-                "  });" +
-                "}"), error, null
+                    "}"), error, payload
         )
     }
 

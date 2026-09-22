@@ -1,5 +1,10 @@
 # PopupBridge Android Release Notes
 
+## unreleased
+
+* Harden JavaScript error delivery
+* The `err` argument of `window.popupBridge.onComplete` is now a JSON string on error paths
+
 ## 5.3.0
 
 * Update Android Gradle Plugin version to 8.13.2
