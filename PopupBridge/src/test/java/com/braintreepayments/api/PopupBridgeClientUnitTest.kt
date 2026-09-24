@@ -277,7 +277,7 @@ class PopupBridgeClientUnitTest {
 
     @Test
     fun `handleReturnToApp with hostile query params dispatches escaped success js`() = runTest {
-        val payload = "1); alert(document.cookie);//"
+        val payload = "</script><script>alert(1)</script>"
         val quoteBackslash = "a\"b\\c"
         val dataUri = Uri.Builder()
             .scheme(returnUrlScheme)
