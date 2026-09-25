@@ -171,9 +171,9 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
             try {
                 queryItems.put(queryParam, returnUri.getQueryParameter(queryParam))
             } catch (e: JSONException) {
-                val error = "new Error('Failed to parse query items from return URL. " +
-                        e.localizedMessage + "')"
-                runErrorJavaScript(error)
+                runErrorJavaScript(
+                    "Failed to parse query items from return URL. ${e.localizedMessage}"
+                )
                 return
             }
         }
@@ -187,15 +187,16 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
 
         analyticsClient.sendEvent(POPUP_BRIDGE_SUCCEEDED)
 
-        val successJavascript = String.format(ON_COMPLETE_JAVA_SCRIPT, null, payLoadJson.toString())
+        val successJavascript =
+            String.format(ON_COMPLETE_JAVA_SCRIPT, null, payLoadJson.toString().escapeJsLineSeparators())
         runJavaScriptInWebView(successJavascript)
     }
 
     private fun runErrorJavaScript(error: String) {
         analyticsClient.sendEvent(POPUP_BRIDGE_FAILED)
-
-        val successJavascript = String.format(ON_COMPLETE_JAVA_SCRIPT, error, null)
-        runJavaScriptInWebView(successJavascript)
+        val errorJavascript =
+            String.format(ON_COMPLETE_JAVA_SCRIPT, error.toJsSafeLiteral(), null)
+        runJavaScriptInWebView(errorJavascript)
     }
 
     private fun runCanceledJavaScript() {
@@ -227,6 +228,10 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
         )
     }
 
+    private fun String.toJsSafeLiteral(): String {
+        return JSONObject.quote(this).escapeJsLineSeparators()
+    }
+
     companion object {
         private const val REQUEST_CODE: Int = 1
         private const val POPUP_BRIDGE_NAME: String = "popupBridge"
@@ -244,4 +249,8 @@ class PopupBridgeClient @SuppressLint("SetJavaScriptEnabled") internal construct
                 "  });" +
                 "}")
     }
+}
+
+private fun String.escapeJsLineSeparators(): String {
+    return replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
 }
