@@ -1,6 +1,6 @@
 # PopupBridge Android Release Notes
 
-## unreleased
+## 5.3.1
 
 * Harden JavaScript error delivery
   * The `err` argument of `window.popupBridge.onComplete` is now a JSON string on error paths
