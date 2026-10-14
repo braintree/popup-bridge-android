@@ -33,3 +33,10 @@ dependencies {
     androidTestImplementation libs.device.automator
     androidTestImplementation libs.core
 }
+
+// device-automator / androidx.test.ext:junit pull in a vulnerable transitive junit:junit:4.12.
+configurations.all {
+    resolutionStrategy {
+        force libs.junit
+    }
+}
