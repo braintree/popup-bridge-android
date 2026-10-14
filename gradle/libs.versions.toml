@@ -23,6 +23,7 @@ jose4jVersion = "0.9.6"
 jdom2Version = "2.0.6.1"
 commonsCompressVersion = "1.26.1"
 nettyVersion = "4.1.137.Final"
+guavaVersion = "33.4.6-jre"
 
 [libraries]
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
@@ -57,6 +58,7 @@ netty-codec-socks = { module = "io.netty:netty-codec-socks", version.ref = "nett
 netty-handler = { module = "io.netty:netty-handler", version.ref = "nettyVersion" }
 netty-handler-proxy = { module = "io.netty:netty-handler-proxy", version.ref = "nettyVersion" }
 netty-transport-native-unix-common = { module = "io.netty:netty-transport-native-unix-common", version.ref = "nettyVersion" }
+guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
 
 [plugins]
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
