@@ -13,7 +13,7 @@ kotlinxCoroutinesTestVersion = "1.10.2"
 lifecycleRuntimeVersion = "2.8.7"
 mockitoCoreVersion = "5.7.0"
 mockkVersion = "1.13.17"
-robolectricVersion = "4.11.1"
+robolectricVersion = "4.17"
 nexusPublishPluginVersion = "1.1.0"
 
 [libraries]

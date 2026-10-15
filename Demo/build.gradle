@@ -32,4 +32,7 @@ dependencies {
 
     androidTestImplementation libs.device.automator
     androidTestImplementation libs.core
+    // device-automator pulls androidx.test.ext:junit, which depends on a vulnerable junit:junit:4.12.
+    // Depending on it directly at a patched version lets Gradle's normal highest-version resolution win.
+    androidTestImplementation libs.junit
 }
