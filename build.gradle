@@ -9,32 +9,6 @@ buildscript {
     dependencies {
         classpath libs.gradle
     }
-
-    // AGP's own classpath pulls in transitive libraries (BouncyCastle, Netty, jose4j, jdom2,
-    // commons-compress) with known CVEs. Force patched versions here instead of upgrading AGP.
-    configurations.classpath {
-        resolutionStrategy {
-            force(
-                    libs.bouncycastle.bcprov,
-                    libs.bouncycastle.bcpkix,
-                    libs.bouncycastle.bcutil,
-                    libs.jose4j,
-                    libs.jdom2,
-                    libs.commons.compress,
-                    libs.netty.common,
-                    libs.netty.buffer,
-                    libs.netty.transport,
-                    libs.netty.resolver,
-                    libs.netty.codec,
-                    libs.netty.codec.http,
-                    libs.netty.codec.http2,
-                    libs.netty.codec.socks,
-                    libs.netty.handler,
-                    libs.netty.handler.proxy,
-                    libs.netty.transport.native.unix.common
-            )
-        }
-    }
 }
 
 plugins {

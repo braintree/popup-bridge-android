@@ -49,13 +49,6 @@ dependencies {
     testImplementation libs.kotlin.test
 }
 
-// Robolectric pulls in a vulnerable transitive guava:31.1-jre and bcprov-jdk18on:1.76.
-configurations.all {
-    resolutionStrategy {
-        force libs.guava, libs.bouncycastle.bcprov
-    }
-}
-
 // region signing and publishing
 
 project.ext.name = "popup-bridge"

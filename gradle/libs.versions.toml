@@ -13,17 +13,8 @@ kotlinxCoroutinesTestVersion = "1.10.2"
 lifecycleRuntimeVersion = "2.8.7"
 mockitoCoreVersion = "5.7.0"
 mockkVersion = "1.13.17"
-robolectricVersion = "4.11.1"
+robolectricVersion = "4.17"
 nexusPublishPluginVersion = "1.1.0"
-
-# Transitive dependency security overrides (pulled in by AGP's buildscript classpath).
-# These force patched versions without changing AGP/Kotlin itself. See Dependabot alerts.
-bouncyCastleVersion = "1.85"
-jose4jVersion = "0.9.6"
-jdom2Version = "2.0.6.1"
-commonsCompressVersion = "1.26.1"
-nettyVersion = "4.1.137.Final"
-guavaVersion = "33.4.6-jre"
 
 [libraries]
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
@@ -41,24 +32,6 @@ lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.r
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCoreVersion" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectricVersion" }
-bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncyCastleVersion" }
-bouncycastle-bcpkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncyCastleVersion" }
-bouncycastle-bcutil = { module = "org.bouncycastle:bcutil-jdk18on", version.ref = "bouncyCastleVersion" }
-jose4j = { module = "org.bitbucket.b_c:jose4j", version.ref = "jose4jVersion" }
-jdom2 = { module = "org.jdom:jdom2", version.ref = "jdom2Version" }
-commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompressVersion" }
-netty-common = { module = "io.netty:netty-common", version.ref = "nettyVersion" }
-netty-buffer = { module = "io.netty:netty-buffer", version.ref = "nettyVersion" }
-netty-transport = { module = "io.netty:netty-transport", version.ref = "nettyVersion" }
-netty-resolver = { module = "io.netty:netty-resolver", version.ref = "nettyVersion" }
-netty-codec = { module = "io.netty:netty-codec", version.ref = "nettyVersion" }
-netty-codec-http = { module = "io.netty:netty-codec-http", version.ref = "nettyVersion" }
-netty-codec-http2 = { module = "io.netty:netty-codec-http2", version.ref = "nettyVersion" }
-netty-codec-socks = { module = "io.netty:netty-codec-socks", version.ref = "nettyVersion" }
-netty-handler = { module = "io.netty:netty-handler", version.ref = "nettyVersion" }
-netty-handler-proxy = { module = "io.netty:netty-handler-proxy", version.ref = "nettyVersion" }
-netty-transport-native-unix-common = { module = "io.netty:netty-transport-native-unix-common", version.ref = "nettyVersion" }
-guava = { module = "com.google.guava:guava", version.ref = "guavaVersion" }
 
 [plugins]
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
