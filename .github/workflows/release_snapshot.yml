@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Set up Java
         uses: ./.github/actions/setup_java
       # After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Set up Java
         uses: ./.github/actions/setup_java
       - name: Unit Tests
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Set up Java
         uses: ./.github/actions/setup_java
       - name: Decode Signing Key

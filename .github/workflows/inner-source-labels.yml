@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Acknowledge command
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -29,7 +29,7 @@ jobs:
             });
 
       - name: Add inner source labels
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.issues.addLabels({
@@ -48,7 +48,7 @@ jobs:
     steps:
       - name: Acknowledge command
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -59,7 +59,7 @@ jobs:
             });
 
       - name: Remove tech lead review required label
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             try {
